@@ -1,0 +1,10 @@
+{
+  "name": "happly-zetjes",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "uuid": "^9.0.0"
+  },
+  "engines": { "node": ">=18" }
+}
