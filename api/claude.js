@@ -1,7 +1,3 @@
-// api/claude.js
-// POST /api/claude { token, system, userMsg }
-// Validates token, proxies to Anthropic server-side
-
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
