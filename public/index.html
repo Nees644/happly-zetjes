@@ -335,8 +335,35 @@
 </div>
 <script>
 const API = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
-let token='', anonId='', tenantId='', productId='', sessionId='';
+let token='', anonId='', tenantId='', productId='', sessionId='', theme='werk';
 let situation='', clarifyQ='', clarifyA='', selectedOpt='';
+
+const THEME_CONFIG = {
+  werk: {
+    welkom: 'Even ergens op <em>vastgelopen?</em>',
+    subtitel: 'Vertel wat er speelt — op je werk of thuis. Ik geef je een Zetje.',
+    voorbeelden: [
+      'Ik stel iets steeds uit op mijn werk...',
+      'Ik durf dat gesprek niet aan te gaan...',
+      'Ik weet niet waar ik moet beginnen...',
+      'Ik maak iets niet af omdat het perfect moet...',
+      'Thuis loopt het niet lekker en dat merk ik op mijn werk...',
+      'Ik voel me overweldigd door alles wat er speelt...',
+    ]
+  },
+  ondernemen: {
+    welkom: 'Even vastgelopen als <em>ondernemer?</em>',
+    subtitel: 'Vertel wat er speelt in je bedrijf of in je hoofd. Ik geef je een Zetje.',
+    voorbeelden: [
+      'Ik durf mijn prijs niet te verhogen...',
+      'Ik twijfel of mijn bedrijf goed genoeg is...',
+      'Ik stel een moeilijke beslissing steeds uit...',
+      'Ik weet niet meer welke kant ik op moet...',
+      'Ik vind het moeilijk om dingen los te laten...',
+      'Ik loop vast in mijn groei als ondernemer...',
+    ]
+  }
+};
 
 window.addEventListener('DOMContentLoaded', async () => {
   const params = new URLSearchParams(window.location.search);
@@ -350,8 +377,26 @@ window.addEventListener('DOMContentLoaded', async () => {
     const d = await r.json();
     if (!d.valid) { go('s-error'); return; }
     anonId=d.anonId; tenantId=d.tenantId; productId=d.productId;
+    theme = d.theme || 'werk';
+    applyTheme(theme);
   } catch(e) { console.warn('Validate failed, continuing:', e); }
 });
+
+function applyTheme(t) {
+  const cfg = THEME_CONFIG[t] || THEME_CONFIG['werk'];
+  // Welkom tekst
+  const welkomH1 = document.querySelector('#s-welcome h1');
+  if (welkomH1) welkomH1.innerHTML = cfg.welkom;
+  const welkomP = document.querySelector('#s-welcome .hero p');
+  if (welkomP) welkomP.textContent = cfg.subtitel;
+  // Voorbeeldzinnen
+  const exDiv = document.querySelector('.examples');
+  if (exDiv) {
+    exDiv.innerHTML = cfg.voorbeelden.map(v =>
+      `<button class="ex" onclick="prefill(this.dataset.v)" data-v="${v}">${v}</button>`
+    ).join('');
+  }
+}
 
 function go(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
@@ -362,13 +407,12 @@ function syncChar() { document.getElementById('cc').textContent=document.getElem
 function clearOptSel() { document.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel')); selectedOpt=''; }
 function setLoadMsg(msg) { document.getElementById('load-msg').textContent=msg; }
 
-async function apiClaude(system, userMsg) {
+async function apiClaude(phase, userMsg, clarifyAnswer) {
   const r = await fetch(API+'/api/claude', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({token, system, userMsg})
+    body: JSON.stringify({token, phase, userMsg, clarifyAnswer})
   });
-  const d = await r.json();
-  return d.content?.find(b=>b.type==='text')?.text || '';
+  return r.json();
 }
 
 async function saveSession(phase, data) {
@@ -387,23 +431,29 @@ async function startFlow() {
   if (!situation) { document.getElementById('ta1').focus(); return; }
   go('s-load'); setLoadMsg('Even kijken wat er speelt...');
 
-  const system = `Je bent Zetjes door happly, een warme collega die mensen helpt als ze vastlopen.
-Stel precies ÉÉN korte verduidelijkingsvraag in gewone mensentaal. Geen psychologische termen.
-Antwoord ALLEEN in raw JSON zonder markdown:
-{"vraag":"...","opties":["...","...","..."]}`;
-
   try {
-    const raw = await apiClaude(system, `Situatie: ${situation}`);
-    const p = JSON.parse(raw.replace(/```json|```/g,'').trim());
-    clarifyQ = p.vraag || 'Wat houdt je het meest tegen?';
+    const d = await apiClaude('clarify', situation);
+
+    // Off-topic: toon vriendelijke redirect
+    if (d.off_topic) {
+      document.getElementById('clarify-q').textContent = d.redirect || 'Zetjes helpt je bij wat je tegenhoudt. Wat speelt er voor jou?';
+      document.getElementById('clarify-opts').innerHTML = '';
+      go('s-clarify');
+      return;
+    }
+
+    clarifyQ = d.vraag || 'Wat houdt je het meest tegen?';
     document.getElementById('clarify-q').textContent = clarifyQ;
     const optsEl = document.getElementById('clarify-opts');
-    optsEl.innerHTML='';
-    (p.opties||[]).forEach(opt => {
-      const btn=document.createElement('button');
-      btn.className='opt'; btn.textContent=opt;
-      btn.onclick=()=>{ document.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
-        btn.classList.add('sel'); selectedOpt=opt; document.getElementById('ta2').value=''; };
+    optsEl.innerHTML = '';
+    (d.opties||[]).forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'opt'; btn.textContent = opt;
+      btn.onclick = () => {
+        document.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+        btn.classList.add('sel'); selectedOpt = opt;
+        document.getElementById('ta2').value = '';
+      };
       optsEl.appendChild(btn);
     });
     go('s-clarify');
@@ -418,20 +468,12 @@ async function submitClarify() {
 }
 
 async function generateZetje(clarifyAnswer) {
-  const ctx = clarifyAnswer ? `Situatie: ${situation}
-Extra: ${clarifyAnswer}` : `Situatie: ${situation}`;
-  const system = `Je bent Zetjes door happly, een warme vriendelijke collega. Geef een concreet Zetje in gewone mensentaal.
-Geen psychologische labels. Spreek de persoon aan met 'je'. Warmte + concreet + kort.
-Voeg intern 'blocker_type' toe in het Engels (bijv: perfectionism, avoidance, fear_of_judgment, overwhelm, procrastination) — wordt NOOIT getoond aan gebruiker.
-Antwoord ALLEEN in raw JSON zonder markdown:
-{"badge":"max 3 woorden met emoji","titel":"max 7 woorden","intro":"1-2 zinnen warmte en hoop","stappen":["doe-ding 1 max 15 woorden","doe-ding 2","doe-ding 3"],"blocker_type":"..."}`;
   try {
-    const raw = await apiClaude(system, ctx);
-    const p = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    const p = await apiClaude('zetje', situation, clarifyAnswer);
     document.getElementById('z-badge').textContent = p.badge||'✨ Jouw Zetje';
     document.getElementById('z-title').textContent = p.titel||'Jouw Zetje';
     document.getElementById('z-intro').textContent = p.intro||'';
-    const el=document.getElementById('z-steps'); el.innerHTML='';
+    const el = document.getElementById('z-steps'); el.innerHTML='';
     (p.stappen||[]).forEach((s,i)=>{
       el.innerHTML+=`<div class="step"><div class="step-n">${i+1}</div><div class="step-t">${s}</div></div>`;
     });
