@@ -1,6 +1,6 @@
 // api/validate.js
 // POST /api/validate { token }
-// Returns { valid, anonId, tenantId, productSlug, productName }
+// Returns { valid, anonId, tenantId, productSlug, productName, theme }
 
 import { createClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
 
   const { data: invite, error } = await supabase
     .from('invites')
-    .select('id, tenant_id, product_id, anon_id, active, products(slug, name)')
+    .select('id, tenant_id, product_id, anon_id, active, theme, products(slug, name)')
     .eq('token', token)
     .single();
 
@@ -45,5 +45,6 @@ export default async function handler(req, res) {
     productId:   invite.product_id,
     productSlug: invite.products?.slug || 'zetjes',
     productName: invite.products?.name || 'Zetjes',
+    theme:       invite.theme || 'werk',
   });
 }
