@@ -2,8 +2,8 @@
 // POST /api/claude { token, phase, userMsg, clarifyAnswer }
 // Valideert token, laadt thema-config, proxiet naar Anthropic
 
-import { createClient } from '@supabase/supabase-js';
-import { getTheme } from './themes.js';
+const { createClient } = require('@supabase/supabase-js');
+const { getTheme } = require('./themes.js');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -29,16 +29,18 @@ async function callAnthropic(system, userMsg, maxTokens = 1000) {
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-5',
       max_tokens: maxTokens,
       system,
       messages: [{ role: 'user', content: userMsg }]
     })
   });
-  return response.json();
+  const data = await response.json();
+  if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+  return data;
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
