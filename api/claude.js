@@ -13,8 +13,8 @@ const MAX_INPUT = 2000;
 const CLARIFY_SCHEMA = {
   type: 'object',
   properties: {
-    vraag: { type: 'string' },
-    opties: { type: 'array', items: { type: 'string' } },
+    vraag: { type: 'string', description: 'Eén korte, gerichte verhelderingsvraag' },
+    opties: { type: 'array', items: { type: 'string' }, description: 'Precies drie klikbare antwoorden in de ik-vorm, elk maximaal 6 woorden, die elk naar een andere blokkade wijzen' },
   },
   required: ['vraag', 'opties'],
   additionalProperties: false,
@@ -23,10 +23,10 @@ const CLARIFY_SCHEMA = {
 const ZETJE_SCHEMA = {
   type: 'object',
   properties: {
-    badge: { type: 'string' },
-    titel: { type: 'string' },
-    intro: { type: 'string' },
-    stappen: { type: 'array', items: { type: 'string' } },
+    badge: { type: 'string', description: 'Korte naam van wat er speelt, maximaal 2 woorden, bijvoorbeeld Perfectie, Twijfel, Loslaten, Geen puf' },
+    titel: { type: 'string', description: 'Prikkelende titel van het zetje, maximaal 8 woorden' },
+    intro: { type: 'string', description: 'De spiegel: één zin die laat voelen dat je begrijpt wat er speelt, in de woorden van de persoon, zonder oordeel' },
+    stappen: { type: 'array', items: { type: 'string' }, description: 'Eén tot drie concrete stappen, elk maximaal 15 woorden; de eerste kan binnen vijf minuten beginnen' },
     pattern: { type: 'string', enum: ['energie', 'vertrouwen', 'weerstand', 'overtuigingen'] },
     intervention: { type: 'string', enum: ['kleine_handeling', 'gedachte_herformuleren', 'gesprek_voorbereiden', 'eigen_reden', 'rust', 'anders'] },
     blocker_type: { type: 'string', enum: ['perfectie', 'uitstellen', 'schaamte', 'overthinking', 'twijfel', 'loslaten', 'koers', 'communicatie', 'energie', 'anders'] },
