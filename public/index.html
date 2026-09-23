@@ -186,6 +186,11 @@
   .fb-prev { font-family:'Lora',serif; font-style:italic; font-size:17px; color:var(--pink-d); margin-bottom:18px; max-width:300px; }
   .sub-later { color:var(--text-mid); font-size:14.5px; line-height:1.55; margin-bottom:26px; max-width:290px; }
   #ta-waarom { height:120px; margin-bottom:8px; }
+
+  .of-label { text-align:center; font-size:12px; font-weight:600; letter-spacing:.6px; text-transform:uppercase;
+    color:var(--text-soft); margin:-8px 0 12px; display:flex; align-items:center; gap:10px; }
+  .of-label::before, .of-label::after { content:''; flex:1; height:1px; background:var(--border); }
+  #s-welcome .btn-pink { margin-top:0; }
 </style>
 </head>
 <body>
@@ -208,7 +213,7 @@
         <p>Vertel wat er speelt — in je eigen woorden. Ik geef je een Zetje.</p>
         <p class="herken" id="herken" hidden></p>
       </div>
-      <p class="ex-label">Herken je dit?</p>
+      <p class="ex-label">Herken je dit? Tik erop:</p>
       <div class="examples">
         <button class="ex" onclick="prefill(this.dataset.v)"
           data-v="Ik moet een stuk afmaken maar ik kom er steeds niet toe, telkens iets anders tussendoor..."
@@ -220,7 +225,8 @@
           data-v="Het rapport is bijna klaar maar ik stuur het maar niet weg, er klopt nog iets niet."
           >"Het is bijna klaar maar ik stuur het niet weg..."</button>
       </div>
-      <button class="btn-pink" onclick="go('s-input')">Vertel het me →</button>
+      <p class="of-label">of</p>
+      <button class="btn-pink" onclick="eigenWoorden()">✍️ In je eigen woorden →</button>
     </div>
   </div>
 
@@ -235,7 +241,7 @@
     </div>
     <div class="pad">
       <p class="q-label">Wat speelt er?</p>
-      <p class="q-sub">Typ het gewoon zoals het bij je opkomt.</p>
+      <p class="q-sub" id="input-sub">Typ het gewoon zoals het bij je opkomt.</p>
       <textarea id="ta1" placeholder="Bijv: Ik moet een mail sturen maar elke keer als ik het open doe ik toch iets anders eerst..." maxlength="500" oninput="syncChar()"></textarea>
       <div class="char-hint"><span id="cc">0</span>/500</div>
       <button class="btn-pink" onclick="startFlow()">Verder →</button>
@@ -573,7 +579,16 @@ function go(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
   document.getElementById(id).classList.add('on');
 }
-function prefill(txt) { document.getElementById('ta1').value=txt; syncChar(); go('s-input'); }
+function prefill(txt) {
+  document.getElementById('ta1').value=txt; syncChar();
+  document.getElementById('input-sub').textContent='Pas het gerust aan, of vertel meer.';
+  go('s-input');
+}
+function eigenWoorden() {
+  document.getElementById('input-sub').textContent='Typ het gewoon zoals het bij je opkomt.';
+  go('s-input');
+  setTimeout(() => document.getElementById('ta1').focus(), 350);
+}
 function syncChar() { document.getElementById('cc').textContent=document.getElementById('ta1').value.length; }
 function clearOptSel() { document.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel')); selectedOpt=''; }
 function setLoadMsg(msg) { document.getElementById('load-msg').textContent=msg; }
