@@ -447,6 +447,8 @@ function applyContext(d) {
   document.querySelectorAll('.product-tag').forEach(el => el.textContent = d.label || 'Zetjes');
   const h1 = document.querySelector('#s-welcome h1');
   if (h1 && ui.welkom) h1.innerHTML = ui.welkom;
+  const ta = document.getElementById('ta1');
+  if (ta && ui.placeholder) ta.placeholder = ui.placeholder;
   const p = document.querySelector('#s-welcome .welcome-art p');
   if (p && ui.subtitel) p.textContent = ui.subtitel;
   const ex = document.querySelector('.examples');

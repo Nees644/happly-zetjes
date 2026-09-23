@@ -57,6 +57,7 @@ const CONTEXTS = {
     ui: {
       welkom: 'Even ergens op <em>vastgelopen?</em>',
       subtitel: 'Vertel wat er speelt — op je werk of thuis. Ik geef je een Zetje.',
+      placeholder: 'Bijv: Ik moet een mail sturen maar elke keer als ik het open doe ik toch iets anders eerst...',
       voorbeelden: [
         'Ik stel iets steeds uit op mijn werk...',
         'Ik durf dat gesprek niet aan te gaan...',
@@ -105,6 +106,7 @@ Niet relevant (offtopic): recepten, technische vragen, medisch advies, puur zake
     ui: {
       welkom: 'Even vastgelopen als <em>ondernemer?</em>',
       subtitel: 'Vertel wat er speelt in je bedrijf of in je hoofd. Ik geef je een Zetje.',
+      placeholder: 'Bijv: Ik moet een offerte versturen maar ik blijf eraan schaven en stuur hem niet...',
       voorbeelden: [
         'Ik durf mijn prijs niet te verhogen...',
         'Ik twijfel of mijn bedrijf goed genoeg is...',
@@ -160,6 +162,7 @@ Niet relevant (offtopic): technische vragen (btw, KvK), juridische vragen, recep
     ui: {
       welkom: 'Lukt het even <em>niet?</em>',
       subtitel: 'Vertel wat er speelt. Je krijgt één klein zetje.',
+      placeholder: 'Bijv: Het ging deze week niet goed. Nu heb ik geen zin meer om naar de bijeenkomst te gaan...',
       voorbeelden: [
         'Ik heb een moeilijke week gehad en denk: wat heeft het voor zin...',
         'Ik heb gisteren iets gedaan waar ik niet blij mee ben...',
