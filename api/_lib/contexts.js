@@ -165,7 +165,6 @@ Niet relevant (offtopic): technische vragen (btw, KvK), juridische vragen, recep
       placeholder: 'Bijv: Het ging deze week niet goed. Nu heb ik geen zin meer om naar de bijeenkomst te gaan...',
       voorbeelden: [
         'Ik heb een moeilijke week gehad en denk: wat heeft het voor zin...',
-        'Ik heb gisteren iets gedaan waar ik niet blij mee ben...',
         'De volgende bijeenkomst komt eraan en ik heb er geen zin in...',
         'Het gaat best goed, maar ik ben bang dat het niet blijft...',
       ],
