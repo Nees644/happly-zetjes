@@ -1,6 +1,7 @@
 // api/session.js
-// POST /api/session { token, anonId, sessionId, phase: 'feedback', data: { feedback } }
-// Slaat de terugkoppeling op. Sessies zelf worden aangemaakt in api/claude.js.
+// POST /api/session { token, anonId, sessionId, phase: 'feedback', data: { feedback, toelichting } }
+// Slaat de terugkoppeling op (gevraagd bij het volgende bezoek). Sessies zelf worden
+// aangemaakt in api/claude.js.
 
 const { supabase } = require('./_lib/supabase');
 const { cors, resolveAccess, sendAccessError } = require('./_lib/access');
@@ -18,14 +19,23 @@ module.exports = async function handler(req, res) {
 
     if (phase === 'feedback' && sessionId && FEEDBACK.includes(data?.feedback)) {
       const { data: s } = await supabase
-        .from('sessions').select('id, created_at')
+        .from('sessions').select('id')
         .eq('id', sessionId).eq('anon_id', a.anonId).eq('invite_id', a.invite.id).maybeSingle();
       if (!s) return res.status(404).json({ error: 'Sessie niet gevonden' });
-      const { error } = await supabase.from('sessions').update({
-        feedback: data.feedback,
-        duration_seconds: Math.round((Date.now() - Date.parse(s.created_at)) / 1000),
-      }).eq('id', s.id);
+      // duration_seconds blijft de tijd tot het zetje; de terugvraag komt uren of dagen later.
+      const { error } = await supabase.from('sessions').update({ feedback: data.feedback }).eq('id', s.id);
       if (error) throw error;
+
+      // Toelichting bij "Niet echt": vrije tekst, dus in session_messages (nooit in rapportages).
+      const toelichting = String(data.toelichting || '').trim().slice(0, 250);
+      if (data.feedback === 'nee' && toelichting) {
+        const { count } = await supabase
+          .from('session_messages').select('id', { count: 'exact', head: true }).eq('session_id', s.id);
+        const { error: mErr } = await supabase.from('session_messages').insert({
+          session_id: s.id, positie: (count || 0) + 1, role: 'user', soort: 'feedback_toelichting', content: toelichting,
+        });
+        if (mErr) throw mErr;
+      }
       return res.status(200).json({ ok: true });
     }
 
