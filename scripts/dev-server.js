@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 
 const root = process.argv[2] ? path.resolve(process.argv[2]) : path.join(__dirname, '..');
+process.chdir(root);
 const envFile = path.join(root, 'lokaal.env');
 if (fs.existsSync(envFile)) {
   for (const line of fs.readFileSync(envFile, 'utf8').split('\n')) {
