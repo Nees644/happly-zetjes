@@ -6,7 +6,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const root = path.join(__dirname, '..');
+const root = process.argv[2] ? path.resolve(process.argv[2]) : path.join(__dirname, '..');
 const envFile = path.join(root, 'lokaal.env');
 if (fs.existsSync(envFile)) {
   for (const line of fs.readFileSync(envFile, 'utf8').split('\n')) {
@@ -15,7 +15,7 @@ if (fs.existsSync(envFile)) {
   }
 }
 
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(process.argv[3] || process.env.PORT) || 3000;
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.json': 'application/json' };
 
 function withHelpers(res) {
@@ -30,15 +30,16 @@ http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
 
   if (url.pathname.startsWith('/api/')) {
-    const name = url.pathname.slice(5).replace(/[^a-z0-9/_-]/gi, '');
+    const name = url.pathname.slice(5).replace(/[^a-z0-9/_-]/gi, '').replace(/\.\.+/g, '');
     const file = path.join(root, 'api', `${name}.js`);
-    if (name.startsWith('_') || !fs.existsSync(file)) return res.status(404).json({ error: 'not found' });
+    if (name.split('/').some((p) => p.startsWith('_')) || !fs.existsSync(file)) return res.status(404).json({ error: 'not found' });
     let raw = '';
     for await (const chunk of req) raw += chunk;
     try { req.body = raw ? JSON.parse(raw) : {}; } catch { req.body = {}; }
     req.query = Object.fromEntries(url.searchParams);
     try {
-      await require(file)(req, res);
+      const mod = await import(require('url').pathToFileURL(file).href);
+      await (mod.default?.default || mod.default)(req, res);
     } catch (err) {
       console.error(err);
       if (!res.writableEnded) res.status(500).json({ error: err.message });

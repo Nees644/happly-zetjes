@@ -4,8 +4,14 @@
     {
       "name": "zetjes-app",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["scripts/dev-server.js"],
+      "runtimeArgs": ["/Users/maarten/Desktop/Zetjes/happly-zetjes/scripts/dev-server.js", "/Users/maarten/Desktop/Zetjes/happly-zetjes", "3000"],
       "port": 3000
+    },
+    {
+      "name": "zetjes-dashboard",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["/Users/maarten/Desktop/Zetjes/happly-zetjes/scripts/dev-server.js", "/Users/maarten/Desktop/Zetjes/happly-dashboard", "3001"],
+      "port": 3001
     }
   ]
 }
