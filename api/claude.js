@@ -1,138 +1,223 @@
 // api/claude.js
-// POST /api/claude { token, phase, userMsg, clarifyAnswer }
-// Valideert token, laadt thema-config, proxiet naar Anthropic
+// POST /api/claude { token, anonId, phase: 'clarify'|'zetje', userMsg, clarifyAnswer, sessionId }
+// Laadt de context uit de invite, bewaakt de poortwachter, praat met Claude en
+// slaat de sessie server-side op (labels in sessions, tekst in session_messages).
 
-const { createClient } = require('@supabase/supabase-js');
-const { getTheme } = require('./themes.js');
+const { supabase } = require('./_lib/supabase');
+const { cors, resolveAccess, sendAccessError } = require('./_lib/access');
+const { staticSystem } = require('./_lib/contexts');
+const { jsonCall } = require('./_lib/anthropic');
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
+const MAX_INPUT = 2000;
 
-async function getInvite(token) {
-  const { data, error } = await supabase
-    .from('invites')
-    .select('tenant_id, product_id, anon_id, active, theme')
-    .eq('token', token)
-    .single();
-  if (error || !data || !data.active) return null;
+const CLARIFY_SCHEMA = {
+  type: 'object',
+  properties: {
+    vraag: { type: 'string' },
+    opties: { type: 'array', items: { type: 'string' } },
+  },
+  required: ['vraag', 'opties'],
+  additionalProperties: false,
+};
+
+const ZETJE_SCHEMA = {
+  type: 'object',
+  properties: {
+    badge: { type: 'string' },
+    titel: { type: 'string' },
+    intro: { type: 'string' },
+    stappen: { type: 'array', items: { type: 'string' } },
+    pattern: { type: 'string', enum: ['energie', 'vertrouwen', 'weerstand', 'overtuigingen'] },
+    intervention: { type: 'string', enum: ['kleine_handeling', 'gedachte_herformuleren', 'gesprek_voorbereiden', 'eigen_reden', 'rust', 'anders'] },
+    blocker_type: { type: 'string', enum: ['perfectie', 'uitstellen', 'schaamte', 'overthinking', 'twijfel', 'loslaten', 'koers', 'communicatie', 'energie', 'anders'] },
+    moment: { type: 'string', enum: ['schaamte', 'dip', 'groep', 'stilte', 'geen'] },
+  },
+  required: ['badge', 'titel', 'intro', 'stappen', 'pattern', 'intervention', 'blocker_type', 'moment'],
+  additionalProperties: false,
+};
+
+function guardSchema(categorieen) {
+  return {
+    type: 'object',
+    properties: { categorie: { type: 'string', enum: categorieen } },
+    required: ['categorie'],
+    additionalProperties: false,
+  };
+}
+
+// Variabel deel van de systeemprompt: komt na het cache-breekpunt.
+function variableSystem(a) {
+  const parts = [];
+  if (a.ctx.faseweter && a.phase) {
+    parts.push(`FASE: week ${a.weekSinceStart} sinds de start van de groep. ${a.ctx.fasen[a.phase]}`);
+  }
+  if (a.profile?.profiel_samenvatting) {
+    parts.push(`WAT EERDER BIJ DEZE PERSOON SPEELDE (alleen als achtergrond):\n${a.profile.profiel_samenvatting}`);
+  }
+  return parts.join('\n\n');
+}
+
+function systemBlocks(a, taak) {
+  return [
+    { text: staticSystem(a.ctx), cache: true },
+    { text: [variableSystem(a), taak].filter(Boolean).join('\n\n'), cache: false },
+  ];
+}
+
+async function addMessage(sessionId, role, content) {
+  if (!content) return;
+  const { count } = await supabase
+    .from('session_messages').select('id', { count: 'exact', head: true }).eq('session_id', sessionId);
+  const { error } = await supabase
+    .from('session_messages').insert({ session_id: sessionId, positie: (count || 0) + 1, role, content });
+  if (error) throw error;
+}
+
+async function createSession(a, fields = {}) {
+  const { data, error } = await supabase.from('sessions').insert({
+    tenant_id: a.invite.tenant_id,
+    product_id: a.invite.product_id,
+    invite_id: a.invite.id,
+    anon_id: a.anonId,
+    context: a.ctx.key,
+    theme: a.ctx.key,
+    phase: a.phase,
+    week_since_start: a.weekSinceStart,
+    ...fields,
+  }).select('id, created_at').single();
+  if (error) throw error;
   return data;
 }
 
-async function callAnthropic(system, userMsg, maxTokens = 1000) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': process.env.ANTHROPIC_KEY,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-5',
-      max_tokens: maxTokens,
-      system,
-      messages: [{ role: 'user', content: userMsg }]
-    })
-  });
-  const data = await response.json();
-  if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-  return data;
+async function loadSession(a, sessionId) {
+  if (!sessionId) return null;
+  const { data } = await supabase
+    .from('sessions').select('id, created_at')
+    .eq('id', sessionId).eq('anon_id', a.anonId).eq('invite_id', a.invite.id).maybeSingle();
+  return data || null;
+}
+
+async function firstUserMessage(sessionId) {
+  const { data } = await supabase
+    .from('session_messages').select('content')
+    .eq('session_id', sessionId).eq('role', 'user').order('positie').limit(1).maybeSingle();
+  return data?.content || null;
 }
 
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  cors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { token, phase, userMsg, clarifyAnswer } = req.body || {};
-  const invite = await getInvite(token);
-  if (!invite) return res.status(401).json({ error: 'Unauthorized' });
+  const { token, anonId, phase, sessionId } = req.body || {};
+  const userMsg = String(req.body?.userMsg || '').slice(0, MAX_INPUT).trim();
+  const clarifyAnswer = String(req.body?.clarifyAnswer || '').slice(0, MAX_INPUT).trim();
 
-  // Laad thema-config — fallback naar 'werk'
-  const themeSlug = invite.theme || 'werk';
-  const theme = getTheme(themeSlug);
+  let a;
+  try {
+    a = await resolveAccess({ token, anonId });
+  } catch (err) {
+    if (sendAccessError(res, err)) return;
+    console.error('claude access', err.message);
+    return res.status(500).json({ error: 'fout' });
+  }
+  if (!a.profile?.consent_at) return res.status(403).json({ reason: 'toestemming' });
 
   try {
-
-    // ── FASE 1: poortwachter + verduidelijkingsvraag ─────────────────
+    // ── FASE 1: poortwachter + verhelderingsvraag ────────────────
     if (phase === 'clarify') {
+      if (!userMsg) return res.status(400).json({ error: 'Lege invoer' });
+      const pw = a.ctx.poortwachter;
 
-      // Stap 1: poortwachter check
-      const guardData = await callAnthropic(
-        theme.poortwachter_prompt,
-        userMsg,
-        100
-      );
-      const guardText = guardData?.content?.[0]?.text || '{"relevant": true}';
-      let guard = { relevant: true };
-      try { guard = JSON.parse(guardText.match(/\{.*\}/s)?.[0] || '{"relevant":true}'); } catch {}
-
-      if (!guard.relevant) {
-        return res.status(200).json({
-          off_topic: true,
-          redirect: `Zetjes helpt je bij wat je tegenhoudt ${themeSlug === 'ondernemen' ? 'als ondernemer' : 'op het werk of in je hoofd'}. Wat speelt er voor jou op dat vlak?`
+      let categorie = 'ok';
+      try {
+        const { data: guard } = await jsonCall({
+          label: 'poortwachter',
+          system: [{ text: `Je bent de poortwachter van Zetjes. Je classificeert alleen, je antwoordt de gebruiker niet.
+${pw.beschrijving}
+Kies precies één categorie uit: ${pw.categorieen.join(', ')}.
+crisis gaat altijd voor: kies crisis bij elk signaal van gedachten aan zelfdoding, zelfbeschadiging of acuut gevaar. Twijfel je tussen ok en een andere categorie zonder crisis-signaal, kies dan ok.`, cache: false }],
+          user: userMsg,
+          schema: guardSchema(pw.categorieen),
+          maxTokens: 256,
+          thinking: false,
         });
+        categorie = guard?.categorie || 'ok';
+      } catch (err) {
+        // Poortwachter faalt: doorgaan, de systeemprompt bevat dezelfde grenzen.
+        console.error('poortwachter', err.message);
       }
 
-      // Stap 2: verduidelijkingsvraag genereren
-      const clarifySystem = `${theme.systeem_prompt}
+      if (categorie !== 'ok') {
+        const redirect = pw.teksten[categorie] || pw.teksten.offtopic;
+        const s = await createSession(a, {
+          gatekeeper_triggered: true,
+          gatekeeper_reason: categorie === 'crisis' ? 'mentaal' : categorie,
+        });
+        await addMessage(s.id, 'user', userMsg);
+        await addMessage(s.id, 'assistant', redirect);
+        return res.status(200).json({ off_topic: true, crisis: categorie === 'crisis', redirect, sessionId: s.id });
+      }
 
-TAAK: Genereer één korte, gerichte verduidelijkingsvraag op basis van wat de gebruiker deelt.
-Genereer ook 3 korte klikbare antwoordopties (max 6 woorden elk).
-Antwoord alleen in dit JSON-formaat:
-{
-  "vraag": "...",
-  "opties": ["...", "...", "..."]
-}`;
+      const s = await createSession(a);
+      await addMessage(s.id, 'user', userMsg);
 
-      const clarifyData = await callAnthropic(clarifySystem, userMsg, 300);
-      const clarifyText = clarifyData?.content?.[0]?.text || '';
-      let clarify = { vraag: 'Wat maakt dit het moeilijkst voor je?', opties: ['Ik weet het niet', 'De druk van anderen', 'Mijn eigen twijfel'] };
-      try { clarify = JSON.parse(clarifyText.match(/\{.*\}/s)?.[0] || '{}'); } catch {}
-
-      return res.status(200).json({ off_topic: false, ...clarify });
+      let clarify;
+      try {
+        ({ data: clarify } = await jsonCall({
+          label: 'clarify',
+          system: systemBlocks(a, 'TAAK NU: stel de verhelderingsvraag. Geef precies drie antwoordopties.'),
+          user: userMsg,
+          schema: CLARIFY_SCHEMA,
+          effort: 'low',
+        }));
+      } catch (err) {
+        console.error('clarify', err.message);
+        clarify = { vraag: 'Wat maakt dit het moeilijkst voor je?', opties: ['Ik weet het niet', 'De druk van anderen', 'Mijn eigen twijfel'] };
+      }
+      const opties = (clarify.opties || []).slice(0, 3);
+      await addMessage(s.id, 'assistant', clarify.vraag);
+      return res.status(200).json({ off_topic: false, vraag: clarify.vraag, opties, sessionId: s.id });
     }
 
-    // ── FASE 2: zetje genereren ──────────────────────────────────────
+    // ── FASE 2: zetje ────────────────────────────────────────────
     if (phase === 'zetje') {
+      let s = await loadSession(a, sessionId);
+      let situatie = s ? await firstUserMessage(s.id) : null;
+      if (!s) {
+        if (!userMsg) return res.status(400).json({ error: 'Lege invoer' });
+        s = await createSession(a);
+        await addMessage(s.id, 'user', userMsg);
+        situatie = userMsg;
+      }
+      if (clarifyAnswer) await addMessage(s.id, 'user', clarifyAnswer);
 
-      const zetjeSystem = `${theme.systeem_prompt}
+      const { data: z } = await jsonCall({
+        label: 'zetje',
+        system: systemBlocks(a, 'TAAK NU: geef het zetje, met de labels voor analyse.'),
+        user: `Situatie: ${situatie || userMsg}\nAntwoord op de verhelderingsvraag: ${clarifyAnswer || 'geen'}`,
+        schema: ZETJE_SCHEMA,
+        maxTokens: 6000,
+        effort: 'medium',
+      });
 
-TAAK: Genereer een persoonlijk Zetje op basis van de situatie en het antwoord op de verduidelijkingsvraag.
-Antwoord alleen in dit JSON-formaat:
-{
-  "badge": "Korte naam van de blokkade (max 2 woorden, bijv. Perfectie, Twijfel, Loslaten)",
-  "titel": "Prikkelende titel van het Zetje (max 8 woorden)",
-  "intro": "Één zin die laat voelen dat je begrijpt wat er speelt (empathisch, geen oordeel)",
-  "stappen": [
-    "Concrete stap 1 (max 15 woorden)",
-    "Concrete stap 2 (max 15 woorden)",
-    "Concrete stap 3 (max 15 woorden)"
-  ],
-  "blocker_type": "intern label voor analyse: perfectie | uitstellen | schaamte | overthinking | twijfel | loslaten | koers | communicatie | energie | anders"
-}`;
+      const zetje = { badge: z.badge, titel: z.titel, intro: z.intro, stappen: (z.stappen || []).slice(0, 3) };
+      await addMessage(s.id, 'assistant', JSON.stringify(zetje));
+      const { error } = await supabase.from('sessions').update({
+        pattern: z.pattern,
+        intervention: z.intervention,
+        blocker_type: z.blocker_type,
+        moment: a.ctx.key === 'gli' && z.moment !== 'geen' ? z.moment : null,
+        duration_seconds: Math.round((Date.now() - Date.parse(s.created_at)) / 1000),
+      }).eq('id', s.id);
+      if (error) throw error;
 
-      const context = `Situatie: ${userMsg}\nVerduidelijking: ${clarifyAnswer || 'geen'}`;
-      const zetjeData = await callAnthropic(zetjeSystem, context, 600);
-      const zetjeText = zetjeData?.content?.[0]?.text || '';
-      let zetje = {
-        badge: 'Zetje',
-        titel: 'Eén stap is genoeg',
-        intro: 'Je zit vast — en dat is oké. Hier is wat je nu kunt doen.',
-        stappen: ['Adem even uit', 'Kies één kleine actie', 'Doe die actie nu'],
-        blocker_type: 'anders'
-      };
-      try { zetje = JSON.parse(zetjeText.match(/\{.*\}/s)?.[0] || '{}'); } catch {}
-
-      return res.status(200).json(zetje);
+      return res.status(200).json({ ...zetje, sessionId: s.id });
     }
 
     return res.status(400).json({ error: 'Onbekende fase' });
-
   } catch (err) {
-    return res.status(500).json({ error: 'API call failed', detail: err.message });
+    console.error('claude', err.message);
+    return res.status(500).json({ error: 'API call failed' });
   }
-}
+};
