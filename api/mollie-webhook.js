@@ -9,7 +9,11 @@ const { supabase } = require('./_lib/supabase');
 const { haalBetalingOp } = require('./_lib/mollie');
 const { stuurMail } = require('./_lib/mail');
 
-function appUrl() {
+// Zelfde adres als waar Mollie deze aanroep naartoe stuurde (klopt dan ook
+// op een preview-deploy); anders de vaste APP_URL.
+function appUrl(req) {
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+  if (host) return `https://${host}`;
   return (process.env.APP_URL || 'https://happly-zetjes.vercel.app').replace(/\/$/, '');
 }
 
@@ -62,7 +66,7 @@ module.exports = async function handler(req, res) {
       return res.status(500).end();
     }
 
-    const link = `${appUrl()}/?token=${invite.token}`;
+    const link = `${appUrl(req)}/?token=${invite.token}`;
     try {
       await stuurMail({ naar: email, onderwerp: 'Je Zetjes-link', html: mailHtml(link) });
     } catch (mailErr) {

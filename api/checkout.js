@@ -16,7 +16,11 @@ function cors(res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
 
-function appUrl() {
+// Bij voorkeur het adres waar dit verzoek zelf binnenkwam (klopt dan ook op
+// een preview-deploy); anders de vaste APP_URL.
+function appUrl(req) {
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+  if (host) return `https://${host}`;
   return (process.env.APP_URL || 'https://happly-zetjes.vercel.app').replace(/\/$/, '');
 }
 
@@ -34,8 +38,8 @@ module.exports = async function handler(req, res) {
     const betaling = await maakBetaling({
       bedrag: PRIJS,
       omschrijving: OMSCHRIJVING,
-      redirectUrl: `${appUrl()}/bedankt.html`,
-      webhookUrl: `${appUrl()}/api/mollie-webhook`,
+      redirectUrl: `${appUrl(req)}/bedankt.html`,
+      webhookUrl: `${appUrl(req)}/api/mollie-webhook`,
       metadata: { email },
     });
     if (!betaling.checkoutUrl) throw new Error('Geen betaalpagina ontvangen van Mollie');
