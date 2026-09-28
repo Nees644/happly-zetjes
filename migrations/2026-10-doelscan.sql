@@ -36,7 +36,9 @@ begin
 end $$;
 
 -- ── 2. SESSIONS ─────────────────────────────────────────────────
-alter table sessions add column if not exists profile_id uuid references profiles(id);
+-- ON DELETE SET NULL: anders blokkeert het verwijderen van een profiel
+-- zodra er een sessie naar wijst (zie migratie 2026-10-doelscan-verwijderen.sql).
+alter table sessions add column if not exists profile_id uuid references profiles(id) on delete set null;
 create index if not exists sessions_profile_id_idx on sessions(profile_id);
 
 -- ── 3. INVITES ──────────────────────────────────────────────────

@@ -47,7 +47,7 @@ async function loadInvite(token) {
   if (!token || typeof token !== 'string') return null;
   const { data } = await supabase
     .from('invites')
-    .select('id, tenant_id, product_id, anon_id, active, context, label, start_date, expires_at, max_uses, tenants(name, type, contact_email), products(slug, name)')
+    .select('id, tenant_id, product_id, anon_id, active, context, label, start_date, expires_at, max_uses, scan_required, remeasure_day30, tenants(name, type, contact_email), products(slug, name)')
     .eq('token', token)
     .maybeSingle();
   return data || null;

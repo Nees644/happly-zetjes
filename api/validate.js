@@ -30,6 +30,26 @@ async function openFeedback(anonId, inviteId) {
   return { sessionId: s.id, titel };
 }
 
+// Heeft deze gebruiker de Doelscan al gedaan op deze link? Alleen relevant als
+// de context een scan heeft en de invite hem niet uitschakelt.
+async function scanStatus(ctx, invite, anonId) {
+  if (!ctx.scan || invite.scan_required === false) return { nodig: false };
+  const { data } = await supabase
+    .from('profiles').select('id').eq('invite_id', invite.id).eq('user_key', anonId)
+    .eq('kind', 'start').limit(1).maybeSingle();
+  if (data) return { nodig: false };
+  return {
+    nodig: true,
+    config: {
+      goalPrompt: ctx.scan.goalPrompt,
+      whenPrompt: ctx.scan.whenPrompt,
+      hardPrompt: ctx.scan.hardPrompt,
+      openPrompt: ctx.scan.openPrompt,
+      items: ctx.scan.items.map((it) => ({ text: it.text })),
+    },
+  };
+}
+
 module.exports = async function handler(req, res) {
   cors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -38,6 +58,8 @@ module.exports = async function handler(req, res) {
   const { token, anonId } = req.body || {};
   try {
     const a = await resolveAccess({ token, anonId, register: true });
+    const consent = !!a.profile?.consent_at;
+    const scan = consent ? await scanStatus(a.ctx, a.invite, a.anonId) : { nodig: false };
     return res.status(200).json({
       valid: true,
       anonId: a.anonId,
@@ -48,8 +70,10 @@ module.exports = async function handler(req, res) {
       weekSinceStart: a.weekSinceStart,
       tenantType: a.invite.tenants?.type || null,
       productName: a.invite.products?.name || 'Zetjes',
-      consent: !!a.profile?.consent_at,
-      openFeedback: a.profile?.consent_at ? await openFeedback(a.anonId, a.invite.id) : null,
+      consent,
+      scanNodig: scan.nodig,
+      scanConfig: scan.config || null,
+      openFeedback: consent && !scan.nodig ? await openFeedback(a.anonId, a.invite.id) : null,
     });
   } catch (err) {
     if (sendAccessError(res, err)) return;

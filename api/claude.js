@@ -109,9 +109,12 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { token, anonId, phase, sessionId } = req.body || {};
+  const { token, anonId, phase, sessionId, profileId } = req.body || {};
   const userMsg = String(req.body?.userMsg || '').slice(0, MAX_INPUT).trim();
   const clarifyAnswer = String(req.body?.clarifyAnswer || '').slice(0, MAX_INPUT).trim();
+  // Alleen bij het eerste zetje na de Doelscan: het eigen antwoord op het open veld,
+  // als dat bruikbaar was. Dan slaat Zetjes de AI-call over (bijlage 15 hoofdstuk 4).
+  const firstStepOverride = String(req.body?.firstStepOverride || '').slice(0, MAX_INPUT).trim();
 
   let a;
   try {
@@ -122,6 +125,14 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'fout' });
   }
   if (!a.profile?.consent_at) return res.status(403).json({ reason: 'toestemming' });
+
+  // Doelscan-profiel koppelen aan de sessie, alleen als het echt van deze gebruiker is.
+  let doelscanProfileId = null;
+  if (profileId) {
+    const { data: p } = await supabase
+      .from('profiles').select('id').eq('id', profileId).eq('user_key', a.anonId).maybeSingle();
+    doelscanProfileId = p?.id || null;
+  }
 
   try {
     // ── FASE 1: poortwachter + verhelderingsvraag ────────────────
@@ -186,11 +197,22 @@ crisis gaat altijd voor: kies crisis bij elk signaal van gedachten aan zelfdodin
       let situatie = s ? await firstUserMessage(s.id) : null;
       if (!s) {
         if (!userMsg) return res.status(400).json({ error: 'Lege invoer' });
-        s = await createSession(a);
+        s = await createSession(a, doelscanProfileId ? { profile_id: doelscanProfileId } : {});
         await addMessage(s.id, 'user', userMsg);
         situatie = userMsg;
       }
       if (clarifyAnswer) await addMessage(s.id, 'user', clarifyAnswer);
+
+      // Eerste zetje na de Doelscan, met een bruikbaar eigen antwoord: geen AI-call.
+      if (firstStepOverride.length >= 8 && !firstStepOverride.endsWith('?')) {
+        const zetje = { badge: 'Eigen zetje', titel: 'Jouw eigen eerste stap', intro: '', stappen: [firstStepOverride] };
+        await addMessage(s.id, 'assistant', JSON.stringify(zetje));
+        const { error } = await supabase.from('sessions').update({
+          duration_seconds: Math.round((Date.now() - Date.parse(s.created_at)) / 1000),
+        }).eq('id', s.id);
+        if (error) throw error;
+        return res.status(200).json({ ...zetje, sessionId: s.id });
+      }
 
       const { data: z } = await jsonCall({
         label: 'zetje',

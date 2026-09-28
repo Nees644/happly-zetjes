@@ -93,4 +93,21 @@ function bouwHerkenningszin({ phrases, main_block, strength }) {
   return `Jij ${krachtZin}, maar ${valkuilZin}.`;
 }
 
-module.exports = { BLOKKADES, DREMPEL, CONTEXT_STANDAARD, contextStandaard, scoreDoelscan, bouwHerkenningszin };
+// Mensentaal in plaats van een cijfer voor de vier balken op de uitslagpagina
+// (bijlage 15 hoofdstuk 4: "vier balken, labels in mensentaal, geen cijfers").
+function labelVoorScore(waarde) {
+  if (waarde >= DREMPEL) return 'veel';
+  if (waarde >= 2.5) return 'gemiddeld';
+  return 'weinig';
+}
+
+// Eén item minimaal bruikbaar als eerste zetje: geen vraag, niet te kort.
+function eersteStapBruikbaar(tekst) {
+  const t = (tekst || '').trim();
+  return t.length >= 8 && !t.endsWith('?');
+}
+
+module.exports = {
+  BLOKKADES, DREMPEL, CONTEXT_STANDAARD, contextStandaard,
+  scoreDoelscan, bouwHerkenningszin, labelVoorScore, eersteStapBruikbaar,
+};
