@@ -3,7 +3,7 @@
 // herkenningszin is deterministisch, zoals bijlage 14 hoofdstuk 4 vraagt.
 // Wordt gebruikt door api/scan.js (de route) en door scripts/scan-tests.js.
 
-const BLOKKADES = ['energie', 'vertrouwen', 'weerstand', 'overtuigingen'];
+const BLOKKADES = ['energie', 'vertrouwen', 'overtuigingen', 'weerstand'];
 const DREMPEL = 3.5;
 
 // Welke blokkade in een context het vaakst tot uitval leidt. Gebruikt bij een
@@ -55,6 +55,8 @@ function hoogsteBlok(scores, context) {
   const kandidaten = BLOKKADES.filter((b) => scores[b] === max);
   if (kandidaten.length === 1) return { blok: kandidaten[0], waarde: max };
   const standaard = contextStandaard(context);
+  // Bevat de standaard niet de gelijke hoogste blokkades: vaste volgorde
+  // (energie, vertrouwen, overtuigingen, weerstand) beslist.
   const blok = kandidaten.includes(standaard) ? standaard : kandidaten[0];
   return { blok, waarde: max };
 }

@@ -33,7 +33,8 @@ test('profiel 1: hoge vertrouwen-score wordt main_block', () => {
   assert.strictEqual(r.scores.energie, 4.33);
   assert.strictEqual(r.scores.vertrouwen, 4.33);
   // vertrouwen en energie zijn hier gelijk; gli-standaard is overtuigingen,
-  // die zit niet bij de kandidaten, dus wint de eerste in vaste volgorde (energie).
+  // die zit niet bij de kandidaten, dus wint de eerste in vaste volgorde
+  // (energie, vertrouwen, overtuigingen, weerstand).
   assert.strictEqual(r.main_block, 'energie');
   assert.strictEqual(r.strength, 'weerstand');
   const zin = bouwHerkenningszin({ phrases: PHRASES, ...r });
