@@ -50,9 +50,11 @@ function gemiddeldenPerBlok(items, answers) {
   return scores;
 }
 
-function hoogsteBlok(scores, context) {
-  const max = Math.max(...BLOKKADES.map((b) => scores[b]));
-  const kandidaten = BLOKKADES.filter((b) => scores[b] === max);
+// blokken: welke blokkades meedingen (standaard alle vier; de hermeting
+// gebruikt hier een deelverzameling van drie, zie scoreHermeting).
+function hoogsteBlok(scores, context, blokken = BLOKKADES) {
+  const max = Math.max(...blokken.map((b) => scores[b]));
+  const kandidaten = blokken.filter((b) => scores[b] === max);
   if (kandidaten.length === 1) return { blok: kandidaten[0], waarde: max };
   const standaard = contextStandaard(context);
   // Bevat de standaard niet de gelijke hoogste blokkades: vaste volgorde
@@ -78,6 +80,54 @@ function scoreDoelscan({ items, answers, context }) {
   const main_block = hoogste.waarde >= DREMPEL ? hoogste.blok : 'balans';
   const strength = laagsteBlok(scores);
   return { scores, main_block, strength };
+}
+
+// Welke items de hermeting gebruikt: zelfregie en zelfstarten (niet
+// zelfreflectie) van de drie blokkades die bij de start NIET de kracht
+// waren. Bijlage 14/15 noemen "zes items" bij "de twee hoogste blokkades",
+// wat niet optelt (2 blokkades x 2 z's = 4, geen 6); dit haalt de drempel
+// van zes door drie blokkades te nemen in plaats van twee, en laat alleen
+// de eigen kracht ongemeten (die hoeft niet opnieuw bewezen te worden).
+// Zie de toelichting aan Maarten bij het opleveren van deze stap.
+function hermetingBlokken(startStrength) {
+  return BLOKKADES.filter((b) => b !== startStrength);
+}
+
+function hermetingItems(alleItems, startStrength) {
+  const blokken = hermetingBlokken(startStrength);
+  return alleItems.filter((it) => blokken.includes(it.block) && it.z !== 'zelfreflectie');
+}
+
+// Scoort de hermeting (6 items, 3 blokkades x zelfregie/zelfstarten).
+// De kracht van bij de start wordt niet herbevraagd en blijft ongewijzigd;
+// scores bevat voor dat blok de oorspronkelijke startscore, zodat een latere
+// vergelijking altijd over alle vier de blokkades gaat.
+function scoreHermeting({ items, answers, context, startScores, startStrength }) {
+  const blokken = hermetingBlokken(startStrength);
+  if (!Array.isArray(items) || items.length !== 6) throw new Error('hermeting: 6 items verwacht');
+  if (!Array.isArray(answers) || answers.length !== 6) throw new Error('hermeting: 6 antwoorden verwacht');
+  answers.forEach((a, i) => {
+    if (!Number.isInteger(a) || a < 1 || a > 5) throw new Error(`hermeting: antwoord ${i + 1} moet een geheel getal van 1 tot 5 zijn`);
+  });
+  const perBlok = {};
+  blokken.forEach((b) => { perBlok[b] = 0; });
+  items.forEach((it, i) => {
+    if (!blokken.includes(it.block) || it.z === 'zelfreflectie') {
+      throw new Error(`hermeting: item ${i + 1} hoort niet bij de hermetingset`);
+    }
+    perBlok[it.block] += answers[i];
+  });
+  blokken.forEach((b) => {
+    const n = items.filter((it) => it.block === b).length;
+    if (n !== 2) throw new Error(`hermeting: verwacht 2 items voor ${b}, kreeg ${n}`);
+  });
+
+  const scores = { ...startScores };
+  blokken.forEach((b) => { scores[b] = Math.round((perBlok[b] / 2) * 100) / 100; });
+
+  const hoogste = hoogsteBlok(scores, context, blokken);
+  const main_block = hoogste.waarde >= DREMPEL ? hoogste.blok : 'balans';
+  return { scores, main_block, strength: startStrength };
 }
 
 // Sjabloon: "Jij [kracht], maar [valkuil]." Deterministisch, geen AI-call.
@@ -110,4 +160,5 @@ function eersteStapBruikbaar(tekst) {
 module.exports = {
   BLOKKADES, DREMPEL, CONTEXT_STANDAARD, contextStandaard,
   scoreDoelscan, bouwHerkenningszin, labelVoorScore, eersteStapBruikbaar,
+  hermetingBlokken, hermetingItems, scoreHermeting,
 };

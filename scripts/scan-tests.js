@@ -3,15 +3,12 @@
 // Start: node scripts/scan-tests.js
 
 const assert = require('assert');
-const { scoreDoelscan, bouwHerkenningszin } = require('../api/_lib/scan-engine');
+const { scoreDoelscan, bouwHerkenningszin, hermetingItems, scoreHermeting } = require('../api/_lib/scan-engine');
 
 // Twaalf items in vaste volgorde: 3x energie, 3x vertrouwen, 3x weerstand, 3x overtuigingen.
-const ITEMS = [
-  { block: 'energie' }, { block: 'energie' }, { block: 'energie' },
-  { block: 'vertrouwen' }, { block: 'vertrouwen' }, { block: 'vertrouwen' },
-  { block: 'weerstand' }, { block: 'weerstand' }, { block: 'weerstand' },
-  { block: 'overtuigingen' }, { block: 'overtuigingen' }, { block: 'overtuigingen' },
-];
+const Z = ['zelfreflectie', 'zelfregie', 'zelfstarten'];
+const ITEMS = ['energie', 'vertrouwen', 'weerstand', 'overtuigingen']
+  .flatMap((block) => Z.map((z) => ({ block, z })));
 
 const PHRASES = {
   energie: { kracht: 'begint pas als je er zin in hebt, maar komt dan wel in beweging', valkuil: 'stopt zodra je energie op is' },
@@ -65,6 +62,32 @@ test('profiel 3: gelijke hoogste score, contextstandaard wint', () => {
 test('foutieve invoer wordt geweigerd', () => {
   assert.throws(() => scoreDoelscan({ items: ITEMS, answers: [6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], context: 'werk' }));
   assert.throws(() => scoreDoelscan({ items: ITEMS, answers: [1, 2, 3], context: 'werk' }));
+});
+
+// ── Hermeting: drie blokkades (kracht overgeslagen), zes items ──
+test('hermeting: items sluiten de startkracht uit en laten zelfreflectie weg', () => {
+  const items = hermetingItems(ITEMS, 'energie');
+  assert.strictEqual(items.length, 6);
+  assert.ok(items.every((it) => it.block !== 'energie'));
+  assert.ok(items.every((it) => it.z !== 'zelfreflectie'));
+});
+
+test('hermeting: een nieuwe hoofdvalkuil komt naar boven, de kracht blijft ongewijzigd', () => {
+  const startScores = { energie: 2, vertrouwen: 4.33, weerstand: 2.33, overtuigingen: 1.67 };
+  const items = hermetingItems(ITEMS, 'overtuigingen'); // start-kracht was overtuigingen; volgorde: energie, vertrouwen, weerstand
+  const r = scoreHermeting({ items, answers: [5, 4, 3, 3, 2, 2], context: 'gli', startScores, startStrength: 'overtuigingen' });
+  assert.strictEqual(r.strength, 'overtuigingen'); // ongewijzigd, niet herbevraagd
+  assert.strictEqual(r.scores.overtuigingen, startScores.overtuigingen); // niet herberekend, overgenomen van start
+  assert.strictEqual(r.scores.energie, 4.5);
+  assert.strictEqual(r.scores.vertrouwen, 3);
+  assert.strictEqual(r.main_block, 'energie');
+});
+
+test('hermeting: alles onder de drempel geeft weer balans', () => {
+  const startScores = { energie: 2, vertrouwen: 2, weerstand: 2, overtuigingen: 2 };
+  const items = hermetingItems(ITEMS, 'energie');
+  const r = scoreHermeting({ items, answers: [2, 2, 2, 2, 2, 2], context: 'werk', startScores, startStrength: 'energie' });
+  assert.strictEqual(r.main_block, 'balans');
 });
 
 console.log(`\n${ok} geslaagd, ${fail} gefaald`);
