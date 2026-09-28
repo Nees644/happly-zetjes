@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zetjes | personal — bestellen</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap');
+  :root {
+    --pink: #CC0066; --pink-l: #FFF0F7;
+    --text: #1A0A12; --text-mid: #5E3A4E; --text-soft: #A87A94;
+    --border: #ECD8E4; --r: 16px; --r-lg: 24px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #FDF8FB; font-family: 'DM Sans', sans-serif; color: var(--text);
+    min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .shell { width: 400px; background: #fff; border-radius: 36px;
+    box-shadow: 0 40px 100px rgba(204,0,102,.10), 0 8px 32px rgba(26,10,18,.08); overflow: hidden; }
+  .shell::before { content: ''; display: block; height: 3px; background: linear-gradient(90deg, var(--pink) 0%, #FF66AA 100%); }
+  .pad { padding: 32px 28px; }
+  h1 { font-family: 'Lora', serif; font-size: 25px; font-weight: 600; margin-bottom: 10px; }
+  h1 em { color: var(--pink); font-style: italic; }
+  .lead { color: var(--text-mid); font-size: 14.5px; line-height: 1.55; margin-bottom: 22px; }
+  .prijs-box { background: var(--pink-l); border-radius: var(--r-lg); padding: 20px; margin-bottom: 22px; }
+  .prijs { font-family: 'Lora', serif; font-size: 26px; font-weight: 600; color: var(--pink); }
+  .prijs-sub { font-size: 13px; color: var(--text-mid); margin-top: 4px; }
+  .field-label { font-size: 12.5px; font-weight: 600; color: var(--text-mid); margin-bottom: 6px; display: block; }
+  .text-input { background: #FDFAFB; border: 2px solid var(--border); border-radius: var(--r);
+    padding: 14px 15px; font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--text);
+    width: 100%; margin-bottom: 14px; }
+  .text-input:focus { outline: none; border-color: var(--pink); }
+  .btn-pink { background: var(--pink); color: #fff; border: none; border-radius: var(--r);
+    padding: 16px 22px; font-family: 'DM Sans', sans-serif; font-size: 15.5px; font-weight: 600;
+    cursor: pointer; width: 100%; box-shadow: 0 6px 24px rgba(204,0,102,.28); }
+  .btn-pink:disabled { opacity: .6; cursor: default; }
+  .fout { color: #B42318; font-size: 13px; margin: -6px 0 12px; display: none; }
+  .privacy-note { font-size: 11.5px; color: var(--text-soft); line-height: 1.5; margin-top: 16px; }
+  .privacy-note a { color: var(--pink); }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="pad">
+    <h1>Zetjes <em>personal</em></h1>
+    <p class="lead">Onbeperkt Zetjes, altijd op maat van je eigen Doelscan.</p>
+    <div class="prijs-box">
+      <div class="prijs">€79 per jaar</div>
+      <div class="prijs-sub">Directe toegang na betaling, je link volgt per mail</div>
+    </div>
+    <label class="field-label">E-mailadres</label>
+    <input class="text-input" id="email" type="email" placeholder="jij@voorbeeld.nl">
+    <p class="fout" id="fout"></p>
+    <button class="btn-pink" id="btn" onclick="bestel()">Naar betalen →</button>
+    <p class="privacy-note">Na betaling mailen we je link naar dit adres. <a href="/privacy.html" target="_blank" rel="noopener">Privacyverklaring</a>.</p>
+  </div>
+</div>
+<script>
+async function bestel() {
+  const email = document.getElementById('email').value.trim();
+  const fout = document.getElementById('fout');
+  const btn = document.getElementById('btn');
+  fout.style.display = 'none';
+  if (!email) { fout.textContent = 'Vul een e-mailadres in.'; fout.style.display = 'block'; return; }
+  btn.disabled = true; btn.textContent = 'Even geduld...';
+  try {
+    const r = await fetch('/api/checkout', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const d = await r.json();
+    if (!r.ok || !d.checkoutUrl) throw new Error(d.error || 'fout');
+    location.href = d.checkoutUrl;
+  } catch (e) {
+    fout.textContent = 'Er ging iets mis. Probeer het opnieuw.';
+    fout.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Naar betalen →';
+  }
+}
+</script>
+</body>
+</html>
