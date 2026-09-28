@@ -1,8 +1,14 @@
 // api/_lib/contexts.js
 // Contexten als configuratie (vervangt api/themes.js).
 // De motor (Habintel-kern) is vast; een context bepaalt taal, voorbeelden,
-// zetje-bibliotheek, poortwachter en faseweter. De invite kiest de context,
-// de frontend nooit.
+// zetje-bibliotheek, poortwachter, faseweter en de Doelscan. De invite kiest
+// de context, de frontend nooit.
+//
+// scan.items: twaalf items in vaste volgorde (energie 1-3, vertrouwen 4-6,
+// weerstand 7-9, overtuigingen 10-12; per blokkade zelfreflectie, zelfregie,
+// zelfstarten), bron bijlage 14 hoofdstuk 5. scan.phrases en de alinea's per
+// blokkade zijn eigen tekst, niet letterlijk in de briefing gegeven: eerste
+// versie, graag nalezen voordat de scan live gaat.
 
 const CRISIS_LUISTERLIJN = 'Het klinkt alsof je het op dit moment echt zwaar hebt. Zetjes is daar niet geschikt voor. Bel de Luisterlijn: 088 - 0767 000 (gratis, 24/7). Denk je aan zelfdoding? Bel 113 (gratis via 0800-0113).';
 
@@ -96,6 +102,39 @@ Niet relevant (offtopic): recepten, technische vragen, medisch advies, puur zake
       },
     },
     ankerFrequentie: null,
+    scan: {
+      goalPrompt: 'Wat wil je bereiken?',
+      whenPrompt: 'Wanneer en waar ga je de eerste stap zetten?',
+      hardPrompt: 'Waar verwacht je dat het lastig wordt?',
+      openPrompt: 'Wat is het eerste wat je vanavond kunt doen, hoe klein ook?',
+      items: [
+        { block: 'energie', z: 'zelfreflectie', text: 'Aan het eind van een werkdag is die ene taak die ik wilde doen het eerste wat sneuvelt.' },
+        { block: 'energie', z: 'zelfregie', text: 'Als ik geen fut heb, schuif ik het door naar morgen in plaats van er tien minuten aan te doen.' },
+        { block: 'energie', z: 'zelfstarten', text: 'Ik begin pas aan lastig werk als ik me er scherp voor voel.' },
+        { block: 'vertrouwen', z: 'zelfreflectie', text: 'Als iets me niet meteen lukt, twijfel ik of ik het wel kan.' },
+        { block: 'vertrouwen', z: 'zelfregie', text: 'Collega\'s lijken dit soort dingen makkelijker voor elkaar te krijgen.' },
+        { block: 'vertrouwen', z: 'zelfstarten', text: 'Ik pak iets pas op als ik zeker weet dat ik het goed doe.' },
+        { block: 'weerstand', z: 'zelfreflectie', text: 'Ik stel die ene taak uit, ook als er ruimte in mijn agenda is.' },
+        { block: 'weerstand', z: 'zelfregie', text: 'Als ik moet kiezen, doe ik eerst de makkelijke dingen.' },
+        { block: 'weerstand', z: 'zelfstarten', text: 'Beginnen aan die taak is het moeilijkste deel.' },
+        { block: 'overtuigingen', z: 'zelfreflectie', text: 'Ik denk regelmatig: het maakt toch niet uit of ik dit doe.' },
+        { block: 'overtuigingen', z: 'zelfregie', text: 'Ik denk dat ik nu eenmaal niet iemand ben die dit soort dingen goed kan.' },
+        { block: 'overtuigingen', z: 'zelfstarten', text: 'Ik wacht tot de omstandigheden beter zijn voor ik begin.' },
+      ],
+      phrases: {
+        energie: { kracht: 'pakt door, ook als het even tegenzit', valkuil: 'laat het liggen zodra de energie op is' },
+        vertrouwen: { kracht: 'vertrouwt op je eigen kunnen', valkuil: 'haakt af zodra iets een keer niet lukt' },
+        weerstand: { kracht: 'begint makkelijk aan iets nieuws', valkuil: 'stelt de eerste stap steeds uit' },
+        overtuigingen: { kracht: 'weet goed waarom je dit doet', valkuil: 'denkt al snel dat het toch geen verschil maakt' },
+      },
+      alineas: {
+        energie: 'Je grootste valkuil is dat je energie op raakt voordat je begint. Dat is heel normaal na een volle dag. De oplossing zit niet in meer doorzetten, maar in het kleiner maken van de stap die je zet.',
+        vertrouwen: 'Je grootste valkuil is dat je snel twijfelt aan jezelf zodra iets niet meteen lukt. Eén tegenvaller zegt weinig over wat je kan. Het is slimmer om te kijken naar de momenten dat het wel lukte.',
+        weerstand: 'Je grootste valkuil is uitstel. Vaak is niet de taak zelf het probleem, maar de eerste stap. Maak die stap zo klein dat je hem niet meer kan uitstellen.',
+        overtuigingen: 'Je grootste valkuil is de gedachte dat het toch niet uitmaakt. Die gedachte duikt vooral op als het lastig wordt. Ga dan terug naar je doel in plaats van de gedachte te bestrijden.',
+        balans: 'Er is nu geen uitgesproken valkuil. Dat betekent dat er op dit moment niets is dat je structureel tegenhoudt.',
+      },
+    },
   },
 
   ondernemen: {
@@ -152,6 +191,42 @@ Niet relevant (offtopic): technische vragen (btw, KvK), juridische vragen, recep
       },
     },
     ankerFrequentie: null,
+    // Neutrale kern (bijlage 14 hoofdstuk 5, kolom "Kern"), niet de ondernemer-kolom:
+    // deze context is ook wat Zetjes | personal gebruikt (bijlage 15 hoofdstuk 6),
+    // en personal krijgt expliciet de neutrale kern.
+    scan: {
+      goalPrompt: 'Wat wil je bereiken?',
+      whenPrompt: 'Wanneer en waar ga je de eerste stap zetten?',
+      hardPrompt: 'Waar verwacht je dat het lastig wordt?',
+      openPrompt: 'Wat is het eerste wat je vanavond kunt doen, hoe klein ook?',
+      items: [
+        { block: 'energie', z: 'zelfreflectie', text: 'Ik merk dat ik aan het eind van de dag niets meer over heb voor mijn doel.' },
+        { block: 'energie', z: 'zelfregie', text: 'Als ik moe ben, laat ik mijn plan los in plaats van het kleiner te maken.' },
+        { block: 'energie', z: 'zelfstarten', text: 'Ik kom pas in beweging als ik me er energiek voor voel.' },
+        { block: 'vertrouwen', z: 'zelfreflectie', text: 'Als het een keer niet lukt, denk ik dat ik het niet kan.' },
+        { block: 'vertrouwen', z: 'zelfregie', text: 'Ik vergelijk mezelf met anderen die het beter lijken te doen.' },
+        { block: 'vertrouwen', z: 'zelfstarten', text: 'Ik durf pas te beginnen als ik zeker weet dat het gaat lukken.' },
+        { block: 'weerstand', z: 'zelfreflectie', text: 'Ik merk dat ik het uitstel, ook als ik er tijd voor heb.' },
+        { block: 'weerstand', z: 'zelfregie', text: 'Als ik moet kiezen, kies ik iets makkelijkers dan mijn doel.' },
+        { block: 'weerstand', z: 'zelfstarten', text: 'De eerste stap voelt groter dan hij is.' },
+        { block: 'overtuigingen', z: 'zelfreflectie', text: 'Ik betrap mezelf op de gedachte dat het toch niets uitmaakt.' },
+        { block: 'overtuigingen', z: 'zelfregie', text: 'Ik denk dat ik nu eenmaal zo ben en dat dit niet voor mij is weggelegd.' },
+        { block: 'overtuigingen', z: 'zelfstarten', text: 'Ik wacht tot het juiste moment komt om echt te beginnen.' },
+      ],
+      phrases: {
+        energie: { kracht: 'pakt door, ook als het even tegenzit', valkuil: 'laat het liggen zodra de energie op is' },
+        vertrouwen: { kracht: 'vertrouwt op je eigen kunnen', valkuil: 'haakt af zodra iets een keer niet lukt' },
+        weerstand: { kracht: 'begint makkelijk aan iets nieuws', valkuil: 'stelt de eerste stap steeds uit' },
+        overtuigingen: { kracht: 'weet goed waarom je dit doet', valkuil: 'denkt al snel dat het toch geen verschil maakt' },
+      },
+      alineas: {
+        energie: 'Je grootste valkuil is dat je energie op raakt voordat je begint. Dat is heel normaal na een volle dag. De oplossing zit niet in meer doorzetten, maar in het kleiner maken van de stap die je zet.',
+        vertrouwen: 'Je grootste valkuil is dat je snel twijfelt aan jezelf zodra iets niet meteen lukt. Eén tegenvaller zegt weinig over wat je kan. Het is slimmer om te kijken naar de momenten dat het wel lukte.',
+        weerstand: 'Je grootste valkuil is uitstel. Vaak is niet de taak zelf het probleem, maar de eerste stap. Maak die stap zo klein dat je hem niet meer kan uitstellen.',
+        overtuigingen: 'Je grootste valkuil is de gedachte dat het toch niet uitmaakt. Die gedachte duikt vooral op als het lastig wordt. Ga dan terug naar je doel in plaats van de gedachte te bestrijden.',
+        balans: 'Er is nu geen uitgesproken valkuil. Dat betekent dat er op dit moment niets is dat je structureel tegenhoudt.',
+      },
+    },
   },
 
   gli: {
@@ -242,6 +317,40 @@ offtopic: iets wat niets met het programma of met vastlopen te maken heeft (rece
       onderhoud: 'De deelnemer zit in de onderhoudsfase. Risico: stille weken en oude gewoonten. Toon: een klein anker, korte check-in, geen prestatie.',
     },
     ankerFrequentie: { eersteCheckin: 3, daarna: 7 },
+    scan: {
+      // Het doel is deels voorgegeven: doorgaan met het programma, niet een open vraag.
+      goalPrompt: 'Wat wil je deze periode volhouden in het programma?',
+      whenPrompt: 'Wanneer ga je daar deze week mee aan de slag?',
+      hardPrompt: 'Wat maakt dat nu lastig voor je?',
+      openPrompt: 'Wat kun je vanavond doen, hoe klein ook?',
+      items: [
+        { block: 'energie', z: 'zelfreflectie', text: 'Na een dag die tegenzat heb ik \'s avonds niets meer over voor wat ik in het programma heb afgesproken.' },
+        { block: 'energie', z: 'zelfregie', text: 'Als ik moe ben sla ik over, in plaats van een kleinere versie te doen.' },
+        { block: 'energie', z: 'zelfstarten', text: 'Ik ga pas wandelen of koken zoals afgesproken als ik er zin in heb.' },
+        { block: 'vertrouwen', z: 'zelfreflectie', text: 'Als ik een week niet doe wat ik in het programma heb afgesproken, denk ik dat het niets voor mij is.' },
+        { block: 'vertrouwen', z: 'zelfregie', text: 'In de groep lijkt het bij anderen makkelijker te gaan dan bij mij.' },
+        { block: 'vertrouwen', z: 'zelfstarten', text: 'Ik doe iets nieuws uit het programma pas als ik zeker weet dat ik het kan.' },
+        { block: 'weerstand', z: 'zelfreflectie', text: 'Ik stel de afspraken uit het programma uit, ook als ik er tijd voor heb.' },
+        { block: 'weerstand', z: 'zelfregie', text: 'Als ik moet kiezen, kies ik de bank boven de wandeling.' },
+        { block: 'weerstand', z: 'zelfstarten', text: 'De eerste stap, schoenen aan, boodschappen doen, voelt groter dan hij is.' },
+        { block: 'overtuigingen', z: 'zelfreflectie', text: 'Ik denk regelmatig: wat heeft het voor zin, het maakt toch niet uit.' },
+        { block: 'overtuigingen', z: 'zelfregie', text: 'Ik denk dat ik nu eenmaal niet het type ben dat dit volhoudt.' },
+        { block: 'overtuigingen', z: 'zelfstarten', text: 'Ik wacht op een beter moment om er echt voor te gaan.' },
+      ],
+      phrases: {
+        energie: { kracht: 'pakt dingen op, ook als je moe bent', valkuil: 'stopt ermee zodra je geen puf meer hebt' },
+        vertrouwen: { kracht: 'vertrouwt erop dat het lukt', valkuil: 'haakt af zodra het een keer niet lukt' },
+        weerstand: { kracht: 'begint makkelijk aan iets nieuws', valkuil: 'stelt het steeds uit, ook als je tijd hebt' },
+        overtuigingen: { kracht: 'weet goed waarom je meedoet', valkuil: 'denkt soms: het maakt toch niet uit' },
+      },
+      alineas: {
+        energie: 'Je hoofdvalkuil is dat je vaak geen puf hebt. Dat is niet gek: als de energie op is, stopt alles. Het werkt beter om het heel klein te maken. Niet de hele oefening, maar net genoeg om te beginnen.',
+        vertrouwen: 'Je hoofdvalkuil is dat je snel denkt dat het niet lukt. Eén keer iets niet doen is geen bewijs dat je het niet kan. Kijk naar de keren dat het wel lukte. Dat telt net zo hard mee.',
+        weerstand: 'Je hoofdvalkuil is dat je het uitstelt. Vaak is niet de hele taak het probleem, maar de eerste stap. Maak die stap zo klein dat hij bijna vanzelf gaat.',
+        overtuigingen: 'Je hoofdvalkuil is de gedachte dat het toch geen zin heeft. Die gedachte komt vaak op als het lastig wordt. Ga dan terug naar waarom je begon. Dat helpt beter dan de gedachte zelf te bestrijden.',
+        balans: 'Er is nu geen duidelijke hoofdvalkuil. Dat is goed nieuws: op dit moment houdt niets je structureel tegen.',
+      },
+    },
   },
 
   sales: { fallback: 'werk' },
