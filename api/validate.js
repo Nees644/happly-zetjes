@@ -5,9 +5,14 @@
 
 const { supabase } = require('./_lib/supabase');
 const { cors, resolveAccess, sendAccessError } = require('./_lib/access');
+const { hermetingItems } = require('./_lib/scan-engine');
 
 const TERUGVRAAG_NA_UUR = 2;
 const TERUGVRAAG_MAX_DAGEN = 30;
+const DAG30_MS = 30 * 24 * 60 * 60 * 1000;
+// Grens vóór de echte vervaldatum: eenmaal verlopen blokkeert resolveAccess
+// de toegang, dus de hermeting-bij-het-einde moet er vóór die tijd bij kunnen.
+const EINDE_VENSTER_DAGEN = 7;
 
 // Het laatste zetje zonder terugkoppeling, als het minstens 2 uur oud is:
 // daar vragen we bij dit bezoek naar ("Heeft het geholpen?").
@@ -30,6 +35,63 @@ async function openFeedback(anonId, inviteId) {
   return { sessionId: s.id, titel };
 }
 
+// Heeft deze gebruiker de Doelscan al gedaan op deze link? Alleen relevant als
+// de context een scan heeft en de invite hem niet uitschakelt.
+async function scanStatus(ctx, invite, anonId) {
+  if (!ctx.scan || invite.scan_required === false) return { nodig: false };
+  const { data } = await supabase
+    .from('profiles').select('id').eq('invite_id', invite.id).eq('user_key', anonId)
+    .eq('kind', 'start').limit(1).maybeSingle();
+  if (data) return { nodig: false };
+  return {
+    nodig: true,
+    config: {
+      goalPrompt: ctx.scan.goalPrompt,
+      whenPrompt: ctx.scan.whenPrompt,
+      hardPrompt: ctx.scan.hardPrompt,
+      openPrompt: ctx.scan.openPrompt,
+      items: ctx.scan.items.map((it) => ({ text: it.text })),
+    },
+  };
+}
+
+// Is de hermeting nu aan de orde? Op dag 30 na de Doelscan, of in de laatste
+// week vóór de invite verloopt (zie EINDE_VENSTER_DAGEN hierboven). Werkt
+// zonder de cron: die logt alleen voor het funnelspoor (api/remeasure.js).
+async function remeasureStatus(ctx, invite, anonId) {
+  if (!ctx.scan || invite.remeasure_day30 === false) return { nodig: false };
+  const { data: start } = await supabase
+    .from('profiles').select('measured_at, strength').eq('invite_id', invite.id).eq('user_key', anonId)
+    .eq('kind', 'start').maybeSingle();
+  if (!start) return { nodig: false };
+
+  const heeftAl = async (kind) => {
+    const { data } = await supabase
+      .from('profiles').select('id').eq('invite_id', invite.id).eq('user_key', anonId)
+      .eq('kind', kind).maybeSingle();
+    return !!data;
+  };
+
+  let kind = null;
+  if (invite.expires_at) {
+    const dagenTotVerval = (Date.parse(invite.expires_at) - Date.now()) / 86400000;
+    if (dagenTotVerval <= EINDE_VENSTER_DAGEN && !(await heeftAl('end'))) kind = 'end';
+  }
+  if (!kind && Date.now() - Date.parse(start.measured_at) >= DAG30_MS && !(await heeftAl('day30'))) {
+    kind = 'day30';
+  }
+  if (!kind) return { nodig: false };
+
+  return {
+    nodig: true,
+    kind,
+    config: {
+      progressPrompt: 'Ben je dichter bij je doel dan een maand geleden?',
+      items: hermetingItems(ctx.scan.items, start.strength).map((it) => ({ text: it.text })),
+    },
+  };
+}
+
 module.exports = async function handler(req, res) {
   cors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -38,6 +100,10 @@ module.exports = async function handler(req, res) {
   const { token, anonId } = req.body || {};
   try {
     const a = await resolveAccess({ token, anonId, register: true });
+    const consent = !!a.profile?.consent_at;
+    const scan = consent ? await scanStatus(a.ctx, a.invite, a.anonId) : { nodig: false };
+    // Hermeting pas aanbieden ná de Doelscan zelf, nooit tegelijk.
+    const remeasure = consent && !scan.nodig ? await remeasureStatus(a.ctx, a.invite, a.anonId) : { nodig: false };
     return res.status(200).json({
       valid: true,
       anonId: a.anonId,
@@ -48,8 +114,13 @@ module.exports = async function handler(req, res) {
       weekSinceStart: a.weekSinceStart,
       tenantType: a.invite.tenants?.type || null,
       productName: a.invite.products?.name || 'Zetjes',
-      consent: !!a.profile?.consent_at,
-      openFeedback: a.profile?.consent_at ? await openFeedback(a.anonId, a.invite.id) : null,
+      consent,
+      scanNodig: scan.nodig,
+      scanConfig: scan.config || null,
+      remeasureNodig: remeasure.nodig,
+      remeasureKind: remeasure.kind || null,
+      remeasureConfig: remeasure.config || null,
+      openFeedback: consent && !scan.nodig && !remeasure.nodig ? await openFeedback(a.anonId, a.invite.id) : null,
     });
   } catch (err) {
     if (sendAccessError(res, err)) return;

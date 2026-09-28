@@ -191,6 +191,39 @@
     color:var(--text-soft); margin:-8px 0 12px; display:flex; align-items:center; gap:10px; }
   .of-label::before, .of-label::after { content:''; flex:1; height:1px; background:var(--border); }
   #s-welcome .btn-pink { margin-top:0; }
+
+  /* DOELSCAN */
+  .text-input { background:#FDFAFB; border:2px solid var(--border); border-radius:var(--r);
+    padding:14px 15px; font-family:'DM Sans',sans-serif; font-size:15px; color:var(--text);
+    width:100%; margin-bottom:14px; transition:border-color .2s; }
+  .text-input:focus { outline:none; border-color:var(--pink); }
+  .text-input::placeholder { color:var(--text-soft); }
+  .field-label { font-size:12.5px; font-weight:600; color:var(--text-mid); margin-bottom:6px; display:block; }
+  .scan-progress-wrap { margin-bottom:18px; }
+  .scan-progress-txt { font-size:11.5px; color:var(--text-soft); margin-bottom:6px; }
+  .scan-progress-bar { height:6px; background:var(--pink-l); border-radius:100px; overflow:hidden; }
+  .scan-progress-fill { height:100%; background:var(--pink); border-radius:100px; transition:width .25s ease; }
+  .scan-item-card { background:var(--pink-l); border-left:3px solid var(--pink);
+    border-radius:0 var(--r) var(--r) var(--r); padding:18px 18px; font-size:16px;
+    line-height:1.5; color:var(--text); margin-bottom:20px; font-family:'Lora',serif; }
+  .scale-opts { display:flex; flex-direction:column; gap:8px; }
+  .scale-opt { font-family:inherit; background:var(--card); border:1.5px solid var(--border);
+    border-radius:var(--r); padding:13px 15px; font-size:14px; cursor:pointer;
+    transition:all .15s; color:var(--text-mid); text-align:left; display:flex;
+    align-items:center; gap:10px; }
+  .scale-opt:hover { border-color:var(--pink); background:var(--pink-l); color:var(--pink); }
+  .scale-n { width:22px; height:22px; border-radius:50%; background:var(--pink-l); color:var(--pink);
+    font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .bars-wrap { display:flex; flex-direction:column; gap:14px; margin-bottom:20px; }
+  .bar-row .bar-label { display:flex; justify-content:space-between; font-size:13px;
+    color:var(--text-mid); margin-bottom:5px; }
+  .bar-row .bar-label strong { color:var(--pink); font-weight:600; }
+  .bar-track { height:9px; background:#F3E8EF; border-radius:100px; overflow:hidden; }
+  .bar-fill { height:100%; background:var(--pink); border-radius:100px; transition:width .5s ease; }
+  .recognition-card { background:var(--pink); border-radius:var(--r-lg); padding:20px 20px;
+    color:#fff; margin-bottom:14px; }
+  .recognition-card p { font-family:'Lora',serif; font-size:18px; line-height:1.4; font-style:italic; }
+  .alinea-txt { font-size:14px; color:var(--text-mid); line-height:1.6; margin-bottom:22px; }
 </style>
 </head>
 <body>
@@ -416,6 +449,122 @@
     </div>
   </div>
 
+  <!-- DOELSCAN: DOEL -->
+  <div class="screen" id="s-scan-goal">
+    <div class="topbar">
+      <div class="logo-wrap">
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAh8klEQVR4nO2deXwc1ZXvz7lV1Zu2bu2LZUm2JUuWsWXLCzZ4gQwJBAiQ2BDIAjMJCUmAZDKfyQsvE0jeI294CclLQkgmA5MwBBIScMwSlrAKjHdb3rVZ1mrJliyptXVL3VV1z/xRdUst2RA7D0dyzf3y4fOR1dW3bt361bnnnnPqCvfAFwgkEpfAprsDEskHiRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchTrdHfiLIBIg0KTfESAQ4TT16MLlv8FYznxBEyEQuGbAp5X/BmM5cwWNSECELNkbUdL8I4k3gkfjPnMwmjad3bsQQY8aV7OSB4AAEy213j2U4xYrPYMFDQQEOOep2+tSLi9fCCbnAACoKWrLjf9+YPD5AytQYSaZXJnurs50UGUGGVzN+ccPbc+779oVZJgmIiIwxNF3m+uPXvnTHGDIgdMFv6aamYK2B9dTnHE89cMLqlBTNPGR0TvSN/xmQyUAALngBvwtIJMUVJiZceuqQubX/AAaABEBIg48tXsMiBAVZrphPGfkBSBDDgAQ/NjiY6gpGummTrqpAxEN/GFPHR+NJaHKDLdMk+cTVJgJRBhYUVzvq8ibQyY3gRMHADBOjfQPbqpdDGCJfnp7+sEwIwUtLEXopmXpAADAkKHCFEDE8O92h6yD3L24+cCwfeWMT60cAAAAAiJOHBBx8Nn9debweIoQ/bT28wNi5rkctrvhK89tSVpRUgFEZPt7bLyppy2yu60cEEn6zmcBIpHBVZbkjQRvqJoPAIAMHSPW//gO1y2sZ5yFdtyNG5Z0oMpUMskke4oMP723jXRTQwXN6e3lhQEqaAIipX54wWEtP5hDJrfGjSEbrztxLLK9pdJtxmHGCZpMUgCRQhuW5gIAAAKiggoQUfjpvfkAcjF41thJk4zPrLQWgQAgjMPA73Z1kskVtxmHmSUMhhyI0H9RwdFAVWGZuAmAiNH9xxvHDnXNA0RyQ3jpvGNbXi0vrSf1igULARGRIUMFFdJNfeCpPSUA7jMOM+pihLsR2ljdDQwZmWQCWYua8B/2nARODFVmoMJMVJmBKjPA/s7ZnwTJ+b7CzHP+/pS2Jv0/9TOGHBVmosLM0z7/K9t02vsL/RaWN/jxJY0s2ZtEBjfEYnD0naOHY829RW6JPScyoxaFIl4a+sSS2QBguRsMGRncGHx2/2xUmEkGV6euyM8qwYJIyJCTyZWpISonBkuEp4novVb/dibzjB+J/hAgJZZOnI2AztTme/WdIX+vWgxhedNvWWFFhXAiKtT/5M4IgGVAHAt9pgfu/a79bI6bBmaMoIUIAtVFDb7y3AUiVgqIGNnVUj/e2LMQiBBVZgSWFDV5S7MHKWawyJ72wnh7f8H7CUwIiUxSlFTfiH/RrFZPccY" alt="happly" class="happly-logo">
+        <span class="product-tag">Zetjes</span><span class="beta-tag">beta</span>
+      </div>
+    </div>
+    <div class="pad">
+      <p class="q-label">Wat wil je?</p>
+      <p class="q-sub">Twee minuten, dan weet Zetjes waar je naartoe werkt.</p>
+      <label class="field-label" id="scan-goal-label">Wat wil je bereiken?</label>
+      <input class="text-input" id="scan-goal-text" maxlength="200" placeholder="Bijv: drie keer per week wandelen">
+      <label class="field-label" id="scan-when-label">Wanneer en waar ga je de eerste stap zetten?</label>
+      <input class="text-input" id="scan-goal-when" maxlength="150" placeholder="Bijv: na het avondeten, in de buurt">
+      <label class="field-label" id="scan-hard-label">Waar verwacht je dat het lastig wordt?</label>
+      <input class="text-input" id="scan-goal-hard" maxlength="150" placeholder="Bijv: als ik moe thuiskom">
+      <button class="btn-pink" onclick="scanGoalNext()">Verder →</button>
+    </div>
+  </div>
+
+  <!-- DOELSCAN: ÉÉN ITEM -->
+  <div class="screen" id="s-scan-item">
+    <div class="topbar">
+      <div class="logo-wrap">
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAh8klEQVR4nO2deXwc1ZXvz7lV1Zu2bu2LZUm2JUuWsWXLCzZ4gQwJBAiQ2BDIAjMJCUmAZDKfyQsvE0jeI294CclLQkgmA5MwBBIScMwSlrAKjHdb3rVZ1mrJliyptXVL3VV1z/xRdUst2RA7D0dyzf3y4fOR1dW3bt361bnnnnPqCvfAFwgkEpfAprsDEskHiRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchTrdHfiLIBIg0KTfESAQ4TT16MLlv8FYznxBEyEQuGbAp5X/BmM5cwWNSECELNkbUdL8I4k3gkfjPnMwmjad3bsQQY8aV7OSB4AAEy213j2U4xYrPYMFDQQEOOep2+tSLi9fCCbnAACoKWrLjf9+YPD5AytQYSaZXJnurs50UGUGGVzN+ccPbc+779oVZJgmIiIwxNF3m+uPXvnTHGDIgdMFv6aamYK2B9dTnHE89cMLqlBTNPGR0TvSN/xmQyUAALngBvwtIJMUVJiZceuqQubX/AAaABEBIg48tXsMiBAVZrphPGfkBSBDDgAQ/NjiY6gpGummTrqpAxEN/GFPHR+NJaHKDLdMk+cTVJgJRBhYUVzvq8ibQyY3gRMHADBOjfQPbqpdDGCJfnp7+sEwIwUtLEXopmXpAADAkKHCFEDE8O92h6yD3L24+cCwfeWMT60cAAAAAiJOHBBx8Nn9debweIoQ/bT28wNi5rkctrvhK89tSVpRUgFEZPt7bLyppy2yu60cEEn6zmcBIpHBVZbkjQRvqJoPAIAMHSPW//gO1y2sZ5yFdtyNG5Z0oMpUMskke4oMP723jXRTQwXN6e3lhQEqaAIipX54wWEtP5hDJrfGjSEbrztxLLK9pdJtxmHGCZpMUgCRQhuW5gIAAAKiggoQUfjpvfkAcjF41thJk4zPrLQWgQAgjMPA73Z1kskVtxmHmSUMhhyI0H9RwdFAVWGZuAmAiNH9xxvHDnXNA0RyQ3jpvGNbXi0vrSf1igULARGRIUMFFdJNfeCpPSUA7jMOM+pihLsR2ljdDQwZmWQCWYua8B/2nARODFVmoMJMVJmBKjPA/s7ZnwTJ+b7CzHP+/pS2Jv0/9TOGHBVmosLM0z7/K9t02vsL/RaWN/jxJY0s2ZtEBjfEYnD0naOHY829RW6JPScyoxaFIl4a+sSS2QBguRsMGRncGHx2/2xUmEkGV6euyM8qwYJIyJCTyZWpISonBkuEp4novVb/dibzjB+J/hAgJZZOnI2AztTme/WdIX+vWgxhedNvWWFFhXAiKtT/5M4IgGVAHAt9pgfu/a79bI6bBmaMoIUIAtVFDb7y3AUiVgqIGNnVUj/e2LMQiBBVZgSWFDV5S7MHKWawyJ72wnh7f8H7CUwIiUxSlFTfiH/RrFZPccY" alt="happly" class="happly-logo">
+        <span class="product-tag">Zetjes</span><span class="beta-tag">beta</span>
+      </div>
+      <button class="back" onclick="scanItemBack()">←</button>
+    </div>
+    <div class="pad">
+      <div class="scan-progress-wrap">
+        <p class="scan-progress-txt" id="scan-progress-txt">Vraag 1 van 12</p>
+        <div class="scan-progress-bar"><div class="scan-progress-fill" id="scan-progress-fill" style="width:8%"></div></div>
+      </div>
+      <div class="scan-item-card" id="scan-item-text">...</div>
+      <div class="scale-opts">
+        <button class="scale-opt" onclick="scanAnswer(1)"><span class="scale-n">1</span>Helemaal niet</button>
+        <button class="scale-opt" onclick="scanAnswer(2)"><span class="scale-n">2</span>Een beetje niet</button>
+        <button class="scale-opt" onclick="scanAnswer(3)"><span class="scale-n">3</span>Soms wel, soms niet</button>
+        <button class="scale-opt" onclick="scanAnswer(4)"><span class="scale-n">4</span>Best wel</button>
+        <button class="scale-opt" onclick="scanAnswer(5)"><span class="scale-n">5</span>Helemaal wel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOELSCAN: OPEN VELD -->
+  <div class="screen" id="s-scan-open">
+    <div class="topbar">
+      <div class="logo-wrap">
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAh8klEQVR4nO2deXwc1ZXvz7lV1Zu2bu2LZUm2JUuWsWXLCzZ4gQwJBAiQ2BDIAjMJCUmAZDKfyQsvE0jeI294CclLQkgmA5MwBBIScMwSlrAKjHdb3rVZ1mrJliyptXVL3VV1z/xRdUst2RA7D0dyzf3y4fOR1dW3bt361bnnnnPqCvfAFwgkEpfAprsDEskHiRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchTrdHfiLIBIg0KTfESAQ4TT16MLlv8FYznxBEyEQuGbAp5X/BmM5cwWNSECELNkbUdL8I4k3gkfjPnMwmjad3bsQQY8aV7OSB4AAEy213j2U4xYrPYMFDQQEOOep2+tSLi9fCCbnAACoKWrLjf9+YPD5AytQYSaZXJnurs50UGUGGVzN+ccPbc+779oVZJgmIiIwxNF3m+uPXvnTHGDIgdMFv6aamYK2B9dTnHE89cMLqlBTNPGR0TvSN/xmQyUAALngBvwtIJMUVJiZceuqQubX/AAaABEBIg48tXsMiBAVZrphPGfkBSBDDgAQ/NjiY6gpGummTrqpAxEN/GFPHR+NJaHKDLdMk+cTVJgJRBhYUVzvq8ibQyY3gRMHADBOjfQPbqpdDGCJfnp7+sEwIwUtLEXopmXpAADAkKHCFEDE8O92h6yD3L24+cCwfeWMT60cAAAAAiJOHBBx8Nn9debweIoQ/bT28wNi5rkctrvhK89tSVpRUgFEZPt7bLyppy2yu60cEEn6zmcBIpHBVZbkjQRvqJoPAIAMHSPW//gO1y2sZ5yFdtyNG5Z0oMpUMskke4oMP723jXRTQwXN6e3lhQEqaAIipX54wWEtP5hDJrfGjSEbrztxLLK9pdJtxmHGCZpMUgCRQhuW5gIAAAKiggoQUfjpvfkAcjF41thJk4zPrLQWgQAgjMPA73Z1kskVtxmHmSUMhhyI0H9RwdFAVWGZuAmAiNH9xxvHDnXNA0RyQ3jpvGNbXi0vrSf1igULARGRIUMFFdJNfeCpPSUA7jMOM+pihLsR2ljdDQwZmWQCWYua8B/2nARODFVmoMJMVJmBKjPA/s7ZnwTJ+b7CzHP+/pS2Jv0/9TOGHBVmosLM0z7/K9t02vsL/RaWN/jxJY0s2ZtEBjfEYnD0naOHY829RW6JPScyoxaFIl4a+sSS2QBguRsMGRncGHx2/2xUmEkGV6euyM8qwYJIyJCTyZWpISonBkuEp4novVb/dibzjB+J/hAgJZZOnI2AztTme/WdIX+vWgxhedNvWWFFhXAiKtT/5M4IgGVAHAt9pgfu/a79bI6bBmaMoIUIAtVFDb7y3AUiVgqIGNnVUj/e2LMQiBBVZgSWFDV5S7MHKWawyJ72wnh7f8H7CUwIiUxSlFTfiH/RrFZPccY" alt="happly" class="happly-logo">
+        <span class="product-tag">Zetjes</span><span class="beta-tag">beta</span>
+      </div>
+      <button class="back" onclick="go('s-scan-item')">←</button>
+    </div>
+    <div class="pad">
+      <p class="q-label" id="scan-open-label">Wat is het eerste wat je vanavond kunt doen, hoe klein ook?</p>
+      <p class="q-sub">Mag ook leeg blijven.</p>
+      <textarea id="scan-open-text" maxlength="200" placeholder="Typ het hier..."></textarea>
+      <button class="btn-pink" onclick="scanSubmit()">Bekijk je uitslag →</button>
+    </div>
+  </div>
+
+  <!-- DOELSCAN: UITSLAG -->
+  <div class="screen" id="s-scan-uitslag">
+    <div class="topbar">
+      <div class="logo-wrap">
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAh8klEQVR4nO2deXwc1ZXvz7lV1Zu2bu2LZUm2JUuWsWXLCzZ4gQwJBAiQ2BDIAjMJCUmAZDKfyQsvE0jeI294CclLQkgmA5MwBBIScMwSlrAKjHdb3rVZ1mrJliyptXVL3VV1z/xRdUst2RA7D0dyzf3y4fOR1dW3bt361bnnnnPqCvfAFwgkEpfAprsDEskHiRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchTrdHfiLIBIg0KTfESAQ4TT16MLlv8FYznxBEyEQuGbAp5X/BmM5cwWNSECELNkbUdL8I4k3gkfjPnMwmjad3bsQQY8aV7OSB4AAEy213j2U4xYrPYMFDQQEOOep2+tSLi9fCCbnAACoKWrLjf9+YPD5AytQYSaZXJnurs50UGUGGVzN+ccPbc+779oVZJgmIiIwxNF3m+uPXvnTHGDIgdMFv6aamYK2B9dTnHE89cMLqlBTNPGR0TvSN/xmQyUAALngBvwtIJMUVJiZceuqQubX/AAaABEBIg48tXsMiBAVZrphPGfkBSBDDgAQ/NjiY6gpGummTrqpAxEN/GFPHR+NJaHKDLdMk+cTVJgJRBhYUVzvq8ibQyY3gRMHADBOjfQPbqpdDGCJfnp7+sEwIwUtLEXopmXpAADAkKHCFEDE8O92h6yD3L24+cCwfeWMT60cAAAAAiJOHBBx8Nn9debweIoQ/bT28wNi5rkctrvhK89tSVpRUgFEZPt7bLyppy2yu60cEEn6zmcBIpHBVZbkjQRvqJoPAIAMHSPW//gO1y2sZ5yFdtyNG5Z0oMpUMskke4oMP723jXRTQwXN6e3lhQEqaAIipX54wWEtP5hDJrfGjSEbrztxLLK9pdJtxmHGCZpMUgCRQhuW5gIAAAKiggoQUfjpvfkAcjF41thJk4zPrLQWgQAgjMPA73Z1kskVtxmHmSUMhhyI0H9RwdFAVWGZuAmAiNH9xxvHDnXNA0RyQ3jpvGNbXi0vrSf1igULARGRIUMFFdJNfeCpPSUA7jMOM+pihLsR2ljdDQwZmWQCWYua8B/2nARODFVmoMJMVJmBKjPA/s7ZnwTJ+b7CzHP+/pS2Jv0/9TOGHBVmosLM0z7/K9t02vsL/RaWN/jxJY0s2ZtEBjfEYnD0naOHY829RW6JPScyoxaFIl4a+sSS2QBguRsMGRncGHx2/2xUmEkGV6euyM8qwYJIyJCTyZWpISonBkuEp4novVb/dibzjB+J/hAgJZZOnI2AztTme/WdIX+vWgxhedNvWWFFhXAiKtT/5M4IgGVAHAt9pgfu/a79bI6bBmaMoIUIAtVFDb7y3AUiVgqIGNnVUj/e2LMQiBBVZgSWFDV5S7MHKWawyJ72wnh7f8H7CUwIiUxSlFTfiH/RrFZPccY" alt="happly" class="happly-logo">
+        <span class="product-tag">Zetjes</span><span class="beta-tag">beta</span>
+      </div>
+    </div>
+    <div class="pad">
+      <p class="q-label">Dit zie ik bij jou</p>
+      <div class="bars-wrap" id="scan-bars"></div>
+      <div class="recognition-card">
+        <p id="scan-recognition">...</p>
+      </div>
+      <p class="alinea-txt" id="scan-alinea"></p>
+      <button class="btn-pink" onclick="doEersteZetje()">👟 Doe je eerste zetje →</button>
+    </div>
+  </div>
+
+  <!-- HERMETING: VOORTGANGSVRAAG -->
+  <div class="screen" id="s-remeasure-progress">
+    <div class="topbar">
+      <div class="logo-wrap">
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAh8klEQVR4nO2deXwc1ZXvz7lV1Zu2bu2LZUm2JUuWsWXLCzZ4gQwJBAiQ2BDIAjMJCUmAZDKfyQsvE0jeI294CclLQkgmA5MwBBIScMwSlrAKjHdb3rVZ1mrJliyptXVL3VV1z/xRdUst2RA7D0dyzf3y4fOR1dW3bt361bnnnnPqCvfAFwgkEpfAprsDEskHiRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchTrdHfiLIBIg0KTfESAQ4TT16MLlv8FYznxBEyEQuGbAp5X/BmM5cwWNSECELNkbUdL8I4k3gkfjPnMwmjad3bsQQY8aV7OSB4AAEy213j2U4xYrPYMFDQQEOOep2+tSLi9fCCbnAACoKWrLjf9+YPD5AytQYSaZXJnurs50UGUGGVzN+ccPbc+779oVZJgmIiIwxNF3m+uPXvnTHGDIgdMFv6aamYK2B9dTnHE89cMLqlBTNPGR0TvSN/xmQyUAALngBvwtIJMUVJiZceuqQubX/AAaABEBIg48tXsMiBAVZrphPGfkBSBDDgAQ/NjiY6gpGummTrqpAxEN/GFPHR+NJaHKDLdMk+cTVJgJRBhYUVzvq8ibQyY3gRMHADBOjfQPbqpdDGCJfnp7+sEwIwUtLEXopmXpAADAkKHCFEDE8O92h6yD3L24+cCwfeWMT60cAAAAAiJOHBBx8Nn9debweIoQ/bT28wNi5rkctrvhK89tSVpRUgFEZPt7bLyppy2yu60cEEn6zmcBIpHBVZbkjQRvqJoPAIAMHSPW//gO1y2sZ5yFdtyNG5Z0oMpUMskke4oMP723jXRTQwXN6e3lhQEqaAIipX54wWEtP5hDJrfGjSEbrztxLLK9pdJtxmHGCZpMUgCRQhuW5gIAAAKiggoQUfjpvfkAcjF41thJk4zPrLQWgQAgjMPA73Z1kskVtxmHmSUMhhyI0H9RwdFAVWGZuAmAiNH9xxvHDnXNA0RyQ3jpvGNbXi0vrSf1igULARGRIUMFFdJNfeCpPSUA7jMOM+pihLsR2ljdDQwZmWQCWYua8B/2nARODFVmoMJMVJmBKjPA/s7ZnwTJ+b7CzHP+/pS2Jv0/9TOGHBVmosLM0z7/K9t02vsL/RaWN/jxJY0s2ZtEBjfEYnD0naOHY829RW6JPScyoxaFIl4a+sSS2QBguRsMGRncGHx2/2xUmEkGV6euyM8qwYJIyJCTyZWpISonBkuEp4novVb/dibzjB+J/hAgJZZOnI2AztTme/WdIX+vWgxhedNvWWFFhXAiKtT/5M4IgGVAHAt9pgfu/a79bI6bBmaMoIUIAtVFDb7y3AUiVgqIGNnVUj/e2LMQiBBVZgSWFDV5S7MHKWawyJ72wnh7f8H7CUwIiUxSlFTfiH/RrFZPccY" alt="happly" class="happly-logo">
+        <span class="product-tag">Zetjes</span><span class="beta-tag">beta</span>
+      </div>
+    </div>
+    <div class="pad">
+      <p class="q-label" id="remeasure-progress-label">Ben je dichter bij je doel dan een maand geleden?</p>
+      <div class="scale-opts">
+        <button class="scale-opt" onclick="remeasureSubmit('ja')"><span class="scale-n">🙌</span>Ja</button>
+        <button class="scale-opt" onclick="remeasureSubmit('beetje')"><span class="scale-n">💪</span>Een beetje</button>
+        <button class="scale-opt" onclick="remeasureSubmit('nee')"><span class="scale-n">🤗</span>Nee</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERMETING: DANK -->
+  <div class="screen" id="s-remeasure-done">
+    <div class="topbar">
+      <div class="logo-wrap">
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAh8klEQVR4nO2deXwc1ZXvz7lV1Zu2bu2LZUm2JUuWsWXLCzZ4gQwJBAiQ2BDIAjMJCUmAZDKfyQsvE0jeI294CclLQkgmA5MwBBIScMwSlrAKjHdb3rVZ1mrJliyptXVL3VV1z/xRdUst2RA7D0dyzf3y4fOR1dW3bt361bnnnnPqCvfAFwgkEpfAprsDEskHiRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchRS0xFVIQUtchTrdHfiLIBIg0KTfESAQ4TT16MLlv8FYznxBEyEQuGbAp5X/BmM5cwWNSECELNkbUdL8I4k3gkfjPnMwmjad3bsQQY8aV7OSB4AAEy213j2U4xYrPYMFDQQEOOep2+tSLi9fCCbnAACoKWrLjf9+YPD5AytQYSaZXJnurs50UGUGGVzN+ccPbc+779oVZJgmIiIwxNF3m+uPXvnTHGDIgdMFv6aamYK2B9dTnHE89cMLqlBTNPGR0TvSN/xmQyUAALngBvwtIJMUVJiZceuqQubX/AAaABEBIg48tXsMiBAVZrphPGfkBSBDDgAQ/NjiY6gpGummTrqpAxEN/GFPHR+NJaHKDLdMk+cTVJgJRBhYUVzvq8ibQyY3gRMHADBOjfQPbqpdDGCJfnp7+sEwIwUtLEXopmXpAADAkKHCFEDE8O92h6yD3L24+cCwfeWMT60cAAAAAiJOHBBx8Nn9debweIoQ/bT28wNi5rkctrvhK89tSVpRUgFEZPt7bLyppy2yu60cEEn6zmcBIpHBVZbkjQRvqJoPAIAMHSPW//gO1y2sZ5yFdtyNG5Z0oMpUMskke4oMP723jXRTQwXN6e3lhQEqaAIipX54wWEtP5hDJrfGjSEbrztxLLK9pdJtxmHGCZpMUgCRQhuW5gIAAAKiggoQUfjpvfkAcjF41thJk4zPrLQWgQAgjMPA73Z1kskVtxmHmSUMhhyI0H9RwdFAVWGZuAmAiNH9xxvHDnXNA0RyQ3jpvGNbXi0vrSf1igULARGRIUMFFdJNfeCpPSUA7jMOM+pihLsR2ljdDQwZmWQCWYua8B/2nARODFVmoMJMVJmBKjPA/s7ZnwTJ+b7CzHP+/pS2Jv0/9TOGHBVmosLM0z7/K9t02vsL/RaWN/jxJY0s2ZtEBjfEYnD0naOHY829RW6JPScyoxaFIl4a+sSS2QBguRsMGRncGHx2/2xUmEkGV6euyM8qwYJIyJCTyZWpISonBkuEp4novVb/dibzjB+J/hAgJZZOnI2AztTme/WdIX+vWgxhedNvWWFFhXAiKtT/5M4IgGVAHAt9pgfu/a79bI6bBmaMoIUIAtVFDb7y3AUiVgqIGNnVUj/e2LMQiBBVZgSWFDV5S7MHKWawyJ72wnh7f8H7CUwIiUxSlFTfiH/RrFZPccY" alt="happly" class="happly-logo">
+        <span class="product-tag">Zetjes</span><span class="beta-tag">beta</span>
+      </div>
+    </div>
+    <div class="pad" style="justify-content:center;align-items:center;text-align:center">
+      <div class="end-icon">🌤️</div>
+      <h2 class="q-label" style="font-size:24px">Dank je wel</h2>
+      <p class="sub-later">Goed dat je even stilstond bij hoe het gaat. Ga zo door.</p>
+      <button class="btn-pink" onclick="remeasureDoorNaarWelkom()" style="margin-top:0">Verder</button>
+    </div>
+  </div>
+
   <!-- MIJN GEGEVENS -->
   <div class="screen" id="s-profiel">
     <div class="topbar">
@@ -457,6 +606,9 @@ let token='', anonId='', sessionId='', context='werk';
 let situation='', clarifyQ='', clarifyA='', selectedOpt='';
 let herkenTimer = null;
 let feedbackSessionId = '';
+let scanConfig = null, scanAnswers = [], scanIndex = 0, scanMode = 'start';
+let scanGoalText = '', scanProfileId = '', scanFirstStep = '';
+let remeasureKind = '';
 
 const ANON_KEY = () => 'zetjes_anon_' + token;
 function readAnon() { try { return localStorage.getItem(ANON_KEY()) || ''; } catch { return ''; } }
@@ -484,14 +636,23 @@ window.addEventListener('DOMContentLoaded', async () => {
     context = d.context || 'werk';
     applyContext(d);
     document.getElementById('mijn-gegevens').hidden = false;
-    if (!d.consent) go('s-consent');
-    else if (d.openFeedback) askFeedback(d.openFeedback);
-    else go('s-welcome');
+    decideRoute(d);
   } catch(e) {
     console.warn('Validate failed:', e);
     showError('fout');
   }
 });
+
+// Bepaalt welk scherm na /api/validate volgt: toestemming, de Doelscan (als
+// die nog niet gedaan is), de terugvraag over het vorige zetje, of gewoon
+// het welkomscherm.
+function decideRoute(d) {
+  if (!d.consent) { go('s-consent'); return; }
+  if (d.scanNodig && d.scanConfig) { startScan(d.scanConfig); return; }
+  if (d.remeasureNodig && d.remeasureConfig) { startRemeasure(d.remeasureKind, d.remeasureConfig); return; }
+  if (d.openFeedback) { askFeedback(d.openFeedback); return; }
+  go('s-welcome');
+}
 
 function applyContext(d) {
   const ui = d.ui || {};
@@ -559,8 +720,14 @@ function showError(reason, d = {}) {
 
 async function giveConsent() {
   const d = await post('/api/consent', {});
-  if (d.ok) go('s-welcome');
-  else if (d.reason) showError(d.reason, d);
+  if (!d.ok) { if (d.reason) showError(d.reason, d); return; }
+  // Na toestemming pas weten we of de Doelscan nodig is (die staat pas in
+  // het antwoord van validate zodra er toestemming is).
+  try {
+    const v = await post('/api/validate', {});
+    if (!v.valid) { showError(v.reason, v); return; }
+    decideRoute(v);
+  } catch(e) { go('s-welcome'); }
 }
 
 async function deleteMyData() {
@@ -593,8 +760,8 @@ function syncChar() { document.getElementById('cc').textContent=document.getElem
 function clearOptSel() { document.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel')); selectedOpt=''; }
 function setLoadMsg(msg) { document.getElementById('load-msg').textContent=msg; }
 
-async function apiClaude(phase, userMsg, clarifyAnswer) {
-  const d = await post('/api/claude', { phase, userMsg, clarifyAnswer, sessionId });
+async function apiClaude(phase, userMsg, clarifyAnswer, extra) {
+  const d = await post('/api/claude', { phase, userMsg, clarifyAnswer, sessionId, ...extra });
   if (d.status === 403 && d.reason === 'toestemming') { go('s-consent'); throw new Error('toestemming'); }
   if (d.status === 401 || d.status === 403 || d.status === 404) { showError(d.reason, d); throw new Error(d.reason); }
   if (d.status >= 400) throw new Error(d.error || 'fout');
@@ -663,9 +830,9 @@ function showSteps(stappen) {
   });
 }
 
-async function generateZetje(clarifyAnswer) {
+async function generateZetje(clarifyAnswer, extra) {
   try {
-    const p = await apiClaude('zetje', situation, clarifyAnswer);
+    const p = await apiClaude('zetje', situation, clarifyAnswer, extra);
     document.getElementById('z-badge').textContent = p.badge||'✨ Jouw Zetje';
     document.getElementById('z-title').textContent = p.titel||'Jouw Zetje';
     document.getElementById('z-intro').textContent = p.intro||'';
@@ -763,6 +930,135 @@ function reset() {
   selectedOpt=''; situation=''; clarifyQ=''; clarifyA=''; sessionId='';
   go('s-input');
 }
+
+// ── DOELSCAN ──────────────────────────────────────────────────────────
+function startScan(config) {
+  scanMode = 'start';
+  scanConfig = config;
+  scanAnswers = new Array(config.items.length).fill(null);
+  scanIndex = 0;
+  document.getElementById('scan-goal-label').textContent = config.goalPrompt;
+  document.getElementById('scan-when-label').textContent = config.whenPrompt;
+  document.getElementById('scan-hard-label').textContent = config.hardPrompt;
+  document.getElementById('scan-open-label').textContent = config.openPrompt;
+  document.getElementById('scan-goal-text').value = '';
+  document.getElementById('scan-goal-when').value = '';
+  document.getElementById('scan-goal-hard').value = '';
+  go('s-scan-goal');
+}
+
+function scanGoalNext() {
+  scanGoalText = document.getElementById('scan-goal-text').value.trim();
+  if (!scanGoalText) { document.getElementById('scan-goal-text').focus(); return; }
+  scanIndex = 0;
+  document.getElementById('scan-open-text').value = '';
+  renderScanItem();
+  go('s-scan-item');
+}
+
+function renderScanItem() {
+  const item = scanConfig.items[scanIndex];
+  document.getElementById('scan-item-text').textContent = item.text;
+  document.getElementById('scan-progress-txt').textContent = `Vraag ${scanIndex + 1} van ${scanConfig.items.length}`;
+  document.getElementById('scan-progress-fill').style.width = Math.round(((scanIndex + 1) / scanConfig.items.length) * 100) + '%';
+}
+
+function scanAnswer(waarde) {
+  scanAnswers[scanIndex] = waarde;
+  if (scanIndex < scanConfig.items.length - 1) {
+    scanIndex++;
+    renderScanItem();
+  } else if (scanMode === 'hermeting') {
+    go('s-remeasure-progress');
+  } else {
+    go('s-scan-open');
+  }
+}
+
+function scanItemBack() {
+  if (scanIndex > 0) { scanIndex--; renderScanItem(); }
+  else if (scanMode !== 'hermeting') go('s-scan-goal');
+}
+
+async function scanSubmit() {
+  const firstStep = document.getElementById('scan-open-text').value.trim();
+  go('s-load'); setLoadMsg('Je uitslag wordt gemaakt...');
+  try {
+    const d = await post('/api/scan', {
+      goalText: scanGoalText,
+      goalWhen: document.getElementById('scan-goal-when').value.trim(),
+      goalHard: document.getElementById('scan-goal-hard').value.trim(),
+      answers: scanAnswers,
+      firstStep,
+    });
+    if (d.status === 403 && d.reason === 'toestemming') { go('s-consent'); return; }
+    if (d.status >= 400) { alert(d.error || 'Er ging iets mis. Probeer het opnieuw.'); go('s-scan-open'); return; }
+    showScanUitslag(d);
+  } catch(e) {
+    alert('Er ging iets mis. Probeer het opnieuw.');
+    go('s-scan-open');
+  }
+}
+
+const BALK_LABEL = { energie: 'Energie', vertrouwen: 'Vertrouwen', overtuigingen: 'Overtuigingen', weerstand: 'Weerstand' };
+const BALK_BREEDTE = { weinig: 30, gemiddeld: 65, veel: 100 };
+const BALK_WOORD = { weinig: 'weinig', gemiddeld: 'gemiddeld', veel: 'veel' };
+
+function showScanUitslag(d) {
+  scanProfileId = d.profileId;
+  scanFirstStep = d.eersteZetjeUitAntwoord ? d.eersteStap : '';
+
+  const el = document.getElementById('scan-bars');
+  el.innerHTML = '';
+  Object.keys(BALK_LABEL).forEach(blok => {
+    const niveau = d.balken[blok] || 'gemiddeld';
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `<div class="bar-label"><span>${BALK_LABEL[blok]}</span><strong>${BALK_WOORD[niveau]}</strong></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${BALK_BREEDTE[niveau]}%"></div></div>`;
+    el.appendChild(row);
+  });
+
+  document.getElementById('scan-recognition').textContent = d.recognition;
+  document.getElementById('scan-alinea').textContent = d.alinea;
+  go('s-scan-uitslag');
+}
+
+async function doEersteZetje() {
+  situation = scanGoalText;
+  sessionId = '';
+  go('s-load'); setLoadMsg('Je eerste zetje wordt gemaakt...');
+  await generateZetje('', { profileId: scanProfileId, firstStepOverride: scanFirstStep });
+}
+
+// ── HERMETING (dag 30 en einde) ─────────────────────────────────────────
+function startRemeasure(kind, config) {
+  scanMode = 'hermeting';
+  remeasureKind = kind;
+  scanConfig = config;
+  scanAnswers = new Array(config.items.length).fill(null);
+  scanIndex = 0;
+  document.getElementById('remeasure-progress-label').textContent = config.progressPrompt;
+  renderScanItem();
+  go('s-scan-item');
+}
+
+async function remeasureSubmit(keuze) {
+  go('s-load'); setLoadMsg('Even opslaan...');
+  try {
+    const d = await post('/api/remeasure', { kind: remeasureKind, answers: scanAnswers, progress: keuze });
+    if (d.status === 403 && d.reason === 'toestemming') { go('s-consent'); return; }
+    if (d.status >= 400) { alert(d.error || 'Er ging iets mis. Probeer het opnieuw.'); go('s-remeasure-progress'); return; }
+  } catch(e) {
+    alert('Er ging iets mis. Probeer het opnieuw.');
+    go('s-remeasure-progress');
+    return;
+  }
+  scanMode = 'start';
+  go('s-remeasure-done');
+}
+
+function remeasureDoorNaarWelkom() { go('s-welcome'); }
 </script>
 </body>
 </html>

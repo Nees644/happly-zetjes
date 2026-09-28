@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doelscan — door Zetjes</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap');
+  :root {
+    --pink: #CC0066; --pink-d: #99004D; --pink-l: #FFF0F7; --pink-m: #FFD6EC;
+    --ok: #1E7B55; --ok-l: #E0F4EC;
+    --bg: #FDF8FB; --surface: #FFFFFF; --card: #FFFFFF;
+    --text: #1A0A12; --text-mid: #5E3A4E; --text-soft: #A87A94;
+    --border: #ECD8E4; --r: 16px; --r-lg: 24px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text);
+    min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .shell { width: 400px; min-height: 640px; background: var(--surface); border-radius: 36px;
+    box-shadow: 0 40px 100px rgba(204,0,102,.10), 0 8px 32px rgba(26,10,18,.08), 0 0 0 1px rgba(255,255,255,.9) inset;
+    display: flex; flex-direction: column; overflow: hidden; }
+  .shell::before { content: ''; display: block; height: 3px;
+    background: linear-gradient(90deg, var(--pink) 0%, #FF66AA 100%); flex-shrink: 0; }
+  .topbar { padding: 18px 28px 0; }
+  .brand { font-family: 'Lora', serif; font-weight: 600; font-style: italic; color: var(--pink); font-size: 18px; }
+  .brand-sub { font-size: 9px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--text-soft); }
+  .pad { padding: 24px 28px 32px; display: flex; flex-direction: column; flex: 1; }
+  .screen { display: none; flex-direction: column; flex: 1; animation: rise .3s ease; }
+  .screen.on { display: flex; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  h1 { font-family: 'Lora', serif; font-size: 25px; font-weight: 600; line-height: 1.2; margin-bottom: 10px; }
+  h1 em { color: var(--pink); font-style: italic; }
+  .lead { color: var(--text-mid); font-size: 14.5px; line-height: 1.55; margin-bottom: 20px; }
+  .field-label { font-size: 12.5px; font-weight: 600; color: var(--text-mid); margin-bottom: 6px; display: block; }
+  .text-input, textarea { background: #FDFAFB; border: 2px solid var(--border); border-radius: var(--r);
+    padding: 14px 15px; font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--text);
+    width: 100%; margin-bottom: 14px; }
+  .text-input:focus, textarea:focus { outline: none; border-color: var(--pink); }
+  textarea { resize: none; height: 90px; }
+  .btn-pink { background: var(--pink); color: #fff; border: none; border-radius: var(--r);
+    padding: 16px 22px; font-family: 'DM Sans', sans-serif; font-size: 15.5px; font-weight: 600;
+    cursor: pointer; width: 100%; margin-top: auto; box-shadow: 0 6px 24px rgba(204,0,102,.28); }
+  .btn-ghost { background: transparent; border: 1.5px solid var(--border); border-radius: var(--r);
+    padding: 14px 22px; font-family: 'DM Sans', sans-serif; font-size: 14.5px; color: var(--text-mid);
+    cursor: pointer; width: 100%; margin-top: 10px; }
+  .skip { background: none; border: none; color: var(--text-soft); font-size: 13px; cursor: pointer;
+    text-decoration: underline; margin-top: 10px; align-self: center; }
+
+  .scan-progress-txt { font-size: 11.5px; color: var(--text-soft); margin-bottom: 6px; }
+  .scan-progress-bar { height: 6px; background: var(--pink-l); border-radius: 100px; overflow: hidden; margin-bottom: 20px; }
+  .scan-progress-fill { height: 100%; background: var(--pink); border-radius: 100px; transition: width .25s ease; }
+  .scan-item-card { background: var(--pink-l); border-left: 3px solid var(--pink);
+    border-radius: 0 var(--r) var(--r) var(--r); padding: 18px; font-size: 16px; line-height: 1.5;
+    color: var(--text); margin-bottom: 20px; font-family: 'Lora', serif; }
+  .scale-opts { display: flex; flex-direction: column; gap: 8px; }
+  .scale-opt { font-family: inherit; background: var(--card); border: 1.5px solid var(--border);
+    border-radius: var(--r); padding: 13px 15px; font-size: 14px; cursor: pointer; color: var(--text-mid);
+    text-align: left; display: flex; align-items: center; gap: 10px; }
+  .scale-opt:hover { border-color: var(--pink); background: var(--pink-l); color: var(--pink); }
+  .scale-n { width: 22px; height: 22px; border-radius: 50%; background: var(--pink-l); color: var(--pink);
+    font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  .bars-wrap { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+  .bar-row .bar-label { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-mid); margin-bottom: 5px; }
+  .bar-row .bar-label strong { color: var(--pink); font-weight: 600; }
+  .bar-track { height: 9px; background: #F3E8EF; border-radius: 100px; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--pink); border-radius: 100px; }
+  .recognition-card { background: var(--pink); border-radius: var(--r-lg); padding: 20px; color: #fff; margin-bottom: 14px; }
+  .recognition-card p { font-family: 'Lora', serif; font-size: 18px; line-height: 1.4; font-style: italic; }
+  .alinea-txt { font-size: 14px; color: var(--text-mid); line-height: 1.6; margin-bottom: 22px; }
+
+  .zetje-hero { background: var(--pink); border-radius: var(--r-lg); padding: 22px; color: #fff; margin-bottom: 16px; }
+  .z-badge { display: inline-block; background: var(--ok); border-radius: 100px; padding: 4px 13px;
+    font-size: 12px; font-weight: 600; color: #fff; margin-bottom: 10px; }
+  .zetje-hero h2 { font-family: 'Lora', serif; font-size: 21px; font-weight: 600; margin-bottom: 8px; }
+  .zetje-hero p { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,.88); }
+  .steps { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .step { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px;
+    padding: 12px 14px; display: flex; gap: 11px; align-items: flex-start; }
+  .step-n { width: 24px; height: 24px; background: var(--pink-l); color: var(--pink); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .step-t { font-size: 14px; line-height: 1.5; color: var(--text-mid); padding-top: 2px; }
+
+  .privacy-note { font-size: 11.5px; color: var(--text-soft); line-height: 1.5; margin-top: 16px; }
+  .conversie-card { border: 1.5px solid var(--border); border-radius: var(--r); padding: 16px; margin-bottom: 12px; }
+  .conversie-card .prijs { font-family: 'Lora', serif; font-size: 20px; font-weight: 600; color: var(--pink); }
+  .conversie-card p { font-size: 13px; color: var(--text-mid); margin: 4px 0 12px; line-height: 1.5; }
+  .conversie-card a.btn-pink { display: block; text-align: center; text-decoration: none; margin-top: 0; }
+
+  #s-load { justify-content: center; align-items: center; gap: 18px; }
+  .dots { display: flex; gap: 8px; }
+  .dot { width: 10px; height: 10px; background: var(--pink); border-radius: 50%; animation: pulse 1.3s ease-in-out infinite; }
+  .dot:nth-child(2) { animation-delay: .22s; }
+  .dot:nth-child(3) { animation-delay: .44s; }
+  @keyframes pulse { 0%,80%,100% { transform: scale(.55); opacity: .3; } 40% { transform: scale(1); opacity: 1; } }
+  .load-txt { font-family: 'Lora', serif; font-style: italic; color: var(--text-soft); font-size: 14.5px; text-align: center; }
+  .char-hint { text-align: right; font-size: 11px; color: var(--text-soft); margin: -10px 0 14px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <span class="brand">happly</span><br><span class="brand-sub">Doelscan</span>
+  </div>
+
+  <!-- INTRO -->
+  <div class="screen on" id="s-intro">
+    <div class="pad">
+      <h1>Wat houdt jou van je <em>doel</em> af?</h1>
+      <p class="lead">In 5 minuten weet je welke blokkade je het meest tegenhoudt, en krijg je meteen een eerste zetje. Gratis.</p>
+      <label class="field-label">Wat wil je bereiken?</label>
+      <input class="text-input" id="goal-text" maxlength="200" placeholder="Bijv: elke week één keer sporten">
+      <label class="field-label">Wanneer en waar ga je de eerste stap zetten?</label>
+      <input class="text-input" id="goal-when" maxlength="150" placeholder="Bijv: morgenochtend, thuis">
+      <label class="field-label">Waar verwacht je dat het lastig wordt?</label>
+      <input class="text-input" id="goal-hard" maxlength="150" placeholder="Bijv: als ik moe ben">
+      <button class="btn-pink" onclick="goalNext()">Start de Doelscan →</button>
+      <p class="privacy-note">Zetjes bewaart je antwoorden om je een zetje op maat te geven. Geen account nodig. <a href="/privacy.html" target="_blank" rel="noopener" style="color:var(--pink)">Privacyverklaring</a>.</p>
+    </div>
+  </div>
+
+  <!-- ITEM -->
+  <div class="screen" id="s-item">
+    <div class="pad">
+      <p class="scan-progress-txt" id="progress-txt">Vraag 1 van 12</p>
+      <div class="scan-progress-bar"><div class="scan-progress-fill" id="progress-fill" style="width:8%"></div></div>
+      <div class="scan-item-card" id="item-text">...</div>
+      <div class="scale-opts">
+        <button class="scale-opt" onclick="answer(1)"><span class="scale-n">1</span>Helemaal niet</button>
+        <button class="scale-opt" onclick="answer(2)"><span class="scale-n">2</span>Een beetje niet</button>
+        <button class="scale-opt" onclick="answer(3)"><span class="scale-n">3</span>Soms wel, soms niet</button>
+        <button class="scale-opt" onclick="answer(4)"><span class="scale-n">4</span>Best wel</button>
+        <button class="scale-opt" onclick="answer(5)"><span class="scale-n">5</span>Helemaal wel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPEN VELD -->
+  <div class="screen" id="s-open">
+    <div class="pad">
+      <h1 style="font-size:21px">Nog één ding</h1>
+      <p class="lead">Wat is het eerste wat je vanavond kunt doen, hoe klein ook?</p>
+      <textarea id="open-text" maxlength="200" placeholder="Mag ook leeg blijven..."></textarea>
+      <button class="btn-pink" onclick="submitScan()">Bekijk je uitslag →</button>
+    </div>
+  </div>
+
+  <!-- LADEN -->
+  <div class="screen" id="s-load">
+    <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <p class="load-txt" id="load-msg">Even kijken wat er speelt...</p>
+  </div>
+
+  <!-- UITSLAG -->
+  <div class="screen" id="s-uitslag">
+    <div class="pad">
+      <h1 style="font-size:21px">Dit zie ik bij jou</h1>
+      <div class="bars-wrap" id="bars"></div>
+      <div class="recognition-card"><p id="recognition">...</p></div>
+      <p class="alinea-txt" id="alinea"></p>
+      <button class="btn-pink" onclick="go('s-mailflip')">👟 Doe je eerste zetje →</button>
+    </div>
+  </div>
+
+  <!-- MAILFLIP -->
+  <div class="screen" id="s-mailflip">
+    <div class="pad">
+      <h1 style="font-size:21px">Wil je je zetje ook <em>bewaren</em>?</h1>
+      <p class="lead">Vul je e-mailadres in en je krijgt een link naar je eigen Zetjes-pagina, 7 dagen geldig. Mag ook worden overgeslagen.</p>
+      <input class="text-input" id="lead-email" type="email" placeholder="jij@voorbeeld.nl">
+      <button class="btn-pink" onclick="submitLead()">Verder →</button>
+      <button class="skip" onclick="showZetje()">Overslaan</button>
+    </div>
+  </div>
+
+  <!-- ZETJE -->
+  <div class="screen" id="s-zetje">
+    <div class="pad">
+      <div class="zetje-hero">
+        <div class="z-badge" id="z-badge">✨ Jouw Zetje</div>
+        <h2 id="z-title">—</h2>
+        <p id="z-intro">—</p>
+      </div>
+      <div class="steps" id="z-steps"></div>
+      <button class="btn-pink" onclick="go('s-conversie')">Verder →</button>
+    </div>
+  </div>
+
+  <!-- CONVERSIE -->
+  <div class="screen" id="s-conversie">
+    <div class="pad">
+      <h1 style="font-size:21px">Wil je <em>verder</em>?</h1>
+      <p class="lead">Zetjes helpt je bij elke keer dat je vastloopt, op jouw profiel afgestemd.</p>
+      <div class="conversie-card">
+        <div class="prijs">€79 per jaar</div>
+        <p>Zetjes | personal. Onbeperkt gebruik, altijd op maat van jouw Doelscan.</p>
+        <a class="btn-pink" href="https://zetjes.nl/koop.html" target="_blank" rel="noopener">Naar Zetjes | personal →</a>
+      </div>
+      <button class="btn-ghost" onclick="go('s-klaar')">Nee, dank je</button>
+    </div>
+  </div>
+
+  <!-- KLAAR -->
+  <div class="screen" id="s-klaar">
+    <div class="pad" style="justify-content:center;align-items:center;text-align:center">
+      <h1 style="font-size:22px">Dank je wel</h1>
+      <p class="lead">Veel succes met je doel. Je kunt deze pagina altijd opnieuw openen voor een nieuwe Doelscan.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+let anonId = '', profileId = '', config = null, answers = [], idx = 0, eersteStap = '';
+
+function readAnon() { try { return localStorage.getItem('zetjes_scan_anon') || ''; } catch { return ''; } }
+function writeAnon(v) { try { localStorage.setItem('zetjes_scan_anon', v); } catch {} }
+
+async function post(body) {
+  const r = await fetch(API + '/api/scan-vrij', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ anonId, ...body }),
+  });
+  let d = {};
+  try { d = await r.json(); } catch {}
+  return { status: r.status, ...d };
+}
+
+function go(id) {
+  document.querySelectorAll('.screen').forEach((s) => s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+}
+function setLoadMsg(m) { document.getElementById('load-msg').textContent = m; }
+
+// Twaalf items in vaste volgorde: energie, vertrouwen, weerstand, overtuigingen (bijlage 14/15).
+const ITEMS = [
+  "Ik merk dat ik aan het eind van de dag niets meer over heb voor mijn doel.",
+  "Als ik moe ben, laat ik mijn plan los in plaats van het kleiner te maken.",
+  "Ik kom pas in beweging als ik me er energiek voor voel.",
+  "Als het een keer niet lukt, denk ik dat ik het niet kan.",
+  "Ik vergelijk mezelf met anderen die het beter lijken te doen.",
+  "Ik durf pas te beginnen als ik zeker weet dat het gaat lukken.",
+  "Ik merk dat ik het uitstel, ook als ik er tijd voor heb.",
+  "Als ik moet kiezen, kies ik iets makkelijkers dan mijn doel.",
+  "De eerste stap voelt groter dan hij is.",
+  "Ik betrap mezelf op de gedachte dat het toch niets uitmaakt.",
+  "Ik denk dat ik nu eenmaal zo ben en dat dit niet voor mij is weggelegd.",
+  "Ik wacht tot het juiste moment komt om echt te beginnen.",
+];
+
+function goalNext() {
+  const t = document.getElementById('goal-text').value.trim();
+  if (!t) { document.getElementById('goal-text').focus(); return; }
+  answers = new Array(12).fill(null);
+  idx = 0;
+  renderItem();
+  go('s-item');
+}
+
+function renderItem() {
+  document.getElementById('item-text').textContent = ITEMS[idx];
+  document.getElementById('progress-txt').textContent = `Vraag ${idx + 1} van 12`;
+  document.getElementById('progress-fill').style.width = Math.round(((idx + 1) / 12) * 100) + '%';
+}
+
+function answer(v) {
+  answers[idx] = v;
+  if (idx < 11) { idx++; renderItem(); } else { go('s-open'); }
+}
+
+async function submitScan() {
+  go('s-load'); setLoadMsg('Je uitslag wordt gemaakt...');
+  const d = await post({
+    phase: 'scan',
+    goalText: document.getElementById('goal-text').value.trim(),
+    goalWhen: document.getElementById('goal-when').value.trim(),
+    goalHard: document.getElementById('goal-hard').value.trim(),
+    answers,
+    firstStep: document.getElementById('open-text').value.trim(),
+  });
+  if (d.status >= 400) { alert(d.error || 'Er ging iets mis. Probeer het opnieuw.'); go('s-open'); return; }
+  anonId = d.anonId; writeAnon(anonId);
+  profileId = d.profileId;
+  eersteStap = d.eersteZetjeUitAntwoord ? d.eersteStap : '';
+  showUitslag(d);
+}
+
+const BALK_LABEL = { energie: 'Energie', vertrouwen: 'Vertrouwen', overtuigingen: 'Overtuigingen', weerstand: 'Weerstand' };
+const BALK_BREEDTE = { weinig: 30, gemiddeld: 65, veel: 100 };
+
+function showUitslag(d) {
+  const el = document.getElementById('bars');
+  el.innerHTML = '';
+  Object.keys(BALK_LABEL).forEach((blok) => {
+    const niveau = d.balken[blok] || 'gemiddeld';
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `<div class="bar-label"><span>${BALK_LABEL[blok]}</span><strong>${niveau}</strong></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${BALK_BREEDTE[niveau]}%"></div></div>`;
+    el.appendChild(row);
+  });
+  document.getElementById('recognition').textContent = d.recognition;
+  document.getElementById('alinea').textContent = d.alinea;
+  go('s-uitslag');
+}
+
+async function submitLead() {
+  const email = document.getElementById('lead-email').value.trim();
+  if (!email) { document.getElementById('lead-email').focus(); return; }
+  const d = await post({ phase: 'lead', profileId, email });
+  if (d.status >= 400) { alert(d.error || 'Vul een geldig e-mailadres in.'); return; }
+  await showZetje();
+}
+
+function showSteps(stappen) {
+  const el = document.getElementById('z-steps');
+  el.innerHTML = '';
+  (stappen || []).forEach((s, i) => {
+    const step = document.createElement('div'); step.className = 'step';
+    const n = document.createElement('div'); n.className = 'step-n'; n.textContent = i + 1;
+    const t = document.createElement('div'); t.className = 'step-t'; t.textContent = s;
+    step.append(n, t); el.appendChild(step);
+  });
+}
+
+async function showZetje() {
+  go('s-load'); setLoadMsg('Je eerste zetje wordt gemaakt...');
+  try {
+    const d = await post({ phase: 'zetje', profileId });
+    if (d.status >= 400) throw new Error(d.error || 'fout');
+    document.getElementById('z-badge').textContent = d.badge || '✨ Jouw Zetje';
+    document.getElementById('z-title').textContent = d.titel || 'Jouw Zetje';
+    document.getElementById('z-intro').textContent = d.intro || '';
+    showSteps(d.stappen || []);
+  } catch (e) {
+    document.getElementById('z-badge').textContent = '👟 Zetje';
+    document.getElementById('z-title').textContent = 'Begin met één kleine stap';
+    document.getElementById('z-intro').textContent = 'Je hoeft het niet perfect te doen — je hoeft het alleen maar te beginnen.';
+    showSteps(['Zet een timer van 5 minuten en doe gewoon iets', 'Kies iets dat past bij je doel', 'Meer hoeft nu niet']);
+  }
+  go('s-zetje');
+}
+
+anonId = readAnon();
+</script>
+</body>
+</html>

@@ -7,6 +7,7 @@ const { supabase } = require('./_lib/supabase');
 const { cors, resolveAccess, sendAccessError } = require('./_lib/access');
 const { staticSystem } = require('./_lib/contexts');
 const { jsonCall } = require('./_lib/anthropic');
+const { profielBlokTekst } = require('./_lib/scan-engine');
 
 const MAX_INPUT = 2000;
 
@@ -45,8 +46,10 @@ function guardSchema(categorieen) {
   };
 }
 
-// Variabel deel van de systeemprompt: komt na het cache-breekpunt.
-function variableSystem(a) {
+// Variabel deel van de systeemprompt: komt na het cache-breekpunt. Het
+// profielblok zelf (toon, kracht, doel) staat in scan-engine.js, gedeeld
+// met api/scan-vrij.js.
+function variableSystem(a, doelscanProfile) {
   const parts = [];
   if (a.ctx.faseweter && a.phase) {
     parts.push(`FASE: week ${a.weekSinceStart} sinds de start van de groep. ${a.ctx.fasen[a.phase]}`);
@@ -54,13 +57,15 @@ function variableSystem(a) {
   if (a.profile?.profiel_samenvatting) {
     parts.push(`WAT EERDER BIJ DEZE PERSOON SPEELDE (alleen als achtergrond):\n${a.profile.profiel_samenvatting}`);
   }
+  const pBlok = profielBlokTekst(a.ctx, doelscanProfile);
+  if (pBlok) parts.push(pBlok);
   return parts.join('\n\n');
 }
 
-function systemBlocks(a, taak) {
+function systemBlocks(a, taak, doelscanProfile) {
   return [
     { text: staticSystem(a.ctx), cache: true },
-    { text: [variableSystem(a), taak].filter(Boolean).join('\n\n'), cache: false },
+    { text: [variableSystem(a, doelscanProfile), taak].filter(Boolean).join('\n\n'), cache: false },
   ];
 }
 
@@ -104,14 +109,33 @@ async function firstUserMessage(sessionId) {
   return data?.content || null;
 }
 
+// Het Doelscan-profiel van deze gebruiker op deze link. Een expliciet
+// profileId (net na de scan) gaat voor; anders het laatste startprofiel,
+// zodat ook latere zetjes profielgestuurd blijven ("zelfde dip, ander zetje").
+async function loadDoelscanProfile(invite, userKey, profileId) {
+  if (profileId) {
+    const { data } = await supabase
+      .from('profiles').select('*').eq('id', profileId).eq('user_key', userKey).maybeSingle();
+    if (data) return data;
+  }
+  const { data } = await supabase
+    .from('profiles').select('*')
+    .eq('invite_id', invite.id).eq('user_key', userKey).eq('kind', 'start')
+    .order('measured_at', { ascending: false }).limit(1).maybeSingle();
+  return data || null;
+}
+
 module.exports = async function handler(req, res) {
   cors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { token, anonId, phase, sessionId } = req.body || {};
+  const { token, anonId, phase, sessionId, profileId } = req.body || {};
   const userMsg = String(req.body?.userMsg || '').slice(0, MAX_INPUT).trim();
   const clarifyAnswer = String(req.body?.clarifyAnswer || '').slice(0, MAX_INPUT).trim();
+  // Alleen bij het eerste zetje na de Doelscan: het eigen antwoord op het open veld,
+  // als dat bruikbaar was. Dan slaat Zetjes de AI-call over (bijlage 15 hoofdstuk 4).
+  const firstStepOverride = String(req.body?.firstStepOverride || '').slice(0, MAX_INPUT).trim();
 
   let a;
   try {
@@ -122,6 +146,11 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'fout' });
   }
   if (!a.profile?.consent_at) return res.status(403).json({ reason: 'toestemming' });
+
+  // Doelscan-profiel van deze gebruiker, indien aanwezig: koppelt de sessie
+  // en stuurt de toon van het zetje (alleen gebruikt in fase 'zetje' hieronder).
+  const doelscanProfile = await loadDoelscanProfile(a.invite, a.anonId, profileId);
+  const doelscanProfileId = doelscanProfile?.id || null;
 
   try {
     // ── FASE 1: poortwachter + verhelderingsvraag ────────────────
@@ -159,7 +188,7 @@ crisis gaat altijd voor: kies crisis bij elk signaal van gedachten aan zelfdodin
         return res.status(200).json({ off_topic: true, crisis: categorie === 'crisis', redirect, sessionId: s.id });
       }
 
-      const s = await createSession(a);
+      const s = await createSession(a, doelscanProfileId ? { profile_id: doelscanProfileId } : {});
       await addMessage(s.id, 'user', userMsg);
 
       let clarify;
@@ -186,15 +215,26 @@ crisis gaat altijd voor: kies crisis bij elk signaal van gedachten aan zelfdodin
       let situatie = s ? await firstUserMessage(s.id) : null;
       if (!s) {
         if (!userMsg) return res.status(400).json({ error: 'Lege invoer' });
-        s = await createSession(a);
+        s = await createSession(a, doelscanProfileId ? { profile_id: doelscanProfileId } : {});
         await addMessage(s.id, 'user', userMsg);
         situatie = userMsg;
       }
       if (clarifyAnswer) await addMessage(s.id, 'user', clarifyAnswer);
 
+      // Eerste zetje na de Doelscan, met een bruikbaar eigen antwoord: geen AI-call.
+      if (firstStepOverride.length >= 8 && !firstStepOverride.endsWith('?')) {
+        const zetje = { badge: 'Eigen zetje', titel: 'Jouw eigen eerste stap', intro: '', stappen: [firstStepOverride] };
+        await addMessage(s.id, 'assistant', JSON.stringify(zetje));
+        const { error } = await supabase.from('sessions').update({
+          duration_seconds: Math.round((Date.now() - Date.parse(s.created_at)) / 1000),
+        }).eq('id', s.id);
+        if (error) throw error;
+        return res.status(200).json({ ...zetje, sessionId: s.id });
+      }
+
       const { data: z } = await jsonCall({
         label: 'zetje',
-        system: systemBlocks(a, 'TAAK NU: geef het zetje, met de labels voor analyse.'),
+        system: systemBlocks(a, 'TAAK NU: geef het zetje, met de labels voor analyse.', doelscanProfile),
         user: `Situatie: ${situatie || userMsg}\nAntwoord op de verhelderingsvraag: ${clarifyAnswer || 'geen'}`,
         schema: ZETJE_SCHEMA,
         maxTokens: 6000,
