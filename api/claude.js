@@ -10,6 +10,16 @@ const { jsonCall } = require('./_lib/anthropic');
 
 const MAX_INPUT = 2000;
 
+// Toon per hoofdvalkuil uit de Doelscan, met het voorbeeld uit bijlage 14
+// hoofdstuk 6 als few-shot. 'balans' krijgt geen instructie: dan geldt de
+// gewone werkwijze (de blokkade van dit gesprek zelf, niet het profiel).
+const PROFIEL_TOON = {
+  energie: 'Maak het zetje zo klein mogelijk: niet de hele stap, de kleinst denkbare versie ervan. Voorbeeld bij "het is avond en ik heb niets gedaan": "Niet de wandeling. Alleen schoenen aan en tot de hoek. Terug mag."',
+  vertrouwen: 'Normaliseer en geef bewijs: één keer iets niet doen is geen patroon. Voorbeeld bij "het is avond en ik heb niets gedaan": "Eén dag telt niet als mislukt. Doe vanavond één ding dat je gisteren ook deed."',
+  weerstand: 'Maak de eerste stap los van de rest van de taak. Voorbeeld bij "het is avond en ik heb niets gedaan": "Zet alleen de spullen klaar voor morgen. Meer niet."',
+  overtuigingen: 'Ga terug naar het doel, bespreek de gedachte zelf niet. Voorbeeld bij "het is avond en ik heb niets gedaan": "Vergeet even of het zin heeft. Wat was ook alweer het doel? Doe daar nu twee minuten van."',
+};
+
 const CLARIFY_SCHEMA = {
   type: 'object',
   properties: {
@@ -45,8 +55,22 @@ function guardSchema(categorieen) {
   };
 }
 
+// Profiel uit de Doelscan, alleen bij het zetje: bepaalt de toon en noemt
+// de kracht als hefboom. Verandert per gebruiker, dus in het niet-gecachte
+// deel van de prompt (bijlage 15 hoofdstuk 5).
+function profileBlock(ctx, profile) {
+  if (!profile) return '';
+  const parts = [`PROFIEL UIT DE DOELSCAN (richt het zetje hierop; wat de persoon nu typt blijft leidend voor de situatie zelf).`];
+  if (profile.goal_text) parts.push(`Doel van deze persoon: ${profile.goal_text}`);
+  const toon = PROFIEL_TOON[profile.main_block];
+  if (toon) parts.push(`Hoofdvalkuil: ${profile.main_block}. ${toon}`);
+  const krachtZin = ctx.scan?.phrases?.[profile.strength]?.kracht;
+  if (krachtZin) parts.push(`Kracht van deze persoon: ${krachtZin}. Noem dit één keer kort als hefboom in het zetje, geen apart advies.`);
+  return parts.join('\n');
+}
+
 // Variabel deel van de systeemprompt: komt na het cache-breekpunt.
-function variableSystem(a) {
+function variableSystem(a, doelscanProfile) {
   const parts = [];
   if (a.ctx.faseweter && a.phase) {
     parts.push(`FASE: week ${a.weekSinceStart} sinds de start van de groep. ${a.ctx.fasen[a.phase]}`);
@@ -54,13 +78,15 @@ function variableSystem(a) {
   if (a.profile?.profiel_samenvatting) {
     parts.push(`WAT EERDER BIJ DEZE PERSOON SPEELDE (alleen als achtergrond):\n${a.profile.profiel_samenvatting}`);
   }
+  const pBlok = profileBlock(a.ctx, doelscanProfile);
+  if (pBlok) parts.push(pBlok);
   return parts.join('\n\n');
 }
 
-function systemBlocks(a, taak) {
+function systemBlocks(a, taak, doelscanProfile) {
   return [
     { text: staticSystem(a.ctx), cache: true },
-    { text: [variableSystem(a), taak].filter(Boolean).join('\n\n'), cache: false },
+    { text: [variableSystem(a, doelscanProfile), taak].filter(Boolean).join('\n\n'), cache: false },
   ];
 }
 
@@ -104,6 +130,22 @@ async function firstUserMessage(sessionId) {
   return data?.content || null;
 }
 
+// Het Doelscan-profiel van deze gebruiker op deze link. Een expliciet
+// profileId (net na de scan) gaat voor; anders het laatste startprofiel,
+// zodat ook latere zetjes profielgestuurd blijven ("zelfde dip, ander zetje").
+async function loadDoelscanProfile(invite, userKey, profileId) {
+  if (profileId) {
+    const { data } = await supabase
+      .from('profiles').select('*').eq('id', profileId).eq('user_key', userKey).maybeSingle();
+    if (data) return data;
+  }
+  const { data } = await supabase
+    .from('profiles').select('*')
+    .eq('invite_id', invite.id).eq('user_key', userKey).eq('kind', 'start')
+    .order('measured_at', { ascending: false }).limit(1).maybeSingle();
+  return data || null;
+}
+
 module.exports = async function handler(req, res) {
   cors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -126,13 +168,10 @@ module.exports = async function handler(req, res) {
   }
   if (!a.profile?.consent_at) return res.status(403).json({ reason: 'toestemming' });
 
-  // Doelscan-profiel koppelen aan de sessie, alleen als het echt van deze gebruiker is.
-  let doelscanProfileId = null;
-  if (profileId) {
-    const { data: p } = await supabase
-      .from('profiles').select('id').eq('id', profileId).eq('user_key', a.anonId).maybeSingle();
-    doelscanProfileId = p?.id || null;
-  }
+  // Doelscan-profiel van deze gebruiker, indien aanwezig: koppelt de sessie
+  // en stuurt de toon van het zetje (alleen gebruikt in fase 'zetje' hieronder).
+  const doelscanProfile = await loadDoelscanProfile(a.invite, a.anonId, profileId);
+  const doelscanProfileId = doelscanProfile?.id || null;
 
   try {
     // ── FASE 1: poortwachter + verhelderingsvraag ────────────────
@@ -170,7 +209,7 @@ crisis gaat altijd voor: kies crisis bij elk signaal van gedachten aan zelfdodin
         return res.status(200).json({ off_topic: true, crisis: categorie === 'crisis', redirect, sessionId: s.id });
       }
 
-      const s = await createSession(a);
+      const s = await createSession(a, doelscanProfileId ? { profile_id: doelscanProfileId } : {});
       await addMessage(s.id, 'user', userMsg);
 
       let clarify;
@@ -216,7 +255,7 @@ crisis gaat altijd voor: kies crisis bij elk signaal van gedachten aan zelfdodin
 
       const { data: z } = await jsonCall({
         label: 'zetje',
-        system: systemBlocks(a, 'TAAK NU: geef het zetje, met de labels voor analyse.'),
+        system: systemBlocks(a, 'TAAK NU: geef het zetje, met de labels voor analyse.', doelscanProfile),
         user: `Situatie: ${situatie || userMsg}\nAntwoord op de verhelderingsvraag: ${clarifyAnswer || 'geen'}`,
         schema: ZETJE_SCHEMA,
         maxTokens: 6000,
