@@ -143,6 +143,32 @@ function bouwHerkenningszin({ phrases, main_block, strength }) {
   return `Jij ${krachtZin}, maar ${valkuilZin}.`;
 }
 
+// Toon per hoofdvalkuil uit de Doelscan, met het voorbeeld uit bijlage 14
+// hoofdstuk 6 als few-shot. 'balans' krijgt geen instructie: dan geldt de
+// gewone werkwijze (de blokkade van dit gesprek zelf, niet het profiel).
+// Gedeeld door api/claude.js en api/scan-vrij.js, zodat de tonen niet
+// dubbel onderhouden hoeven te worden.
+const PROFIEL_TOON = {
+  energie: 'Maak het zetje zo klein mogelijk: niet de hele stap, de kleinst denkbare versie ervan. Voorbeeld bij "het is avond en ik heb niets gedaan": "Niet de wandeling. Alleen schoenen aan en tot de hoek. Terug mag."',
+  vertrouwen: 'Normaliseer en geef bewijs: één keer iets niet doen is geen patroon. Voorbeeld bij "het is avond en ik heb niets gedaan": "Eén dag telt niet als mislukt. Doe vanavond één ding dat je gisteren ook deed."',
+  weerstand: 'Maak de eerste stap los van de rest van de taak. Voorbeeld bij "het is avond en ik heb niets gedaan": "Zet alleen de spullen klaar voor morgen. Meer niet."',
+  overtuigingen: 'Ga terug naar het doel, bespreek de gedachte zelf niet. Voorbeeld bij "het is avond en ik heb niets gedaan": "Vergeet even of het zin heeft. Wat was ook alweer het doel? Doe daar nu twee minuten van."',
+};
+
+// Bouwt het profielblok voor de systeemprompt (niet-gecachte deel). ctx moet
+// ctx.scan.phrases bevatten (de context van de scan, niet per se de context
+// van het gesprek zelf bij de losse scan, waar beide gelijk zijn).
+function profielBlokTekst(ctx, profile) {
+  if (!profile) return '';
+  const parts = [`PROFIEL UIT DE DOELSCAN (richt het zetje hierop; wat de persoon nu typt blijft leidend voor de situatie zelf).`];
+  if (profile.goal_text) parts.push(`Doel van deze persoon: ${profile.goal_text}`);
+  const toon = PROFIEL_TOON[profile.main_block];
+  if (toon) parts.push(`Hoofdvalkuil: ${profile.main_block}. ${toon}`);
+  const krachtZin = ctx.scan?.phrases?.[profile.strength]?.kracht;
+  if (krachtZin) parts.push(`Kracht van deze persoon: ${krachtZin}. Noem dit één keer kort als hefboom in het zetje, geen apart advies.`);
+  return parts.join('\n');
+}
+
 // Mensentaal in plaats van een cijfer voor de vier balken op de uitslagpagina
 // (bijlage 15 hoofdstuk 4: "vier balken, labels in mensentaal, geen cijfers").
 function labelVoorScore(waarde) {
@@ -161,4 +187,5 @@ module.exports = {
   BLOKKADES, DREMPEL, CONTEXT_STANDAARD, contextStandaard,
   scoreDoelscan, bouwHerkenningszin, labelVoorScore, eersteStapBruikbaar,
   hermetingBlokken, hermetingItems, scoreHermeting,
+  PROFIEL_TOON, profielBlokTekst,
 };
