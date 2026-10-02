@@ -1,13 +1,14 @@
 // api/mollie-webhook.js
 // POST /api/mollie-webhook  (form-encoded, door Mollie: alleen { id })
 // Haalt de betaling zelf op bij Mollie (vertrouwt niets uit het verzoek).
-// Bij status 'paid': maakt een invite (tenant personal, context ondernemen,
-// 12 maanden geldig, max 3 gebruikers) en mailt de link. Idempotent: dezelfde
+// Bij status 'paid': maakt een invite volgens het product in de metadata
+// (_lib/producten.js; zonder product: Zetjes | personal) en mailt de link. Idempotent: dezelfde
 // betaling levert nooit twee invites op.
 
 const { supabase } = require('./_lib/supabase');
 const { haalBetalingOp } = require('./_lib/mollie');
 const { stuurMail } = require('./_lib/mail');
+const { getProduct } = require('./_lib/producten');
 
 // Zelfde adres als waar Mollie deze aanroep naartoe stuurde (klopt dan ook
 // op een preview-deploy); anders de vaste APP_URL.
@@ -17,10 +18,13 @@ function appUrl(req) {
   return (process.env.APP_URL || 'https://happly-zetjes.vercel.app').replace(/\/$/, '');
 }
 
-function mailHtml(link) {
-  return `<p>Gelukt! Je persoonlijke Zetjes-link staat hieronder.</p>
+function mailHtml(link, product) {
+  const intro = product.naam === 'rookvrij'
+    ? '<p>Gelukt! Hier is je volhoudassistent voor rookvrij. Open de link op je telefoon en zet hem op je beginscherm, dan heb je hem bij de hand als de trek komt.</p>'
+    : '<p>Gelukt! Je persoonlijke Zetjes-link staat hieronder.</p>';
+  return `${intro}
 <p><a href="${link}">${link}</a></p>
-<p>Deze link is 12 maanden geldig en werkt op maximaal 3 toestellen.</p>
+<p>Deze link is ${product.looptijdTekst} geldig en werkt op maximaal ${product.maxUses} toestellen.</p>
 <p>Vragen? Mail naar <a href="mailto:hallo@zetjes.nl">hallo@zetjes.nl</a>.</p>`;
 }
 
@@ -42,18 +46,25 @@ module.exports = async function handler(req, res) {
     const email = String(betaling.metadata?.email || '').trim().toLowerCase();
     if (!email) { console.error('mollie-webhook: geen e-mailadres in metadata', paymentId); return res.status(200).end(); }
 
+    const product = getProduct(String(betaling.metadata?.product || 'personal'));
+    if (!product) { console.error('mollie-webhook: onbekend product', betaling.metadata?.product, paymentId); return res.status(200).end(); }
+    if (betaling.amount?.value !== product.prijs) {
+      console.error('mollie-webhook: bedrag klopt niet', betaling.amount?.value, product.prijs, paymentId);
+      return res.status(200).end();
+    }
+
     const { data: tenant } = await supabase.from('tenants').select('id').eq('slug', 'personal').maybeSingle();
-    const { data: product } = await supabase.from('products').select('id').eq('slug', 'zetjes').maybeSingle();
+    const { data: productRij } = await supabase.from('products').select('id').eq('slug', 'zetjes').maybeSingle();
     if (!tenant) { console.error('mollie-webhook: tenant personal ontbreekt'); return res.status(500).end(); }
 
     const { data: invite, error } = await supabase.from('invites').insert({
       tenant_id: tenant.id,
-      product_id: product?.id || null,
-      context: 'ondernemen',
-      theme: 'ondernemen',
-      label: 'Zetjes | personal',
-      max_uses: 3,
-      expires_at: new Date(Date.now() + 365 * 86400000).toISOString(),
+      product_id: productRij?.id || null,
+      context: product.context,
+      theme: product.context,
+      label: product.label,
+      max_uses: product.maxUses,
+      expires_at: new Date(Date.now() + product.dagen * 86400000).toISOString(),
       mollie_payment_id: paymentId,
       koper_email: email,
     }).select('token').single();
@@ -68,7 +79,7 @@ module.exports = async function handler(req, res) {
 
     const link = `${appUrl(req)}/?token=${invite.token}`;
     try {
-      await stuurMail({ naar: email, onderwerp: 'Je Zetjes-link', html: mailHtml(link) });
+      await stuurMail({ naar: email, onderwerp: product.naam === 'rookvrij' ? 'Je volhoudassistent voor rookvrij' : 'Je Zetjes-link', html: mailHtml(link, product) });
     } catch (mailErr) {
       // Invite staat er al; Maarten kan de link handmatig doorsturen via het dashboard.
       console.error('mollie-webhook mail', mailErr.message, '| koper:', email, '| token:', invite.token);

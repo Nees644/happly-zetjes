@@ -353,6 +353,115 @@ offtopic: iets wat niets met het programma of met vastlopen te maken heeft (rece
     },
   },
 
+  rookvrij: {
+    naam: 'Rookvrij',
+    label: 'Zetjes Rookvrij',
+    taalniveau: 'B1',
+    faseweter: false,
+    ui: {
+      welkom: 'Trek, of even <em>lastig?</em>',
+      subtitel: 'Vertel wat er nu speelt. Je krijgt één zetje van een paar minuten.',
+      placeholder: 'Bijv: Ik zit na het eten op de bank en ik wil zo graag een sigaret...',
+      voorbeelden: [
+        'Na het eten krijg ik altijd zin in een sigaret...',
+        'Ik heb er vandaag toch één gerookt, nu denk ik: laat maar...',
+        'Mijn collega\'s gaan naar buiten om te roken en ik wil mee...',
+        'Ik ben zo prikkelbaar, ik weet niet of ik dit volhoud...',
+      ],
+      herkenningszinnen: [
+        'Je krijgt trek op het moment dat je vroeger altijd rookte.',
+        'Je hebt er toch één gerookt en nu denk je: dan maakt het ook niet meer uit.',
+        'Je bent prikkelbaar en moe, en je twijfelt of je dit volhoudt.',
+        'Iedereen om je heen rookt, en jij wil er gewoon bij horen.',
+      ],
+    },
+    blokkadetaal: {
+      energie: 'Ik ben op, ik heb er de kracht niet voor',
+      vertrouwen: 'Het lukt mij toch nooit om te stoppen',
+      weerstand: 'Ik wil eigenlijk gewoon roken',
+      overtuigingen: 'Eentje kan geen kwaad / Ik ben nu eenmaal een roker',
+    },
+    zetjeBibliotheek: {
+      toegestaan: ['een korte handeling die de trek overbrugt (lopen, water drinken, handen bezig houden, even van plek wisselen)', 'het als-dan-plan van de persoon zelf toepassen', 'de eigen reden om te stoppen terughalen', 'een gedachte anders bekijken', 'één zin voorbereiden voor iemand die een sigaret aanbiedt', 'na een misstap het alles-of-niets denken doorbreken'],
+      verboden: ['advies over nicotinevervangers, dosering, medicatie of bijwerkingen', 'minderen in plaats van stoppen voorstellen', 'e-sigaretten of andere nicotineproducten aanraden', 'gezondheidsrisico\'s of schrikbeelden inzetten'],
+    },
+    voorbeeldsituaties: ['trek na het eten', 'een misstap', 'rokende collega\'s of vrienden', 'stress en prikkelbaarheid'],
+    systemPromptExtra: `CONTEXT: STOPPEN MET ROKEN (ROOKVRIJ)
+De persoon is gestopt met roken, of staat op het punt om te stoppen. Vaak gebruikt de persoon nicotinepleisters of kauwgom, soms medicatie van de huisarts, soms begeleiding van een coach. Die hulp is gepland. Jij bent er op het moment zelf: als de trek komt, of als het even lastig is. Je bent geen coach, geen arts en geen apotheker. Volhouden is het doel, niet perfect zijn.
+
+TAAL: B1-niveau. Korte zinnen, gewone woorden. Zeg "je". Geen preken, geen schrikbeelden over gezondheid, geen schuld.
+
+TREK DUURT KORT
+Een golf van trek zakt meestal binnen een paar minuten weer weg. Een zetje helpt de persoon die minuten door. Daarom is de eerste stap altijd iets dat meteen kan en hooguit een paar minuten duurt.
+
+DE VIER BLOKKADES IN DE WOORDEN VAN STOPPERS
+- energie: "Ik ben op, ik heb de kracht er niet voor." Vaak bij moeheid, stress of prikkelbaarheid.
+- vertrouwen: "Het lukt mij toch nooit." Vaak na eerdere pogingen of na een misstap.
+- weerstand: "Ik wil eigenlijk gewoon roken." Of: anderen willen dat ik stop, ik zelf niet echt.
+- overtuigingen: "Eentje kan geen kwaad." of "Ik ben nu eenmaal een roker."
+
+LASTIGE MOMENTEN
+- vaste momenten: na het eten, bij de koffie, in de auto, met een drankje. Zetje: het als-dan-plan van de persoon gebruiken of meteen iets anders met de handen doen.
+- misstap: er toch één gerookt. Zetje: normaliseren en meteen weer doorgaan. Eén sigaret is geen terugval, tenzij je hem daar zelf van maakt. Nooit: "dan kun je net zo goed".
+- sociaal: anderen roken of bieden een sigaret aan. Zetje: één korte zin om nee te zeggen, of even een andere plek.
+- stress: spanning, ruzie, slecht nieuws. Zetje: eerst rust en adem, dan pas beslissen.
+
+ZETJE-BIBLIOTHEEK
+Wel: een korte handeling die de trek overbrugt (een paar minuten lopen, een glas water, iets met de handen doen, van plek wisselen), het eigen als-dan-plan, de eigen reden terughalen, een gedachte anders bekijken, één zin voorbereiden om nee te zeggen.
+Niet: advies over pleisters, kauwgom, dosering, medicatie of bijwerkingen. Geen minderen als alternatief voor stoppen. Geen e-sigaret of ander nicotineproduct aanraden. Geen gezondheidsrisico's of schrikbeelden.
+
+POORTWACHTER (HARD)
+Je zegt nooit iets over nicotinevervangers, medicatie, dosering, bijwerkingen of klachten, ook niet als de persoon erom vraagt. Verwijs dan vriendelijk naar de bijsluiter, de apotheek of de huisarts, en ga terug naar wat de persoon nu tegenhoudt. Wie hulp bij stoppen wil: die is gratis via de huisarts of via ikstopnu.nl (0800-1995). Bij signalen van zware somberheid: verwijs warm door naar de huisarts. Bij acute nood: 113 (gratis, 24 uur per dag, ook via 0800-0113) of 112.`,
+    poortwachter: {
+      beschrijving: `Context: iemand die stopt of gestopt is met roken vertelt waar hij of zij vastloopt.
+ok: trek, zin in een sigaret, een misstap, stress, prikkelbaarheid, rokende mensen in de buurt, twijfel of het lukt, moeite om vol te houden. Ook als pleisters of kauwgom genoemd worden, zolang de vraag niet om advies daarover gaat.
+medisch: de persoon vraagt om advies over nicotinevervangers, pleisters, kauwgom, medicatie, dosering, bijwerkingen, klachten of ontwenningsverschijnselen die zorgen baren.
+mentaal: signalen van zware somberheid of angst, zonder acuut gevaar.
+crisis: gedachten aan zelfdoding, zelfbeschadiging of acuut gevaar.
+offtopic: iets wat niets met stoppen met roken of met vastlopen te maken heeft.`,
+      categorieen: ['ok', 'medisch', 'mentaal', 'crisis', 'offtopic'],
+      teksten: {
+        medisch: 'Daar kan ik je niet mee helpen. Kijk in de bijsluiter of vraag het je apotheek of huisarts. Wat maakt het nu lastig om rookvrij te blijven?',
+        mentaal: 'Dit klinkt zwaar. Praat hierover met je huisarts, die kan je echt helpen. Gratis hulp bij stoppen krijg je ook via ikstopnu.nl (0800-1995). Wil je toch een zetje? Vertel wat er nu speelt.',
+        crisis: 'Het klinkt alsof het nu echt niet goed met je gaat. Zetjes is daar niet voor. Bel 113 (gratis, 24 uur per dag, ook via 0800-0113) of chat via 113.nl. Is er direct gevaar? Bel 112.',
+        offtopic: 'Zetjes helpt je rookvrij te blijven op de momenten dat het lastig is. Wat speelt er nu?',
+      },
+    },
+    scan: {
+      goalPrompt: 'Wat is je doel? Bijvoorbeeld: rookvrij blijven vanaf mijn stopdag.',
+      whenPrompt: 'Wat is je stopdag, of wanneer ben je gestopt?',
+      hardPrompt: 'Wat is je lastigste moment om niet te roken?',
+      openPrompt: 'Maak je als-dan-plan af: "Als ik ... trek krijg, dan ga ik ..."',
+      items: [
+        { block: 'energie', z: 'zelfreflectie', text: 'Als ik moe of gestrest ben, voelt een sigaret als het enige dat helpt.' },
+        { block: 'energie', z: 'zelfregie', text: 'Na een zware dag heb ik geen kracht meer om de trek te weerstaan.' },
+        { block: 'energie', z: 'zelfstarten', text: 'Als ik slecht geslapen heb, is de kans groot dat ik toch rook.' },
+        { block: 'vertrouwen', z: 'zelfreflectie', text: 'Ik heb het al eerder geprobeerd en ik denk dat het mij nu ook niet lukt.' },
+        { block: 'vertrouwen', z: 'zelfregie', text: 'Als ik er één gerookt heb, denk ik: nu is het toch al mislukt.' },
+        { block: 'vertrouwen', z: 'zelfstarten', text: 'Ik stel mijn stopdag uit tot ik zeker weet dat het gaat lukken.' },
+        { block: 'weerstand', z: 'zelfreflectie', text: 'Eigenlijk stop ik vooral omdat anderen dat van mij willen.' },
+        { block: 'weerstand', z: 'zelfregie', text: 'Als anderen gaan roken, wil ik gewoon mee.' },
+        { block: 'weerstand', z: 'zelfstarten', text: 'Een sigaret is voor mij een moment voor mezelf dat ik niet wil missen.' },
+        { block: 'overtuigingen', z: 'zelfreflectie', text: 'Ik denk dat één sigaret af en toe geen kwaad kan.' },
+        { block: 'overtuigingen', z: 'zelfregie', text: 'Ik ben nu eenmaal een roker, dat zit in mij.' },
+        { block: 'overtuigingen', z: 'zelfstarten', text: 'Ik wacht op een rustiger periode om echt te stoppen.' },
+      ],
+      phrases: {
+        energie: { kracht: 'houdt het vol, ook als je moe bent', valkuil: 'grijpt naar een sigaret als je op bent' },
+        vertrouwen: { kracht: 'gelooft dat het je lukt', valkuil: 'denkt na één misstap dat het mislukt is' },
+        weerstand: { kracht: 'stopt omdat je het zelf wil', valkuil: 'mist het rookmoment en wil eigenlijk mee' },
+        overtuigingen: { kracht: 'weet goed waarom je stopt', valkuil: 'denkt dat eentje af en toe geen kwaad kan' },
+      },
+      alineas: {
+        energie: 'Je grootste valkuil is dat je naar een sigaret grijpt als je moe of gestrest bent. Dat is heel normaal: roken was jouw manier om even op adem te komen. Zoek voor die momenten iets anders dat je rust geeft, en houd het klein.',
+        vertrouwen: 'Je grootste valkuil is dat je na een misstap denkt dat het mislukt is. Eén sigaret is geen terugval. Wat telt is wat je daarna doet: gewoon weer doorgaan.',
+        weerstand: 'Je grootste valkuil is dat je het rookmoment mist. Een sigaret was ook een pauze, of samen zijn met anderen. Houd dat moment, maar vul het anders in.',
+        overtuigingen: 'Je grootste valkuil is de gedachte dat eentje geen kwaad kan. Die gedachte komt vaak precies als de trek komt. Ga dan terug naar je eigen reden om te stoppen.',
+        balans: 'Er is nu geen duidelijke grootste valkuil. Dat is goed nieuws: op dit moment houdt niets je structureel tegen.',
+      },
+    },
+  },
+
   sales: { fallback: 'werk' },
   managers: { fallback: 'werk' },
 };

@@ -12,6 +12,7 @@ const DREMPEL = 3.5;
 // nog niet als context (aparte briefing 13); alvast opgenomen.
 const CONTEXT_STANDAARD = {
   gli: 'overtuigingen',
+  rookvrij: 'overtuigingen',
   voornemen: 'energie',
   werk: 'weerstand',
   ondernemen: 'weerstand',
@@ -162,6 +163,11 @@ function profielBlokTekst(ctx, profile) {
   if (!profile) return '';
   const parts = [`PROFIEL UIT DE DOELSCAN (richt het zetje hierop; wat de persoon nu typt blijft leidend voor de situatie zelf).`];
   if (profile.goal_text) parts.push(`Doel van deze persoon: ${profile.goal_text}`);
+  if (ctx.key === 'rookvrij') {
+    if (profile.goal_when) parts.push(`Stopdag: ${profile.goal_when}`);
+    if (profile.goal_hard) parts.push(`Lastigste moment volgens deze persoon: ${profile.goal_hard}`);
+    if (profile.first_step) parts.push(`Eigen als-dan-plan: ${profile.first_step}. Gebruik dit plan als het bij het moment past.`);
+  }
   const toon = PROFIEL_TOON[profile.main_block];
   if (toon) parts.push(`Hoofdvalkuil: ${profile.main_block}. ${toon}`);
   const krachtZin = ctx.scan?.phrases?.[profile.strength]?.kracht;

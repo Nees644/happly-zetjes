@@ -1,14 +1,13 @@
 // api/checkout.js
-// POST /api/checkout { email }
-// Maakt een Mollie-betaling aan voor Zetjes | personal (€79 per jaar) en
-// stuurt de betaalpagina terug. Het e-mailadres gaat mee als metadata, niet
+// POST /api/checkout { email, product? }
+// Maakt een Mollie-betaling aan (standaard Zetjes | personal, €79 per jaar;
+// product 'rookvrij': Zetjes Rookvrij, €19,95 voor 3 maanden) en stuurt de
+// betaalpagina terug. Prijzen staan in _lib/producten.js. Het e-mailadres gaat mee als metadata, niet
 // in de URL. De invite zelf wordt pas aangemaakt door de webhook, na
 // bevestigde betaling (api/mollie-webhook.js).
 
 const { maakBetaling } = require('./_lib/mollie');
-
-const PRIJS = '79.00';
-const OMSCHRIJVING = 'Zetjes | personal jaarabonnement';
+const { getProduct } = require('./_lib/producten');
 
 function cors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -33,14 +32,16 @@ module.exports = async function handler(req, res) {
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     return res.status(400).json({ error: 'Vul een geldig e-mailadres in' });
   }
+  const product = getProduct(String(req.body?.product || 'personal'));
+  if (!product) return res.status(400).json({ error: 'Onbekend product' });
 
   try {
     const betaling = await maakBetaling({
-      bedrag: PRIJS,
-      omschrijving: OMSCHRIJVING,
+      bedrag: product.prijs,
+      omschrijving: product.omschrijving,
       redirectUrl: `${appUrl(req)}/bedankt.html`,
       webhookUrl: `${appUrl(req)}/api/mollie-webhook`,
-      metadata: { email },
+      metadata: { email, product: product.naam },
     });
     if (!betaling.checkoutUrl) throw new Error('Geen betaalpagina ontvangen van Mollie');
     return res.status(200).json({ checkoutUrl: betaling.checkoutUrl });
