@@ -9,7 +9,10 @@ const { AnthropicBedrock } = require('@anthropic-ai/bedrock-sdk');
 // Zonder die sleutels blijft de oude route via de Claude API werken.
 // Eén sleutel volstaat: BEDROCK_API_KEY (aangemaakt in Bedrock onder API keys).
 // Een sleutelpaar (BEDROCK_ACCESS_KEY_ID en BEDROCK_SECRET_ACCESS_KEY) mag ook.
-const OP_BEDROCK = Boolean(
+// Tijdelijk uit: het AWS-account wordt nog geverifieerd (8 oktober 2026).
+// Zet op true zodra Bedrock de modellen vrijgeeft.
+const BEDROCK_AAN = false;
+const OP_BEDROCK = BEDROCK_AAN && Boolean(
   process.env.BEDROCK_API_KEY || (process.env.BEDROCK_ACCESS_KEY_ID && process.env.BEDROCK_SECRET_ACCESS_KEY)
 );
 
