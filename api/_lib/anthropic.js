@@ -1,36 +1,66 @@
 // api/_lib/anthropic.js
 // Aanroep van Claude met gestructureerde JSON-uitvoer en prompt caching.
+//
+// Route: eerst AWS Bedrock in Frankfurt met het EU-profiel, zodat de
+// verwerking in Europa blijft. Weigert Bedrock (account nog niet vrijgegeven,
+// model niet beschikbaar, storing), dan gaat die ene aanroep via de Claude API
+// en slaan we Bedrock een paar minuten over. Zodra AWS vrijgeeft, loopt alles
+// vanzelf via Frankfurt. In het logboek staat per aanroep via welke route.
+//
+// Sleutel: BEDROCK_API_KEY (Bedrock, API keys). Een sleutelpaar
+// (BEDROCK_ACCESS_KEY_ID en BEDROCK_SECRET_ACCESS_KEY) mag ook.
 
 const Anthropic = require('@anthropic-ai/sdk');
 const { AnthropicBedrock } = require('@anthropic-ai/bedrock-sdk');
 
-// Staan de Bedrock-sleutels in Vercel, dan loopt elke aanroep via AWS Bedrock
-// in Frankfurt met het EU-profiel: de verwerking blijft in Europa.
-// Zonder die sleutels blijft de oude route via de Claude API werken.
-// Eén sleutel volstaat: BEDROCK_API_KEY (aangemaakt in Bedrock onder API keys).
-// Een sleutelpaar (BEDROCK_ACCESS_KEY_ID en BEDROCK_SECRET_ACCESS_KEY) mag ook.
-// Tijdelijk uit: het AWS-account wordt nog geverifieerd (8 oktober 2026).
-// Zet op true zodra Bedrock de modellen vrijgeeft.
-const BEDROCK_AAN = false;
-const OP_BEDROCK = BEDROCK_AAN && Boolean(
+// Zelfde model als waarop de prompts zijn afgestemd; alleen de route verschilt.
+const MODEL = 'claude-sonnet-5';
+const MODEL_EU = 'eu.anthropic.claude-sonnet-5';
+const PAUZE_NA_WEIGERING_MS = 5 * 60 * 1000;
+
+const HEEFT_BEDROCK = Boolean(
   process.env.BEDROCK_API_KEY || (process.env.BEDROCK_ACCESS_KEY_ID && process.env.BEDROCK_SECRET_ACCESS_KEY)
 );
 
-// Zelfde model als waarop de prompts zijn afgestemd (Sonnet 5); alleen de route is EU.
-const MODEL = OP_BEDROCK ? 'eu.anthropic.claude-sonnet-5' : 'claude-sonnet-5';
-const client = OP_BEDROCK
+const bedrock = HEEFT_BEDROCK
   ? new AnthropicBedrock({
       awsRegion: process.env.BEDROCK_REGION || 'eu-central-1',
       ...(process.env.BEDROCK_API_KEY ? { apiKey: process.env.BEDROCK_API_KEY } : {}),
       awsAccessKey: process.env.BEDROCK_ACCESS_KEY_ID || null,
       awsSecretKey: process.env.BEDROCK_SECRET_ACCESS_KEY || null,
+      maxRetries: 0,
     })
-  : new Anthropic({ apiKey: process.env.ANTHROPIC_KEY || undefined });
+  : null;
+const direct = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY || undefined });
+
+let bedrockPauzeTot = 0;
+
+function bedrockNu() {
+  return Boolean(bedrock) && Date.now() >= bedrockPauzeTot;
+}
+
+// Probeert Bedrock; bij een weigering of storing de Claude API. Geeft de route terug.
+async function maakBericht(params, label) {
+  if (bedrockNu()) {
+    try {
+      const response = await bedrock.messages.create({ ...params, model: MODEL_EU });
+      return { response, via: 'bedrock-eu' };
+    } catch (err) {
+      bedrockPauzeTot = Date.now() + PAUZE_NA_WEIGERING_MS;
+      // Alleen status en het begin van de melding van AWS, nooit inhoud van de gebruiker.
+      console.log(JSON.stringify({
+        call: label, bedrock_geweigerd: err?.status || 'fout',
+        reden: String(err?.message || '').slice(0, 120),
+      }));
+    }
+  }
+  const response = await direct.messages.create({ ...params, model: MODEL });
+  return { response, via: 'claude-api' };
+}
 
 // system: [{ text, cache: true|false }]; het laatste gecachete blok krijgt het breekpunt.
 async function jsonCall({ system, user, schema, maxTokens = 4000, thinking = true, effort = 'medium', label }) {
-  const response = await client.messages.create({
-    model: MODEL,
+  const { response, via } = await maakBericht({
     max_tokens: maxTokens,
     ...(thinking ? {} : { thinking: { type: 'disabled' } }),
     output_config: {
@@ -43,12 +73,12 @@ async function jsonCall({ system, user, schema, maxTokens = 4000, thinking = tru
       ...(b.cache ? { cache_control: { type: 'ephemeral' } } : {}),
     })),
     messages: [{ role: 'user', content: user }],
-  });
+  }, label);
 
   const u = response.usage || {};
   // Alleen tellingen loggen, nooit inhoud.
   console.log(JSON.stringify({
-    call: label, via: OP_BEDROCK ? 'bedrock-eu' : 'claude-api', stop: response.stop_reason,
+    call: label, via, stop: response.stop_reason,
     input: u.input_tokens, cache_write: u.cache_creation_input_tokens, cache_read: u.cache_read_input_tokens,
     output: u.output_tokens,
   }));
@@ -59,4 +89,4 @@ async function jsonCall({ system, user, schema, maxTokens = 4000, thinking = tru
   return { data: JSON.parse(text), usage: u };
 }
 
-module.exports = { jsonCall, MODEL, OP_BEDROCK, Anthropic };
+module.exports = { jsonCall, MODEL, MODEL_EU, Anthropic };
