@@ -13,7 +13,8 @@ const OP_BEDROCK = Boolean(
   process.env.BEDROCK_API_KEY || (process.env.BEDROCK_ACCESS_KEY_ID && process.env.BEDROCK_SECRET_ACCESS_KEY)
 );
 
-const MODEL = OP_BEDROCK ? 'eu.anthropic.claude-sonnet-5-5' : 'claude-sonnet-5-5';
+// Zelfde model als waarop de prompts zijn afgestemd (Sonnet 5); alleen de route is EU.
+const MODEL = OP_BEDROCK ? 'eu.anthropic.claude-sonnet-5' : 'claude-sonnet-5';
 const client = OP_BEDROCK
   ? new AnthropicBedrock({
       awsRegion: process.env.BEDROCK_REGION || 'eu-central-1',
