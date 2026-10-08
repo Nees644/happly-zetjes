@@ -7,15 +7,19 @@ const { AnthropicBedrock } = require('@anthropic-ai/bedrock-sdk');
 // Staan de Bedrock-sleutels in Vercel, dan loopt elke aanroep via AWS Bedrock
 // in Frankfurt met het EU-profiel: de verwerking blijft in Europa.
 // Zonder die sleutels blijft de oude route via de Claude API werken.
-// Eigen namen (BEDROCK_*), omdat Vercel de AWS_*-namen zelf gebruikt.
-const OP_BEDROCK = Boolean(process.env.BEDROCK_ACCESS_KEY_ID && process.env.BEDROCK_SECRET_ACCESS_KEY);
+// Eén sleutel volstaat: BEDROCK_API_KEY (aangemaakt in Bedrock onder API keys).
+// Een sleutelpaar (BEDROCK_ACCESS_KEY_ID en BEDROCK_SECRET_ACCESS_KEY) mag ook.
+const OP_BEDROCK = Boolean(
+  process.env.BEDROCK_API_KEY || (process.env.BEDROCK_ACCESS_KEY_ID && process.env.BEDROCK_SECRET_ACCESS_KEY)
+);
 
 const MODEL = OP_BEDROCK ? 'eu.anthropic.claude-sonnet-5-5' : 'claude-sonnet-5-5';
 const client = OP_BEDROCK
   ? new AnthropicBedrock({
       awsRegion: process.env.BEDROCK_REGION || 'eu-central-1',
-      awsAccessKey: process.env.BEDROCK_ACCESS_KEY_ID,
-      awsSecretKey: process.env.BEDROCK_SECRET_ACCESS_KEY,
+      ...(process.env.BEDROCK_API_KEY ? { apiKey: process.env.BEDROCK_API_KEY } : {}),
+      awsAccessKey: process.env.BEDROCK_ACCESS_KEY_ID || null,
+      awsSecretKey: process.env.BEDROCK_SECRET_ACCESS_KEY || null,
     })
   : new Anthropic({ apiKey: process.env.ANTHROPIC_KEY || undefined });
 
