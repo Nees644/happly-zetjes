@@ -2,9 +2,22 @@
 // Aanroep van Claude met gestructureerde JSON-uitvoer en prompt caching.
 
 const Anthropic = require('@anthropic-ai/sdk');
+const { AnthropicBedrock } = require('@anthropic-ai/bedrock-sdk');
 
-const MODEL = 'claude-sonnet-5';
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY || undefined });
+// Staan de Bedrock-sleutels in Vercel, dan loopt elke aanroep via AWS Bedrock
+// in Frankfurt met het EU-profiel: de verwerking blijft in Europa.
+// Zonder die sleutels blijft de oude route via de Claude API werken.
+// Eigen namen (BEDROCK_*), omdat Vercel de AWS_*-namen zelf gebruikt.
+const OP_BEDROCK = Boolean(process.env.BEDROCK_ACCESS_KEY_ID && process.env.BEDROCK_SECRET_ACCESS_KEY);
+
+const MODEL = OP_BEDROCK ? 'eu.anthropic.claude-sonnet-5-5' : 'claude-sonnet-5-5';
+const client = OP_BEDROCK
+  ? new AnthropicBedrock({
+      awsRegion: process.env.BEDROCK_REGION || 'eu-central-1',
+      awsAccessKey: process.env.BEDROCK_ACCESS_KEY_ID,
+      awsSecretKey: process.env.BEDROCK_SECRET_ACCESS_KEY,
+    })
+  : new Anthropic({ apiKey: process.env.ANTHROPIC_KEY || undefined });
 
 // system: [{ text, cache: true|false }]; het laatste gecachete blok krijgt het breekpunt.
 async function jsonCall({ system, user, schema, maxTokens = 4000, thinking = true, effort = 'medium', label }) {
@@ -27,7 +40,7 @@ async function jsonCall({ system, user, schema, maxTokens = 4000, thinking = tru
   const u = response.usage || {};
   // Alleen tellingen loggen, nooit inhoud.
   console.log(JSON.stringify({
-    call: label, stop: response.stop_reason,
+    call: label, via: OP_BEDROCK ? 'bedrock-eu' : 'claude-api', stop: response.stop_reason,
     input: u.input_tokens, cache_write: u.cache_creation_input_tokens, cache_read: u.cache_read_input_tokens,
     output: u.output_tokens,
   }));
@@ -38,4 +51,4 @@ async function jsonCall({ system, user, schema, maxTokens = 4000, thinking = tru
   return { data: JSON.parse(text), usage: u };
 }
 
-module.exports = { jsonCall, MODEL, Anthropic };
+module.exports = { jsonCall, MODEL, OP_BEDROCK, Anthropic };
