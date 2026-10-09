@@ -14,8 +14,8 @@ const Anthropic = require('@anthropic-ai/sdk');
 const { AnthropicBedrock } = require('@anthropic-ai/bedrock-sdk');
 
 // Zelfde model als waarop de prompts zijn afgestemd; alleen de route verschilt.
-const MODEL = 'claude-sonnet-5';
-const MODEL_EU = 'eu.anthropic.claude-sonnet-5';
+const MODEL = 'claude-sonnet-5-5';
+const MODEL_EU = 'eu.anthropic.claude-sonnet-5-5';
 const PAUZE_NA_WEIGERING_MS = 5 * 60 * 1000;
 
 const HEEFT_BEDROCK = Boolean(
