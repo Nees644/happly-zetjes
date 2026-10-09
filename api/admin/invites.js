@@ -2,6 +2,10 @@
 // POST /api/admin/invites { tenantSlug, productSlug, count, appUrl }
 
 import { createClient } from '@supabase/supabase-js';
+import crypto from 'crypto';
+import access from '../_lib/access.js';
+
+const { cors } = access;
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -9,13 +13,16 @@ const supabase = createClient(
 );
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-key');
+  cors(res, req, { methods: 'POST, GET, OPTIONS', headers: 'Content-Type, x-admin-key' });
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const adminKey = req.headers['x-admin-key'] || req.body?.adminKey;
-  if (adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  // Zonder ingestelde sleutel staat beheer dicht, niet open.
+  const verwacht = process.env.ADMIN_KEY;
+  if (!verwacht) return res.status(503).json({ error: 'Beheer niet geconfigureerd' });
+  const adminKey = String(req.headers['x-admin-key'] || req.body?.adminKey || '');
+  const a = crypto.createHash('sha256').update(adminKey).digest();
+  const b = crypto.createHash('sha256').update(verwacht).digest();
+  if (!crypto.timingSafeEqual(a, b)) return res.status(401).json({ error: 'Unauthorized' });
 
   if (req.method === 'POST') {
     const { tenantSlug, productSlug = 'zetjes', count = 1, appUrl } = req.body || {};

@@ -15,7 +15,7 @@ const PRODUCTEN = {
   },
   rookvrij: {
     prijs: '19.95',
-    omschrijving: 'Zetjes Rookvrij, 3 maanden',
+    omschrijving: 'Zetjes, 3 maanden', // neutraal: staat op het bankafschrift
     context: 'rookvrij',
     label: 'Zetjes Rookvrij',
     maxUses: 2,

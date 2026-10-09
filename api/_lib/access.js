@@ -13,10 +13,28 @@ const { getContext, phaseFor } = require('./contexts');
 
 const ANON_RE = /^anon_[a-f0-9]{16,32}$/;
 
-function cors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+// Alleen eigen domeinen mogen de API vanuit een browser aanroepen.
+// Aanvullen zonder codewijziging: CORS_ORIGINS in Vercel, komma-gescheiden.
+const STANDAARD_ORIGINS = [
+  'https://happly-zetjes.vercel.app', 'https://zetjes.nl', 'https://www.zetjes.nl',
+  'https://happly.nl', 'https://www.happly.nl', 'https://scan.happly.nl', 'https://app.switchr.me',
+];
+function toegestaneOrigins() {
+  const extra = (process.env.CORS_ORIGINS || '').split(',').map((o) => o.trim()).filter(Boolean);
+  return new Set([...STANDAARD_ORIGINS, ...extra]);
+}
+
+function cors(res, req, { methods = 'POST, OPTIONS', headers = 'Content-Type' } = {}) {
+  const origin = req?.headers?.origin;
+  res.setHeader('Vary', 'Origin');
+  if (origin && toegestaneOrigins().has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else if (origin) {
+    // Alleen het domein loggen, geen inhoud: zo zien we of een eigen site ontbreekt.
+    console.log(JSON.stringify({ cors_geweigerd: origin }));
+  }
+  res.setHeader('Access-Control-Allow-Methods', methods);
+  res.setHeader('Access-Control-Allow-Headers', headers);
 }
 
 function newAnonId() {

@@ -12,10 +12,9 @@ const { resolveAccess, sendAccessError } = require('./_lib/access');
 const { hermetingItems, scoreHermeting } = require('./_lib/scan-engine');
 
 // access.js z'n cors() staat vast op POST; deze route heeft ook GET nodig (de cron).
-function cors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+const { cors: corsBasis } = require('./_lib/access');
+function cors(res, req) {
+  corsBasis(res, req, { methods: 'GET, POST, OPTIONS', headers: 'Content-Type, Authorization' });
 }
 
 const DAG30_MS = 30 * 24 * 60 * 60 * 1000;
@@ -24,7 +23,8 @@ const PROGRESS = ['ja', 'beetje', 'nee'];
 
 function isCron(req) {
   const secret = process.env.CRON_SECRET;
-  if (!secret) { console.warn('remeasure: CRON_SECRET niet gezet, cron-aanroep niet beveiligd'); return true; }
+  // Zonder geheim weigeren: anders kan iedereen de dagelijkse taak starten.
+  if (!secret) { console.error('remeasure: CRON_SECRET niet gezet, cron-aanroep geweigerd'); return false; }
   return req.headers.authorization === `Bearer ${secret}`;
 }
 
@@ -138,7 +138,7 @@ async function handlePost(req, res) {
 }
 
 module.exports = async function handler(req, res) {
-  cors(res);
+  cors(res, req);
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method === 'GET') return handleCron(req, res);
   if (req.method === 'POST') return handlePost(req, res);

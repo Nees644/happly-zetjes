@@ -82,7 +82,8 @@ module.exports = async function handler(req, res) {
       await stuurMail({ naar: email, onderwerp: product.naam === 'rookvrij' ? 'Je volhoudassistent voor rookvrij' : 'Je Zetjes-link', html: mailHtml(link, product) });
     } catch (mailErr) {
       // Invite staat er al; Maarten kan de link handmatig doorsturen via het dashboard.
-      console.error('mollie-webhook mail', mailErr.message, '| koper:', email, '| token:', invite.token);
+      // Geen e-mailadres of token in de log: wie de log leest, kan anders het account openen.
+      console.error('mollie-webhook mail', mailErr.message, '| invite:', invite.id, '| betaling:', paymentId);
     }
 
     return res.status(200).end();

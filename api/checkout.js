@@ -9,10 +9,9 @@
 const { maakBetaling } = require('./_lib/mollie');
 const { getProduct } = require('./_lib/producten');
 
-function cors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+const { cors: corsBasis } = require('./_lib/access');
+function cors(res, req) {
+  corsBasis(res, req, { methods: 'POST, OPTIONS', headers: 'Content-Type' });
 }
 
 // Bij voorkeur het adres waar dit verzoek zelf binnenkwam (klopt dan ook op
@@ -24,7 +23,7 @@ function appUrl(req) {
 }
 
 module.exports = async function handler(req, res) {
-  cors(res);
+  cors(res, req);
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
 

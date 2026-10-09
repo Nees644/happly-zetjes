@@ -34,10 +34,9 @@ const ZETJE_SCHEMA = {
   additionalProperties: false,
 };
 
-function cors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+const { cors: corsBasis } = require('./_lib/access');
+function cors(res, req) {
+  corsBasis(res, req, { methods: 'POST, OPTIONS', headers: 'Content-Type' });
 }
 
 function schoon(t, max = MAX_INPUT) {
@@ -207,7 +206,7 @@ async function handleLead(req, res, tenant) {
 }
 
 module.exports = async function handler(req, res) {
-  cors(res);
+  cors(res, req);
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
 
