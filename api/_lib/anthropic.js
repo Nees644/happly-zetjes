@@ -62,7 +62,7 @@ async function maakBericht(params, label) {
 async function jsonCall({ system, user, schema, maxTokens = 4000, thinking = true, effort = 'medium', label }) {
   const { response, via } = await maakBericht({
     max_tokens: maxTokens,
-    ...(thinking ? {} : { thinking: { type: 'disabled' } }),
+    ...(thinking ? {} : { thinking: { type: 'between_tools' } }),
     output_config: {
       ...(thinking ? { effort } : {}),
       format: { type: 'json_schema', schema },
