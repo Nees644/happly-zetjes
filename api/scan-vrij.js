@@ -142,6 +142,7 @@ async function handleZetje(req, res, tenant) {
   try {
     ({ data: z } = await jsonCall({
       label: 'zetje-vrij',
+      alleenEU: Boolean(ctx.alleenEU),
       system: [
         { text: staticSystem(ctx), cache: true },
         { text: `${profielBlok}\n\nTAAK NU: geef het eerste zetje bij dit doel. Geen verhelderingsvraag nodig.`, cache: false },
@@ -153,6 +154,7 @@ async function handleZetje(req, res, tenant) {
     }));
   } catch (err) {
     console.error('scan-vrij zetje', err.message);
+    if (err.code === 'eu_niet_beschikbaar') return res.status(503).json({ error: 'tijdelijk', reason: 'tijdelijk' });
     return res.status(500).json({ error: 'fout' });
   }
 
