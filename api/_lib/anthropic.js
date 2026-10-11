@@ -40,7 +40,22 @@ function bedrockNu() {
 }
 
 // Probeert Bedrock; bij een weigering of storing de Claude API. Geeft de route terug.
-async function maakBericht(params, label) {
+// alleenEU: geen terugval buiten Europa. Voor contexten met gezondheidsgegevens
+// (de GLI): weigert Bedrock, dan liever een foutmelding dan verwerking in de VS.
+async function maakBericht(params, label, alleenEU = false) {
+  if (alleenEU) {
+    if (!bedrock) throw Object.assign(new Error('EU-route niet ingesteld'), { code: 'eu_niet_beschikbaar' });
+    try {
+      const response = await bedrock.messages.create({ ...params, model: MODEL_EU });
+      return { response, via: 'bedrock-eu' };
+    } catch (err) {
+      console.log(JSON.stringify({
+        call: label, bedrock_geweigerd: err?.status || 'fout', alleen_eu: true,
+        reden: String(err?.message || '').slice(0, 120),
+      }));
+      throw Object.assign(new Error('EU-route weigert'), { code: 'eu_niet_beschikbaar' });
+    }
+  }
   if (bedrockNu()) {
     try {
       const response = await bedrock.messages.create({ ...params, model: MODEL_EU });
@@ -59,7 +74,7 @@ async function maakBericht(params, label) {
 }
 
 // system: [{ text, cache: true|false }]; het laatste gecachete blok krijgt het breekpunt.
-async function jsonCall({ system, user, schema, maxTokens = 4000, thinking = true, effort = 'medium', label }) {
+async function jsonCall({ system, user, schema, maxTokens = 4000, thinking = true, effort = 'medium', label, alleenEU = false }) {
   const { response, via } = await maakBericht({
     max_tokens: maxTokens,
     ...(thinking ? {} : { thinking: { type: 'between_tools' } }),
@@ -73,7 +88,7 @@ async function jsonCall({ system, user, schema, maxTokens = 4000, thinking = tru
       ...(b.cache ? { cache_control: { type: 'ephemeral' } } : {}),
     })),
     messages: [{ role: 'user', content: user }],
-  }, label);
+  }, label, alleenEU);
 
   const u = response.usage || {};
   // Alleen tellingen loggen, nooit inhoud.
