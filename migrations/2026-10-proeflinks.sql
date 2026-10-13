@@ -1,11 +1,17 @@
 -- ============================================================
 -- ZETJES — proeflinks voor de LinkedIn-post (oktober 2026)
 -- Maakt een tenant "Proef LinkedIn" en twee gedeelde proeflinks:
--- GLI en rookvrij. Elke link werkt voor maximaal 50 toestellen en
+-- GLI en rookvrij, en ruimt een verouderde controle op. Elke link werkt voor maximaal 50 toestellen en
 -- is 60 dagen geldig. Idempotent: vaker draaien maakt niets dubbel.
 -- ============================================================
 
 begin;
+
+-- De oude kolom "theme" heeft nog een controle uit de tijd voor de
+-- contextlaag. Die kent gli en rookvrij niet en blokkeert nieuwe links
+-- (en betaalde rookvrij-links via Mollie). De kolom zelf blijft staan.
+alter table invites  drop constraint if exists invites_theme_check;
+alter table sessions drop constraint if exists sessions_theme_check;
 
 insert into tenants (name, slug, type, contact_email)
 select 'Proef LinkedIn', 'proef-linkedin', 'overig', 'maarten@happly.nl'
