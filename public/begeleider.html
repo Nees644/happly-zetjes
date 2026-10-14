@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Je groep</title>
+<link rel="stylesheet" href="/reis.css">
+<style>
+  .shell { max-width: 560px; }
+  .tellers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .teller { background: var(--pink-l); border-radius: 12px; padding: 10px 8px; text-align: center; }
+  .teller b { display: block; font-family: 'Lora', serif; font-size: 22px; color: var(--pink); }
+  .teller span { font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-soft); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-soft); font-weight: 600; padding: 6px 4px; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 4px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .stippen { display: flex; gap: 4px; }
+  .stippen i { width: 10px; height: 10px; border-radius: 50%; background: var(--border); display: inline-block; }
+  .stippen i.aan { background: var(--ok); }
+  .stippen i.nu { background: var(--pink); box-shadow: 0 0 0 2px var(--pink-l); }
+  .bol { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .bol.groen { background: var(--ok); } .bol.grijs { background: #C9BFC6; } .bol.oranje { background: #E08A1E; }
+  .bol.geen { background: transparent; border: 1.5px dashed var(--border); }
+  .legenda { font-size: 12px; color: var(--text-soft); display: flex; gap: 14px; flex-wrap: wrap; }
+  .legenda span { display: inline-flex; align-items: center; gap: 5px; }
+  .link { background: #FDFAFB; border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 12px; font-size: 13px; word-break: break-all; }
+  .uitleg { font-size: 13px; color: var(--text-mid); line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="logo-wrap">
+      <img src="/happly-logo.png" alt="happly" class="happly-logo">
+      <span class="product-tag" id="programma">Je groep</span>
+    </div>
+    <div class="dagteller" id="dagteller" hidden></div>
+  </div>
+
+  <section class="pad" id="s-laden"><p class="hint">De groep wordt geladen.</p></section>
+
+  <section class="pad" id="s-groep" hidden>
+    <div class="art">
+      <h1>Je <em>groep.</em></h1>
+      <p id="intro"></p>
+    </div>
+
+    <div class="tellers" id="tellers"></div>
+
+    <table>
+      <thead><tr><th>#</th><th>Deelnemer</th><th>Stappen</th><th>Actief</th></tr></thead>
+      <tbody id="rijen"></tbody>
+    </table>
+    <p class="legenda">
+      <span><i class="bol groen"></i> afgelopen week</span>
+      <span><i class="bol grijs"></i> 7 tot 10 dagen stil</span>
+      <span><i class="bol oranje"></i> langer dan 10 dagen stil</span>
+      <span><i class="bol geen"></i> deelt geen voortgang</span>
+    </p>
+    <p class="uitleg">De zes stippen zijn de zes stappen van de reis: begonnen, scan, kaart, programma, Zetjes, hermeting. Je ziet hoe ver iemand is, nooit wat iemand invult of vraagt. Een deelnemer die geen voortgang deelt, staat er zonder naam en zonder kleur.</p>
+
+    <p class="hint" style="margin-top:6px">De groepslink voor nieuwe deelnemers:</p>
+    <div class="link" id="groepslink"></div>
+    <div class="knoppen">
+      <button class="btn-ghost" id="kopieer">Kopieer link</button>
+      <a class="btn-ghost" id="qr" target="_blank" rel="noopener">QR-code</a>
+    </div>
+  </section>
+
+  <section class="pad" id="s-fout" hidden>
+    <div class="art"><h1>Deze link kennen we <em>niet.</em></h1><p>Controleer of je de begeleiderslink helemaal hebt gekopieerd.</p></div>
+  </section>
+
+  <p class="voet">volhouden door Happly</p>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const token = params.get('groep') || location.pathname.split('/').filter(Boolean).pop() || '';
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const datum = (iso) => iso ? new Date(iso).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' }) : '';
+function toon(id) { for (const s of ['s-laden', 's-groep', 's-fout']) document.getElementById(s).hidden = (s !== id); }
+
+async function laad() {
+  if (!token) { toon('s-fout'); return; }
+  try {
+    const r = await fetch('/api/reis-begeleider?token=' + encodeURIComponent(token));
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.ok) { toon('s-fout'); return; }
+    teken(d); toon('s-groep');
+  } catch { toon('s-fout'); }
+}
+
+function teken(d) {
+  document.getElementById('programma').textContent = d.programma;
+  const dt = document.getElementById('dagteller');
+  if (d.dag != null && d.dag >= 1 && d.dag <= d.dagen) { dt.hidden = false; dt.innerHTML = `<small>dag</small>${d.dag} <span style="color:var(--text-soft);font-weight:400">van ${d.dagen}</span>`; }
+  else if (d.dag != null && d.dag < 1) { dt.hidden = false; dt.innerHTML = `<small>start over</small>${1 - d.dag} ${1 - d.dag === 1 ? 'dag' : 'dagen'}`; }
+  document.getElementById('intro').textContent = `${esc(d.programma)} van ${esc(d.aanbieder)}${d.start ? ', gestart op ' + datum(d.start) : ''}. ${d.actief ? '' : 'Deze groep is afgesloten.'}`;
+  const t = d.telling;
+  document.getElementById('tellers').innerHTML = [
+    ['deelnemers', t.deelnemers], ['scan gedaan', t.scan], ['kaart ingevuld', t.kaart],
+    ['met Zetjes', t.zetjes], ['hermeting', t.hermeting], ['stil', t.stil],
+  ].map(([l, n]) => `<div class="teller"><b>${n}</b><span>${l}</span></div>`).join('');
+  document.getElementById('rijen').innerHTML = d.deelnemers.map((p) => {
+    const stippen = [1, 2, 3, 4, 5, 6].map((s) => `<i class="${s < p.stap ? 'aan' : (s === p.stap ? 'nu' : '')}" title="stap ${s}"></i>`).join('');
+    const bol = p.signaal ? `<i class="bol ${p.kleur}"></i>` : `<i class="bol geen"></i>`;
+    return `<tr><td>${p.nummer}</td><td>${esc(p.voornaam)}</td><td><div class="stippen">${stippen}</div></td><td>${bol}</td></tr>`;
+  }).join('') || '<tr><td colspan="4" class="hint">Nog geen deelnemers. Deel de groepslink.</td></tr>';
+  document.getElementById('groepslink').textContent = d.groepslink;
+  document.getElementById('qr').href = 'https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=' + encodeURIComponent(d.groepslink);
+  document.getElementById('kopieer').onclick = async () => {
+    try { await navigator.clipboard.writeText(d.groepslink); document.getElementById('kopieer').textContent = 'Gekopieerd'; } catch {}
+  };
+}
+laad();
+</script>
+</body>
+</html>

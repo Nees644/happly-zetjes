@@ -68,6 +68,18 @@ Stand per stap (zie paragraaf 13 van de briefing):
   Open punt: er is nog geen context voor bewegen; een fit20-groep draait op
   context `werk` en toont dus werkvoorbeelden. Dat is inhoudswerk in
   `api/_lib/contexts.js`.
+- Stap 5, dagelijkse taken: `api/reis-taken.js` op de cron (vercel.json,
+  06.10 UTC, Bearer `CRON_SECRET`): startdagmail op dag 1, hermetingmail op
+  dag 66 (tot 72, eenmalig), het wekelijkse zetje per mail op de weekdag uit
+  vak 1 (`proactief_laatst_at` bewaakt één per week; de cron draait eenmaal
+  per dag, dus het zetje gaat 's ochtends en noemt het dagdeel).
+  `api/reis-instellingen.js` zet signaal en wekelijks zetje aan of uit; de
+  afmeldlink in de mail opent de reis op `#instellingen`.
+- Stap 6, de begeleider: `api/reis-begeleider.js` en `public/begeleider.html`
+  op `/groep/:begeleider_token`. Selecteert alleen voornaam, signaal_ok, stap
+  en laatste_activiteit; de test leest de broncode na op verboden tabellen en
+  kolommen. QR-code via api.qrserver.com (externe dienst; de groepslink is
+  toch bedoeld om te delen).
 
 ## Werkregels
 

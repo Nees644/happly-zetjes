@@ -93,7 +93,11 @@
       <h1>Je <em>gegevens.</em></h1>
       <p>Wat je hier aanzet of uitzet, gaat direct in.</p>
     </div>
-    <p class="hint">Instellingen wijzigen en je gegevens verwijderen komt in de volgende versie. Tot die tijd: mail <a href="mailto:hallo@happly.nl" style="color:var(--pink)">hallo@happly.nl</a>, dan regelen we het binnen een werkdag.</p>
+    <label class="vink"><input type="checkbox" id="inst-signaal"><span>Mijn begeleider mag zien hoe ver ik ben. Niet wat ik invul.</span></label>
+    <label class="vink"><input type="checkbox" id="inst-proactief"><span>Stuur me op mijn moment één keer per week een zetje per mail. Werkt alleen als op je kaart een dag en dagdeel staan.</span></label>
+    <p class="fout" id="inst-fout" hidden></p>
+    <p class="hint" id="inst-ok" hidden>Opgeslagen.</p>
+    <p class="hint">Je gegevens verwijderen (reis, kaart en Zetjes, alles in één keer) kan in Zetjes onder Mijn gegevens.</p>
     <button class="btn-ghost" id="inst-terug">Terug</button>
   </section>
 
@@ -137,7 +141,8 @@ async function laad() {
     }
     reis = d;
     teken();
-    toon('s-reis');
+    if (location.hash === '#instellingen') { toonInstellingen(); history.replaceState(null, '', location.pathname + location.search); }
+    else toon('s-reis');
   } catch { toon('s-fout'); }
 }
 
@@ -253,7 +258,25 @@ document.getElementById('kaartform').addEventListener('submit', async (e) => {
 document.getElementById('kaart-terug').onclick = () => toon('s-reis');
 document.getElementById('lees-terug').onclick = () => toon('s-reis');
 document.getElementById('lees-wijzig').onclick = vulKaart;
-document.getElementById('instellingen').onclick = (e) => { e.preventDefault(); toon('s-instellingen'); };
+function toonInstellingen() {
+  document.getElementById('inst-signaal').checked = !!reis.signaalOk;
+  document.getElementById('inst-proactief').checked = !!reis.proactiefOk;
+  document.getElementById('inst-ok').hidden = true; document.getElementById('inst-fout').hidden = true;
+  toon('s-instellingen');
+}
+async function bewaarInstelling(veld, waarde) {
+  const fout = document.getElementById('inst-fout'), ok = document.getElementById('inst-ok');
+  fout.hidden = true; ok.hidden = true;
+  try {
+    const r = await fetch('/api/reis-instellingen', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, [veld]: waarde }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.ok) throw new Error('fout');
+    reis.signaalOk = d.signaalOk; reis.proactiefOk = d.proactiefOk; ok.hidden = false;
+  } catch { fout.textContent = 'Opslaan lukte niet. Probeer het nog eens.'; fout.hidden = false; }
+}
+document.getElementById('inst-signaal').onchange = (e) => bewaarInstelling('signaalOk', e.target.checked);
+document.getElementById('inst-proactief').onchange = (e) => bewaarInstelling('proactiefOk', e.target.checked);
+document.getElementById('instellingen').onclick = (e) => { e.preventDefault(); toonInstellingen(); };
 document.getElementById('inst-terug').onclick = () => toon('s-reis');
 
 laad();

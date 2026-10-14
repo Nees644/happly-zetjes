@@ -47,7 +47,7 @@ function dagInReis(invite) {
 }
 
 const SELECT_REIS = 'id, invite_id, token, anon_id, voornaam, email, toestemming_at, signaal_ok, proactief_ok, stap, ' +
-  'scan_start_id, scan_start, scan_eind_id, scan_eind, laatste_activiteit, created_at, ' +
+  'scan_start_id, scan_start, scan_eind_id, scan_eind, laatste_activiteit, proactief_laatst_at, created_at, ' +
   'invites(id, token, tenant_id, context, label, programma_naam, start_date, interventie_start, expires_at, active, is_reis, begeleider_email, tenants(name, slug, contact_email))';
 
 async function laadReis(token) {

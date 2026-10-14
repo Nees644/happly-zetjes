@@ -11,6 +11,7 @@ process.env.APP_URL = 'https://zetjes.test';
 process.env.SCAN_URL = 'https://scan.test';
 process.env.ADMIN_KEY = 'geheim-admin';
 process.env.REIS_SCAN_SECRET = 'geheim-scan';
+process.env.CRON_SECRET = 'geheim-cron';
 
 const { installeer } = require('./nep-supabase');
 const db = installeer();
@@ -216,6 +217,68 @@ test('het kaartblok gebruikt de woorden van de kaart en niets anders', () => {
     assert.ok(blok.includes(w), `ontbreekt: ${w}`);
   }
   assert.equal(kaartBlokTekst(null, 5, 'x'), '');
+});
+
+test('begeleiderslijst: voortgang, nooit inhoud', async () => {
+  // De broncode zelf: geen verboden tabel of kolom in de route van de begeleider.
+  const bron = fs.readFileSync(path.join(__dirname, '..', 'api', 'reis-begeleider.js'), 'utf8');
+  const code = bron.replace(/\/\/.*$/gm, '');
+  for (const verboden of ["from('kaarten')", "from('sessions')", "from('session_messages')", 'scan_start', 'scan_eind', 'vak1', 'vak3', 'vak4', 'doel', 'email']) {
+    assert.ok(!code.includes(verboden), `reis-begeleider.js bevat ${verboden}`);
+  }
+  // Het antwoord: alleen de toegestane velden per deelnemer.
+  const r = await call('reis-begeleider', { method: 'GET', query: { token: groep.begeleider_token } });
+  assert.equal(r.status, 200);
+  assert.equal(r.telling.deelnemers, 2);
+  assert.ok(r.groepslink.endsWith('/start/' + groep.token));
+  for (const p of r.deelnemers) {
+    assert.deepEqual(Object.keys(p).sort(), ['kleur', 'nummer', 'signaal', 'stap', 'voornaam']);
+  }
+  const maarten = r.deelnemers[0];
+  assert.equal(maarten.voornaam, 'Maarten');
+  assert.equal(maarten.signaal, true);
+  assert.equal(maarten.kleur, 'groen');
+  const tweede = r.deelnemers[1];
+  assert.equal(tweede.voornaam, 'deelnemer', 'zonder signaal_ok geen voornaam');
+  assert.equal(tweede.kleur, null);
+  const fout = await call('reis-begeleider', { method: 'GET', query: { token: 'e'.repeat(32) } });
+  assert.equal(fout.status, 404);
+});
+
+test('instellingen: proactief uitzetten', async () => {
+  const reis = db.tabel('reizen')[0];
+  const r = await call('reis-instellingen', { body: { token: reis.token, proactiefOk: false } });
+  assert.equal(r.ok, true);
+  assert.equal(db.tabel('reizen')[0].proactief_ok, false);
+  const leeg = await call('reis-instellingen', { body: { token: reis.token } });
+  assert.equal(leeg.status, 400);
+  await call('reis-instellingen', { body: { token: reis.token, proactiefOk: true } });
+});
+
+test('dagelijkse taken: startdagmail en proactief zetje, en nooit twee keer', async () => {
+  const reis = db.tabel('reizen')[0];
+  // Kaart op de weekdag van vandaag zetten, zodat het proactieve zetje vandaag valt.
+  const d = new Date(); const weekdag = d.getDay() === 0 ? 7 : d.getDay();
+  const kaart = db.tabel('kaarten').find((k) => k.reis_id === reis.id && k.versie === 2);
+  Object.assign(kaart, { vak1_weekdag: weekdag, vak1_dagdeel: 'avond', vak1_moment: 'dinsdagavond', vak4_woorden: 'je kunt het' });
+  const voor = mails.length;
+  let r = await call('reis-taken', { method: 'GET', headers: { authorization: 'Bearer geheim-cron' } });
+  assert.equal(r.status, 200);
+  assert.equal(r.startdag, 2, 'dag 1 is vandaag: startdagmail voor beide deelnemers');
+  assert.equal(r.proactief, 1, 'kaart staat op vandaag: proactief zetje');
+  assert.equal(r.dag66, 0);
+  assert.equal(mails.length, voor + 3);
+  const onderwerpen = mails.slice(voor).map((m) => m.onderwerp);
+  assert.ok(onderwerpen.includes('Vandaag begint het'));
+  assert.ok(onderwerpen.some((o) => o.startsWith('Maarten, als het regent')));
+  const zetje = mails.slice(voor).find((m) => m.onderwerp.startsWith('Maarten, als'));
+  assert.ok(zetje.html.includes('schoenen aan') && zetje.html.includes('je kunt het') && zetje.html.includes('Niet meer sturen'));
+  // Tweede run dezelfde dag: niets.
+  r = await call('reis-taken', { method: 'GET', headers: { authorization: 'Bearer geheim-cron' } });
+  assert.equal(r.startdag + r.proactief + r.dag66, 0);
+  assert.equal(mails.length, voor + 3);
+  const geweigerd = await call('reis-taken', { method: 'GET', headers: { authorization: 'Bearer fout' } });
+  assert.equal(geweigerd.status, 401);
 });
 
 test('verwijderen haalt ook de reis en de kaarten weg', async () => {
