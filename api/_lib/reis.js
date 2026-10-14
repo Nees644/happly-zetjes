@@ -143,7 +143,7 @@ function kaartBlokTekst(kaart, dag, voornaam) {
   if (voornaam) r.push(`Voornaam: ${voornaam}`);
   if (kaart.doel) r.push(`Doel: ${kaart.doel}`);
   const moment = [kaart.vak1_moment, kaart.vak1_weekdag ? `${WEEKDAGEN[kaart.vak1_weekdag]}${kaart.vak1_dagdeel ? ', ' + kaart.vak1_dagdeel : ''}` : null].filter(Boolean).join('; ');
-  if (moment) r.push(`Wanneer het misgaat: ${moment}`);
+  if (moment) r.push(`Moeilijk moment: ${moment}`);
   if (kaart.vak1_zin) r.push(`Wat hij dan tegen zichzelf zegt: "${kaart.vak1_zin}"`);
   if (kaart.vak2_inrichting) r.push(`Wat hij anders heeft ingericht: ${kaart.vak2_inrichting}`);
   if (kaart.vak3_als && kaart.vak3_dan) r.push(`Zijn plan: als ${kaart.vak3_als}, dan ${kaart.vak3_dan}`);
