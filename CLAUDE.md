@@ -50,6 +50,14 @@ Stand per stap (zie paragraaf 13 van de briefing):
   `/groep/:token` in `vercel.json`. Tests: `node --test scripts/reis-test.js`
   met `scripts/nep-supabase.js` (database in het geheugen). Nog niet: de
   Zetjes-link uit de reis werkt pas na stap 4 (index.html leest dan `&a=`).
+  Stap 1 en 2 staan op main en op productie sinds 14 oktober 2026.
+- Stap 3, de brug met de scan: `api/reis-scan.js` hier (Bearer
+  `REIS_SCAN_SECRET`); in happly-scan `api/scan.js` (leest `reis` en `meting`,
+  meldt na de opslag aan `REIS_URL/api/reis-scan`), `api/lead.js` (reis telt
+  als via coach: geen verkoop, geen opvolgreeks), `scan.html` (knop terug naar
+  de reis, geen Sprint-blok en deelknop) en `index.html` (stuurt `?reis=` door
+  naar de scanpagina). Omgevingsvariabelen: `REIS_SCAN_SECRET` in beide
+  Vercel-projecten, `REIS_URL` in het scanproject.
 
 ## Werkregels
 

@@ -10,6 +10,7 @@ const fs = require('fs');
 process.env.APP_URL = 'https://zetjes.test';
 process.env.SCAN_URL = 'https://scan.test';
 process.env.ADMIN_KEY = 'geheim-admin';
+process.env.REIS_SCAN_SECRET = 'geheim-scan';
 
 const { installeer } = require('./nep-supabase');
 const db = installeer();
@@ -110,7 +111,7 @@ test('de reis toont stap 1 klaar, stap 2 bezig, scanlink met de reistoken', asyn
   assert.equal(r.stappen[2].status, 'nog');
   assert.equal(r.huidig, 2);
   assert.equal(r.dag, 1);
-  assert.equal(r.links.scanStart, `https://scan.test/?reis=${reis.token}&meting=start&src=reis`);
+  assert.equal(r.links.scanStart, `https://scan.test/scan?reis=${reis.token}&meting=start&src=reis`);
   assert.ok(r.links.zetjes.includes(`token=${groep.token}`) && r.links.zetjes.includes(reis.anon_id));
   assert.equal(r.email, undefined, 'het e-mailadres gaat niet terug naar de browser');
 });
@@ -145,6 +146,52 @@ test('kaart opslaan maakt versie 1, wijzigen versie 2, en de reis leest de hoogs
   assert.equal(d.kaart.vak3_dan, 'schoenen aan');
   assert.equal(d.stappen[2].status, 'klaar');
   assert.equal(d.huidig, 2, 'de scan is nog niet gedaan, dus de reis wijst nog naar stap 2');
+});
+
+test('reis-scan weigert zonder of met verkeerd geheim', async () => {
+  const reis = db.tabel('reizen')[0];
+  const body = { reisToken: reis.token, meting: 'start', scanId: 'scan-1', index: 62, zien: 70, sturen: 55, doen: 61 };
+  let r = await call('reis-scan', { body });
+  assert.equal(r.status, 401);
+  r = await call('reis-scan', { body, headers: { authorization: 'Bearer fout' } });
+  assert.equal(r.status, 401);
+  assert.equal(db.tabel('reizen')[0].scan_start, undefined);
+});
+
+test('reis-scan schrijft de startmeting, de reis loopt door naar Zetjes, een tweede start telt niet', async () => {
+  const reis = db.tabel('reizen')[0];
+  const kop = { authorization: 'Bearer geheim-scan' };
+  let r = await call('reis-scan', { headers: kop, body: { reisToken: reis.token, meting: 'start', scanId: 'scan-1', index: 62.44, zien: 70, sturen: 55, doen: 61 } });
+  assert.equal(r.status, 200);
+  assert.equal(db.tabel('reizen')[0].scan_start.index, 62.4);
+  assert.equal(db.tabel('reizen')[0].scan_start_id, 'scan-1');
+  r = await call('reis-scan', { headers: kop, body: { reisToken: reis.token, meting: 'start', scanId: 'scan-2', index: 10, zien: 10, sturen: 10, doen: 10 } });
+  assert.equal(r.al, true);
+  assert.equal(db.tabel('reizen')[0].scan_start_id, 'scan-1', 'de eerste meting blijft staan');
+  const d = await call('reis', { method: 'GET', query: { token: reis.token } });
+  assert.equal(d.stappen[1].status, 'klaar');
+  assert.equal(d.stappen[1].getallen.index, 62.4);
+  assert.equal(d.huidig, 5, 'scan en kaart klaar, programma gestart op dag 1: Zetjes loopt');
+  assert.equal(db.tabel('reizen')[0].stap, 5);
+});
+
+test('reis-scan: eindmeting zet stap 6 op klaar en de reis op afgerond', async () => {
+  const reis = db.tabel('reizen')[0];
+  const kop = { authorization: 'Bearer geheim-scan' };
+  const r = await call('reis-scan', { headers: kop, body: { reisToken: reis.token, meting: 'eind', scanId: 'scan-9', index: 71, zien: 74, sturen: 66, doen: 72 } });
+  assert.equal(r.status, 200);
+  const d = await call('reis', { method: 'GET', query: { token: reis.token } });
+  assert.equal(d.stappen[5].status, 'klaar');
+  assert.equal(d.stappen[5].getallen.index, 71);
+  assert.equal(d.stappen[1].getallen.index, 62.4, 'de startmeting blijft ernaast staan');
+});
+
+test('reis-scan: onbekende reis geeft 404, slechte getallen 400', async () => {
+  const kop = { authorization: 'Bearer geheim-scan' };
+  let r = await call('reis-scan', { headers: kop, body: { reisToken: 'f'.repeat(32), meting: 'start', index: 1, zien: 1, sturen: 1, doen: 1 } });
+  assert.equal(r.status, 404);
+  r = await call('reis-scan', { headers: kop, body: { reisToken: db.tabel('reizen')[0].token, meting: 'start', index: 'x', zien: 1, sturen: 1, doen: 1 } });
+  assert.equal(r.status, 400);
 });
 
 test('taalregels in de schermen en de mails', () => {

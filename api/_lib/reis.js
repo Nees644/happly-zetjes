@@ -130,7 +130,8 @@ function weergave(invite) {
 function reisLink(reis) { return `${appUrl()}/reis/${reis.token}`; }
 function zetjesLink(reis) { return `${appUrl()}/?token=${reis.invites.token}&a=${encodeURIComponent(reis.anon_id)}`; }
 function scanLink(reis, meting) {
-  return `${scanUrl()}/?reis=${reis.token}&meting=${meting}&src=reis`;
+  // Rechtstreeks naar de scanpagina, niet naar de voorpagina van de scan.
+  return `${scanUrl()}/scan?reis=${reis.token}&meting=${meting}&src=reis`;
 }
 
 function esc(s) {
