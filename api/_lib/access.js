@@ -144,4 +144,4 @@ function sendAccessError(res, err) {
   return true;
 }
 
-module.exports = { cors, resolveAccess, sendAccessError, AccessError, weekSinceStart, todayNL };
+module.exports = { cors, resolveAccess, sendAccessError, AccessError, weekSinceStart, todayNL, newAnonId, loadInvite };

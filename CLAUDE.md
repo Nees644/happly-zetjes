@@ -41,7 +41,15 @@ Stand per stap (zie paragraaf 13 van de briefing):
 
 - Stap 1, migraties: `migrations/2026-10-reis.sql` hier en
   `migratie-reis-2026-10-14.sql` in happly-scan. Geschreven en lokaal getest
-  op 14 oktober 2026; draaien in Supabase doet Maarten.
+  op 14 oktober 2026. Beide gedraaid in Supabase op 14 oktober 2026.
+- Stap 2, de reis en de kaart: `api/_lib/reis.js` (gedeelde functies, mails),
+  `api/reis-start.js` (GET groepsinfo, POST begin), `api/reis.js`,
+  `api/reis-kaart.js`, `api/reis-groep.js` (beheer, x-admin-key),
+  `public/reis-start.html`, `public/reis.html`, `public/reis.css`,
+  `public/happly-logo.png`; nette adressen `/start/:token`, `/reis/:token`,
+  `/groep/:token` in `vercel.json`. Tests: `node --test scripts/reis-test.js`
+  met `scripts/nep-supabase.js` (database in het geheugen). Nog niet: de
+  Zetjes-link uit de reis werkt pas na stap 4 (index.html leest dan `&a=`).
 
 ## Werkregels
 

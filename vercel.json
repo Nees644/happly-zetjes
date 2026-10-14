@@ -3,6 +3,18 @@
   "outputDirectory": "public",
   "rewrites": [
     {
+      "source": "/start/:token",
+      "destination": "/reis-start.html?invite=:token"
+    },
+    {
+      "source": "/reis/:token",
+      "destination": "/reis.html?reis=:token"
+    },
+    {
+      "source": "/groep/:token",
+      "destination": "/begeleider.html?groep=:token"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     }
