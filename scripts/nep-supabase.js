@@ -35,9 +35,21 @@ function installeer(data = {}) {
     return uit;
   }
 
+  // Alleen de gevraagde kolommen, net als PostgREST: een kolom die niet in
+  // de select staat, bestaat niet in het antwoord.
+  function projecteer(rij, select) {
+    if (!select || select.trim() === '*') return { ...rij };
+    const zonderRelaties = select.replace(/[a-z_]+\([^]*?\)(?=\s*,|\s*$)/g, '');
+    const kolommen = zonderRelaties.split(',').map((k) => k.trim()).filter(Boolean);
+    if (kolommen.includes('*')) return { ...rij };
+    const uit = {};
+    for (const k of kolommen) uit[k] = rij[k];
+    return uit;
+  }
+
   function verrijk(naam, rij, select) {
     if (!rij) return rij;
-    const uit = { ...rij };
+    const uit = projecteer(rij, select);
     for (const [rel, kolommen] of relaties(select)) {
       const def = (RELATIES[naam] || {})[rel];
       if (!def) continue;
