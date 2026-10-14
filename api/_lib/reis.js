@@ -134,6 +134,26 @@ function scanLink(reis, meting) {
   return `${scanUrl()}/scan?reis=${reis.token}&meting=${meting}&src=reis`;
 }
 
+// Het kaartblok voor de systeemprompt van Zetjes (bouwbriefing paragraaf 8).
+// In de woorden van de deelnemer; Zetjes verzint er geen andere bij.
+const WEEKDAGEN = ['', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag'];
+function kaartBlokTekst(kaart, dag, voornaam) {
+  if (!kaart) return '';
+  const r = ['DE KAART VAN DEZE PERSOON (zelf ingevuld bij de start, in eigen woorden):'];
+  if (voornaam) r.push(`Voornaam: ${voornaam}`);
+  if (kaart.doel) r.push(`Doel: ${kaart.doel}`);
+  const moment = [kaart.vak1_moment, kaart.vak1_weekdag ? `${WEEKDAGEN[kaart.vak1_weekdag]}${kaart.vak1_dagdeel ? ', ' + kaart.vak1_dagdeel : ''}` : null].filter(Boolean).join('; ');
+  if (moment) r.push(`Wanneer het misgaat: ${moment}`);
+  if (kaart.vak1_zin) r.push(`Wat hij dan tegen zichzelf zegt: "${kaart.vak1_zin}"`);
+  if (kaart.vak2_inrichting) r.push(`Wat hij anders heeft ingericht: ${kaart.vak2_inrichting}`);
+  if (kaart.vak3_als && kaart.vak3_dan) r.push(`Zijn plan: als ${kaart.vak3_als}, dan ${kaart.vak3_dan}`);
+  if (kaart.vak4_woorden) r.push(`Zijn eigen woorden als het zwaar wordt: "${kaart.vak4_woorden}"`);
+  if (dag != null && dag >= 1) r.push(`Dag ${dag} van ${DAGEN}.`);
+  r.push('');
+  r.push('Gebruik dit zo: herken de zin uit "wat hij dan tegen zichzelf zegt" als die terugkomt en benoem dat het het moment is, niet de waarheid. Verwijs naar het als-dan-plan als eerste stap, of maak hem kleiner als hij vandaag te groot is. Sluit af met zijn eigen woorden, letterlijk, als dat past. Verzin geen andere woorden voor hem en herhaal de kaart niet als lijst.');
+  return r.join('\n');
+}
+
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
@@ -174,5 +194,5 @@ async function mailMagischeLink(reis) {
 module.exports = {
   REIS_TOKEN_RE, DAGEN, appUrl, scanUrl, emailHash, geldigEmail, schoon, dagInReis,
   laadReis, laadReisOpAnon, laadKaart, standVanStappen, werkStapBij, log, weergave,
-  reisLink, zetjesLink, scanLink, esc, mailHtml, mailMagischeLink,
+  reisLink, zetjesLink, scanLink, esc, mailHtml, mailMagischeLink, kaartBlokTekst,
 };

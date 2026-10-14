@@ -1,7 +1,7 @@
 // api/verwijder.js
 // POST /api/verwijder { token, anonId }
 // Verwijdert direct alle gegevens van deze gebruiker: berichten, sessies,
-// Doelscan-profielen, het funnelspoor en het toestemmingsprofiel.
+// Doelscan-profielen, het funnelspoor, het toestemmingsprofiel en de reis met kaarten.
 
 const { supabase } = require('./_lib/supabase');
 const { cors, resolveAccess, sendAccessError } = require('./_lib/access');
@@ -34,6 +34,9 @@ module.exports = async function handler(req, res) {
     if (fErr) throw fErr;
     const { error: pErr } = await supabase.from('user_profiles').delete().eq('anon_id', a.anonId);
     if (pErr) throw pErr;
+    // In een reis: de reis zelf (voornaam, e-mail, metingen) en de kaarten (cascade).
+    const { error: rErr } = await supabase.from('reizen').delete().eq('anon_id', a.anonId);
+    if (rErr) throw rErr;
 
     // Oude persoonlijke link: het id loskoppelen, zodat een volgend bezoek als nieuw begint.
     if (a.legacy) {

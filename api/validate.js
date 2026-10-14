@@ -6,6 +6,7 @@
 const { supabase } = require('./_lib/supabase');
 const { cors, resolveAccess, sendAccessError } = require('./_lib/access');
 const { hermetingItems } = require('./_lib/scan-engine');
+const { laadReisOpAnon, laadKaart, dagInReis, DAGEN, reisLink } = require('./_lib/reis');
 
 const TERUGVRAAG_NA_UUR = 2;
 const TERUGVRAAG_MAX_DAGEN = 30;
@@ -101,7 +102,17 @@ module.exports = async function handler(req, res) {
   try {
     const a = await resolveAccess({ token, anonId, register: true });
     const consent = !!a.profile?.consent_at;
-    const scan = consent ? await scanStatus(a.ctx, a.invite, a.anonId) : { nodig: false };
+    // Zit deze gebruiker in een Volhoudreis? Dan dagteller en link naar de reis,
+    // en nooit de Doelscan: de kaart is daar de intake.
+    let reis = null;
+    const r = await laadReisOpAnon(a.anonId);
+    if (r) {
+      const kaart = await laadKaart(r.id);
+      reis = { link: reisLink(r), dag: dagInReis(r.invites || {}), dagen: DAGEN,
+               programma: r.invites?.programma_naam || r.invites?.label || 'Volhoudreis',
+               kaart: !!kaart, alsdan: kaart ? `Als ${kaart.vak3_als}, dan ${kaart.vak3_dan}.` : null };
+    }
+    const scan = consent && !reis ? await scanStatus(a.ctx, a.invite, a.anonId) : { nodig: false };
     // Hermeting pas aanbieden ná de Doelscan zelf, nooit tegelijk.
     const remeasure = consent && !scan.nodig ? await remeasureStatus(a.ctx, a.invite, a.anonId) : { nodig: false };
     return res.status(200).json({
@@ -115,6 +126,7 @@ module.exports = async function handler(req, res) {
       tenantType: a.invite.tenants?.type || null,
       productName: a.invite.products?.name || 'Zetjes',
       consent,
+      reis,
       scanNodig: scan.nodig,
       scanConfig: scan.config || null,
       remeasureNodig: remeasure.nodig,

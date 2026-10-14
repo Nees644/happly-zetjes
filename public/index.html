@@ -629,12 +629,17 @@ window.addEventListener('DOMContentLoaded', async () => {
   token = params.get('token') || '';
   if (!token) { showError('onbekend'); return; }
   anonId = readAnon();
+  // Vanuit de Volhoudreis komt de eigen sleutel mee in de link; die wint van
+  // wat dit toestel eerder bewaarde, zodat reis en Zetjes dezelfde persoon zijn.
+  const uitReis = params.get('a') || '';
+  if (/^anon_[a-f0-9]{16,32}$/.test(uitReis)) { anonId = uitReis; writeAnon(anonId); }
   try {
     const d = await post('/api/validate', {});
     if (!d.valid) { showError(d.reason, d); return; }
     anonId = d.anonId; writeAnon(anonId);
     context = d.context || 'werk';
     applyContext(d);
+    if (d.reis) toonReis(d.reis);
     document.getElementById('mijn-gegevens').hidden = false;
     decideRoute(d);
   } catch(e) {
@@ -652,6 +657,27 @@ function decideRoute(d) {
   if (d.remeasureNodig && d.remeasureConfig) { startRemeasure(d.remeasureKind, d.remeasureConfig); return; }
   if (d.openFeedback) { askFeedback(d.openFeedback); return; }
   go('s-welcome');
+}
+
+// In een Volhoudreis: dagteller in de kop, de als-dan-zin als herkenning,
+// en een link terug naar de reis.
+function toonReis(r) {
+  document.querySelectorAll('.product-tag').forEach(el => el.textContent = r.programma || 'Volhoudreis');
+  document.querySelectorAll('.beta-tag').forEach(el => {
+    Object.assign(el.style, { fontSize: '10px', fontStyle: 'normal', fontWeight: '600', color: 'var(--pink)', textTransform: 'none', marginTop: '2px' });
+    if (r.dag != null && r.dag >= 1 && r.dag <= r.dagen) el.textContent = `dag ${r.dag} van ${r.dagen}`;
+    else if (r.dag != null && r.dag < 1) el.textContent = `start over ${1 - r.dag} ${1 - r.dag === 1 ? 'dag' : 'dagen'}`;
+    else el.textContent = '';
+  });
+  const herken = document.getElementById('herken');
+  if (herken && r.alsdan) { herken.textContent = `Je plan: ${r.alsdan}`; herken.hidden = false; }
+  const mg = document.getElementById('mijn-gegevens');
+  if (mg && r.link) {
+    const a = document.createElement('a');
+    a.href = r.link; a.textContent = 'Je reis'; a.className = 'link-inline'; a.style.marginLeft = '4px';
+    mg.insertAdjacentText('beforeend', ' · ');
+    mg.appendChild(a);
+  }
 }
 
 function applyContext(d) {

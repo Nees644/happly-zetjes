@@ -57,7 +57,17 @@ Stand per stap (zie paragraaf 13 van de briefing):
   als via coach: geen verkoop, geen opvolgreeks), `scan.html` (knop terug naar
   de reis, geen Sprint-blok en deelknop) en `index.html` (stuurt `?reis=` door
   naar de scanpagina). Omgevingsvariabelen: `REIS_SCAN_SECRET` in beide
-  Vercel-projecten, `REIS_URL` in het scanproject.
+  Vercel-projecten, `REIS_URL` in het scanproject. Beide gezet op 14 oktober
+  2026. `api/reis-deelnemer.js` geeft de scanpagina voornaam, e-mail en doel.
+- Stap 4, Zetjes op de kaart: `api/claude.js` zet het kaartblok
+  (`kaartBlokTekst` in `api/_lib/reis.js`) in de systeemprompt, bij de
+  verhelderingsvraag en het zetje; `api/validate.js` geeft `reis` terug
+  (link, dag, programma, als-dan) en biedt in een reis nooit de Doelscan aan;
+  `public/index.html` leest `&a=` uit de reislink, toont de dagteller en de
+  link naar de reis; `api/verwijder.js` verwijdert ook de reis en de kaarten.
+  Open punt: er is nog geen context voor bewegen; een fit20-groep draait op
+  context `werk` en toont dus werkvoorbeelden. Dat is inhoudswerk in
+  `api/_lib/contexts.js`.
 
 ## Werkregels
 

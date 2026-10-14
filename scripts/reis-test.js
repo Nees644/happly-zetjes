@@ -194,6 +194,39 @@ test('reis-scan: onbekende reis geeft 404, slechte getallen 400', async () => {
   assert.equal(r.status, 400);
 });
 
+test('validate geeft de reis terug en biedt geen Doelscan aan', async () => {
+  const reis = db.tabel('reizen')[0];
+  const r = await call('validate', { body: { token: groep.token, anonId: reis.anon_id } });
+  assert.equal(r.valid, true);
+  assert.equal(r.anonId, reis.anon_id);
+  assert.equal(r.consent, true);
+  assert.equal(r.scanNodig, false);
+  assert.ok(r.reis, 'reis aanwezig');
+  assert.equal(r.reis.dag, 1);
+  assert.equal(r.reis.programma, 'Proefprogramma');
+  assert.match(r.reis.alsdan, /^Als het regent, dan schoenen aan\.$/);
+  assert.ok(r.reis.link.endsWith('/reis/' + reis.token));
+});
+
+test('het kaartblok gebruikt de woorden van de kaart en niets anders', () => {
+  const { kaartBlokTekst } = require('../api/_lib/reis');
+  const blok = kaartBlokTekst({ doel: 'twee keer per week', vak1_moment: 'dinsdagavond', vak1_weekdag: 2, vak1_dagdeel: 'avond',
+    vak1_zin: 'nu is het toch al mislukt', vak2_inrichting: 'tas bij de deur', vak3_als: 'het regent', vak3_dan: 'schoenen aan', vak4_woorden: 'je kunt het' }, 23, 'Maarten');
+  for (const w of ['twee keer per week', 'dinsdagavond; dinsdag, avond', '"nu is het toch al mislukt"', 'tas bij de deur', 'als het regent, dan schoenen aan', '"je kunt het"', 'Dag 23 van 66', 'Maarten']) {
+    assert.ok(blok.includes(w), `ontbreekt: ${w}`);
+  }
+  assert.equal(kaartBlokTekst(null, 5, 'x'), '');
+});
+
+test('verwijderen haalt ook de reis en de kaarten weg', async () => {
+  const reis = db.tabel('reizen')[0];
+  const r = await call('verwijder', { body: { token: groep.token, anonId: reis.anon_id } });
+  assert.equal(r.ok, true);
+  assert.equal(db.tabel('reizen').find((x) => x.anon_id === reis.anon_id), undefined);
+  const d = await call('reis', { method: 'GET', query: { token: reis.token } });
+  assert.equal(d.status, 404);
+});
+
 test('taalregels in de schermen en de mails', () => {
   const teksten = ['public/reis.html', 'public/reis-start.html', 'api/_lib/reis.js']
     .map((f) => fs.readFileSync(path.join(__dirname, '..', f), 'utf8')).join('\n');

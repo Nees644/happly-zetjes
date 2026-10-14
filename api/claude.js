@@ -8,6 +8,7 @@ const { cors, resolveAccess, sendAccessError } = require('./_lib/access');
 const { staticSystem } = require('./_lib/contexts');
 const { jsonCall } = require('./_lib/anthropic');
 const { profielBlokTekst } = require('./_lib/scan-engine');
+const { laadReisOpAnon, laadKaart, kaartBlokTekst, dagInReis } = require('./_lib/reis');
 
 const MAX_INPUT = 2000;
 
@@ -49,8 +50,9 @@ function guardSchema(categorieen) {
 // Variabel deel van de systeemprompt: komt na het cache-breekpunt. Het
 // profielblok zelf (toon, kracht, doel) staat in scan-engine.js, gedeeld
 // met api/scan-vrij.js.
-function variableSystem(a, doelscanProfile) {
+function variableSystem(a, doelscanProfile, kaartBlok) {
   const parts = [];
+  if (kaartBlok) parts.push(kaartBlok);
   if (a.ctx.faseweter && a.phase) {
     parts.push(`FASE: week ${a.weekSinceStart} sinds de start van de groep. ${a.ctx.fasen[a.phase]}`);
   }
@@ -62,11 +64,19 @@ function variableSystem(a, doelscanProfile) {
   return parts.join('\n\n');
 }
 
-function systemBlocks(a, taak, doelscanProfile) {
+function systemBlocks(a, taak, doelscanProfile, kaartBlok) {
   return [
     { text: staticSystem(a.ctx), cache: true },
-    { text: [variableSystem(a, doelscanProfile), taak].filter(Boolean).join('\n\n'), cache: false },
+    { text: [variableSystem(a, doelscanProfile, kaartBlok), taak].filter(Boolean).join('\n\n'), cache: false },
   ];
+}
+
+// De Volhoudkaart van deze gebruiker, als hij in een reis zit. Hoogste versie.
+async function loadKaartBlok(anonId) {
+  const reis = await laadReisOpAnon(anonId);
+  if (!reis) return '';
+  const kaart = await laadKaart(reis.id);
+  return kaartBlokTekst(kaart, dagInReis(reis.invites || {}), reis.voornaam);
 }
 
 async function addMessage(sessionId, role, content) {
@@ -151,6 +161,9 @@ module.exports = async function handler(req, res) {
   // en stuurt de toon van het zetje (alleen gebruikt in fase 'zetje' hieronder).
   const doelscanProfile = await loadDoelscanProfile(a.invite, a.anonId, profileId);
   const doelscanProfileId = doelscanProfile?.id || null;
+  // In een reis: de kaart als tweede bron naast (meestal in plaats van) het profiel.
+  let kaartBlok = '';
+  try { kaartBlok = await loadKaartBlok(a.anonId); } catch (err) { console.error('kaartblok', err.message); }
 
   try {
     // ── FASE 1: poortwachter + verhelderingsvraag ────────────────
@@ -195,7 +208,7 @@ crisis gaat altijd voor: kies crisis bij elk signaal van gedachten aan zelfdodin
       try {
         ({ data: clarify } = await jsonCall({
           label: 'clarify',
-          system: systemBlocks(a, 'TAAK NU: stel de verhelderingsvraag. Geef precies drie antwoordopties.'),
+          system: systemBlocks(a, 'TAAK NU: stel de verhelderingsvraag. Geef precies drie antwoordopties.', null, kaartBlok),
           user: userMsg,
           schema: CLARIFY_SCHEMA,
           effort: 'low',
@@ -234,7 +247,7 @@ crisis gaat altijd voor: kies crisis bij elk signaal van gedachten aan zelfdodin
 
       const { data: z } = await jsonCall({
         label: 'zetje',
-        system: systemBlocks(a, 'TAAK NU: geef het zetje, met de labels voor analyse.', doelscanProfile),
+        system: systemBlocks(a, 'TAAK NU: geef het zetje, met de labels voor analyse.', doelscanProfile, kaartBlok),
         user: `Situatie: ${situatie || userMsg}\nAntwoord op de verhelderingsvraag: ${clarifyAnswer || 'geen'}`,
         schema: ZETJE_SCHEMA,
         maxTokens: 6000,
