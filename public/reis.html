@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Je reis</title>
+<link rel="stylesheet" href="/reis.css">
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="logo-wrap">
+      <img src="/happly-logo.png" alt="happly" class="happly-logo">
+      <span class="product-tag" id="programma">Volhoudreis</span>
+    </div>
+    <div class="dagteller" id="dagteller" hidden></div>
+  </div>
+
+  <section class="pad" id="s-laden"><p class="hint">Je reis wordt geladen.</p></section>
+
+  <section class="pad" id="s-reis" hidden>
+    <div class="art">
+      <h1 id="kop">Jouw <em>reis.</em></h1>
+      <p id="intro"></p>
+    </div>
+    <div class="stappen" id="stappen"></div>
+    <p class="hint geen-print">Instellingen en je gegevens: <a href="#" id="instellingen" style="color:var(--pink)">bekijk of wijzig</a>.</p>
+  </section>
+
+  <section class="pad" id="s-kaart" hidden>
+    <div class="art">
+      <h1>Je <em>Volhoudkaart.</em></h1>
+      <p>Vier vakken, vier minuten. Wat je hier opschrijft, is waar je Zetjes straks mee werken. Niemand anders leest het.</p>
+    </div>
+    <form class="kaart" id="kaartform" novalidate>
+      <div class="vak">
+        <h3><small>Mijn doel</small>Wat wil je volhouden?</h3>
+        <input type="text" name="doel" maxlength="200" placeholder="Bijvoorbeeld: twee keer per week trainen">
+      </div>
+      <div class="vak">
+        <h3><small>Vak 1 · Zien</small>Wanneer haak jij meestal af?</h3>
+        <p>Niet bij dit programma, dat is net begonnen. Bij eerdere dingen. Welke dag, welk moment, welke omstandigheid.</p>
+        <textarea name="vak1_moment" maxlength="400" placeholder="Bijvoorbeeld: dinsdagavond, na een lange werkdag, als het regent"></textarea>
+        <div class="rij">
+          <select name="vak1_weekdag">
+            <option value="">Dag</option>
+            <option value="1">maandag</option><option value="2">dinsdag</option><option value="3">woensdag</option>
+            <option value="4">donderdag</option><option value="5">vrijdag</option><option value="6">zaterdag</option><option value="7">zondag</option>
+          </select>
+          <select name="vak1_dagdeel">
+            <option value="">Dagdeel</option>
+            <option value="ochtend">ochtend</option><option value="middag">middag</option><option value="avond">avond</option>
+          </select>
+        </div>
+        <p>Dag en dagdeel zijn voor je wekelijkse zetje, als je dat aan hebt gezet. En de zin die je dan tegen jezelf zegt. Letterlijk.</p>
+        <input type="text" name="vak1_zin" maxlength="200" placeholder="&quot;Nu is het toch al mislukt&quot;">
+      </div>
+      <div class="vak">
+        <h3><small>Vak 2 · Sturen</small>Eén ding dat je morgen anders inricht</h3>
+        <p>Geen voornemen. Iets wat je neerlegt, klaarzet, afspreekt of weghaalt, zodat doorgaan makkelijker wordt dan stoppen.</p>
+        <textarea name="vak2_inrichting" maxlength="400" placeholder="Bijvoorbeeld: sporttas bij de deur, afspraak in de agenda, snacks uit de kast"></textarea>
+      </div>
+      <div class="vak">
+        <h3><small>Vak 3 · Doen</small>Je als-dan-plan</h3>
+        <p>Als het moment uit vak 1 komt, wat doe je dan? Zo klein dat het ook op je slechtste dag kan.</p>
+        <div class="alsdan"><label>Als</label><input type="text" name="vak3_als" maxlength="200" placeholder="het dinsdagavond regent"></div>
+        <div class="alsdan"><label>dan</label><input type="text" name="vak3_dan" maxlength="200" placeholder="trek ik mijn schoenen aan en loop ik naar de hoek"></div>
+      </div>
+      <div class="vak">
+        <h3><small>Vak 4 · Blijven</small>Welke woorden helpen jou als het zwaar wordt?</h3>
+        <p>Een zin, een naam, een beeld. Van jezelf of van iemand die ertoe doet.</p>
+        <input type="text" name="vak4_woorden" maxlength="200" placeholder="Bijvoorbeeld: je kunt het">
+      </div>
+      <p class="fout" id="kaartfout" hidden></p>
+      <div class="knoppen">
+        <button type="button" class="btn-ghost" id="kaart-terug">Terug</button>
+        <button type="submit" class="btn-pink" id="kaart-opslaan">Bewaar</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="pad" id="s-kaart-lees" hidden>
+    <div class="kaart kaart-lees" id="kaartlees"></div>
+    <div class="knoppen geen-print">
+      <button class="btn-ghost" id="lees-terug">Terug</button>
+      <button class="btn-ghost" onclick="window.print()">Print</button>
+      <button class="btn-pink" id="lees-wijzig">Wijzig</button>
+    </div>
+  </section>
+
+  <section class="pad" id="s-instellingen" hidden>
+    <div class="art">
+      <h1>Je <em>gegevens.</em></h1>
+      <p>Wat je hier aanzet of uitzet, gaat direct in.</p>
+    </div>
+    <p class="hint">Instellingen wijzigen en je gegevens verwijderen komt in de volgende versie. Tot die tijd: mail <a href="mailto:hallo@happly.nl" style="color:var(--pink)">hallo@happly.nl</a>, dan regelen we het binnen een werkdag.</p>
+    <button class="btn-ghost" id="inst-terug">Terug</button>
+  </section>
+
+  <section class="pad" id="s-fout" hidden>
+    <div class="art">
+      <h1 id="fout-kop">Deze link kennen we <em>niet.</em></h1>
+      <p id="fout-tekst">Controleer of je de link uit je mail helemaal hebt gekopieerd.</p>
+    </div>
+  </section>
+
+  <p class="voet">volhouden door Happly</p>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const token = params.get('reis') || location.pathname.split('/').filter(Boolean).pop() || '';
+let reis = null;
+
+const WEEKDAG = ['', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag'];
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const datum = (iso) => iso ? new Date(iso).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' }) : '';
+
+function toon(id) {
+  for (const s of ['s-laden', 's-reis', 's-kaart', 's-kaart-lees', 's-instellingen', 's-fout']) {
+    document.getElementById(s).hidden = (s !== id);
+  }
+  window.scrollTo(0, 0);
+}
+
+async function laad() {
+  if (!token) { toon('s-fout'); return; }
+  try {
+    const r = await fetch('/api/reis?token=' + encodeURIComponent(token));
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.ok) {
+      if (d.error === 'inactief') {
+        document.getElementById('fout-kop').innerHTML = 'Deze reis is <em>afgesloten.</em>';
+        document.getElementById('fout-tekst').textContent = d.contactEmail ? `Vragen? Mail ${d.contactEmail}.` : '';
+      }
+      toon('s-fout'); return;
+    }
+    reis = d;
+    teken();
+    toon('s-reis');
+  } catch { toon('s-fout'); }
+}
+
+function teken() {
+  const d = reis;
+  document.getElementById('programma').textContent = d.programma;
+  document.getElementById('kop').innerHTML = d.voornaam ? `${esc(d.voornaam)}, jouw <em>reis.</em>` : 'Jouw <em>reis.</em>';
+  const s = d.stappen;
+  const dt = document.getElementById('dagteller');
+  if (d.dag != null && d.dag >= 1 && d.dag <= d.dagen) {
+    dt.hidden = false; dt.innerHTML = `<small>dag</small>${d.dag} <span style="color:var(--text-soft);font-weight:400">van ${d.dagen}</span>`;
+  } else if (d.dag != null && d.dag < 1) {
+    dt.hidden = false; dt.innerHTML = `<small>start over</small>${1 - d.dag} ${1 - d.dag === 1 ? 'dag' : 'dagen'}`;
+  } else dt.hidden = true;
+
+  const intro = {
+    2: 'Eerste stap: de Zelfkracht Scan. Acht minuten, en je weet waar je kracht zit en waar het lastig wordt.',
+    3: 'Je scan staat. Nu je kaart: vier vakken voor het moment waarop het misgaat.',
+    4: `Je kaart staat. ${s[3].naam ? esc(s[3].naam) + ' begint ' + (s[3].start ? 'op ' + datum(s[3].start) : 'binnenkort') + '.' : 'Het programma begint binnenkort.'} Vanaf dan staan je Zetjes klaar.`,
+    5: 'Je Zetjes staan klaar. Gebruik ze op het moment dat het lastig wordt, in jouw woorden.',
+    6: 'Bijna aan het eind. Doe de scan nog een keer en zie wat er veranderd is.',
+    7: 'Je reis is af. Je kaart blijft van jou, en Zetjes kan doorgaan als je dat wilt.',
+  }[d.huidig] || '';
+  document.getElementById('intro').textContent = intro;
+
+  const k = d.kaart;
+  const plan = k ? `<div class="plan">Als ${esc(k.vak3_als)}, dan ${esc(k.vak3_dan)}.</div>` : '';
+  const getallen = (g) => g ? `<div class="getallen">
+      <div class="getal"><b>${esc(g.index)}</b><span>index</span></div>
+      <div class="getal"><b>${esc(g.zien)}</b><span>zien</span></div>
+      <div class="getal"><b>${esc(g.sturen)}</b><span>sturen</span></div>
+      <div class="getal"><b>${esc(g.doen)}</b><span>doen</span></div></div>` : '';
+
+  const html = [
+    stap(1, s[0], 'Begonnen', `Je reis bestaat sinds ${datum(s[0].datum)}.`),
+    stap(2, s[1], 'Zelfkracht Scan', s[1].status === 'klaar'
+      ? `Gedaan op ${datum(s[1].datum)}. Je uitslag staat ook in je mail.${getallen(s[1].getallen)}`
+      : 'Acht minuten. Je ziet daarna direct je uitslag.',
+      s[1].status !== 'klaar' ? knop(d.links.scanStart, 'Doe de scan', true) : ''),
+    stap(3, s[2], 'Volhoudkaart', s[2].status === 'klaar'
+      ? `Ingevuld op ${datum(s[2].datum)}${s[2].versie > 1 ? ', versie ' + s[2].versie : ''}.${plan}`
+      : 'Vier vakken: je afhaakmoment, wat je anders inricht, je als-dan-plan en je eigen woorden.',
+      s[2].status === 'klaar'
+        ? `<button class="btn-ghost" onclick="leesKaart()">Bekijk of wijzig je kaart</button>`
+        : `<button class="${s[2].status === 'bezig' ? 'btn-pink' : 'btn-ghost'}" onclick="vulKaart()">Vul je kaart in</button>`),
+    stap(4, s[3], esc(s[3].naam || 'Het programma'), s[3].start
+      ? (s[3].status === 'klaar' ? `Gestart op ${datum(s[3].start)}.` : `Begint op ${datum(s[3].start)}.`)
+      : 'De startdatum volgt.'),
+    stap(5, s[4], 'Zetjes, dag 1 tot ' + d.dagen, s[4].status === 'nog'
+      ? 'Vanaf de startdag staan je Zetjes klaar: een klein zetje op het moment dat het lastig wordt.'
+      : (s[4].status === 'bezig' ? `Dag ${d.dag} van ${d.dagen}. Lastig moment? Vraag een zetje.` : `De ${d.dagen} dagen zijn voorbij. Zetjes blijft beschikbaar.`),
+      s[4].status !== 'nog' ? knop(d.links.zetjes, 'Open Zetjes', s[4].status === 'bezig' && d.huidig === 5) : ''),
+    stap(6, s[5], 'Hermeting', s[5].status === 'klaar'
+      ? `Gedaan op ${datum(s[5].datum)}.${getallen(s[5].getallen)}<p class="wat" style="margin-top:10px">Eerste meting ernaast:</p>${getallen(s[1].getallen)}`
+      : (s[5].status === 'bezig' ? 'Doe de scan opnieuw en zie het verschil.' : `Rond dag ${d.dagen} doe je de scan nog een keer.`),
+      s[5].status === 'bezig' ? knop(d.links.scanEind, 'Doe de hermeting', true)
+        : (s[5].status === 'klaar' ? knop(d.links.koop, 'Doorgaan met Zetjes', false) : '')),
+  ].join('');
+  document.getElementById('stappen').innerHTML = html;
+}
+
+function knop(url, tekst, primair) {
+  return `<a class="${primair ? 'btn-pink' : 'btn-ghost'}" href="${esc(url)}" target="_blank" rel="noopener">${esc(tekst)}</a>`;
+}
+function stap(nr, s, titel, wat, actie) {
+  return `<div class="stap ${s.status}"><div class="stip">${s.status === 'klaar' ? '&#10003;' : nr}</div>
+    <div><h2>${titel}</h2><div class="wat">${wat}</div>${actie ? `<div class="actie">${actie}</div>` : ''}</div></div>`;
+}
+
+function vulKaart() {
+  const f = document.getElementById('kaartform');
+  const k = reis.kaart || {};
+  for (const el of f.elements) if (el.name) el.value = k[el.name] == null ? '' : k[el.name];
+  if (!k.doel && reis.programma && reis.programma !== 'Volhoudreis') f.doel.placeholder = `Bijvoorbeeld: ${reis.programma} volhouden tot het eind`;
+  document.getElementById('kaartfout').hidden = true;
+  toon('s-kaart');
+}
+function leesKaart() {
+  const k = reis.kaart; if (!k) { vulKaart(); return; }
+  const vak = (kop, label, antw) => `<div class="vak"><h3><small>${kop}</small>${label}</h3><p class="antwoord">${antw ? esc(antw) : '<span style="color:var(--text-soft)">nog leeg</span>'}</p></div>`;
+  const moment = [k.vak1_moment, k.vak1_weekdag ? `${WEEKDAG[k.vak1_weekdag]}${k.vak1_dagdeel ? ', ' + k.vak1_dagdeel : ''}` : ''].filter(Boolean).join(' · ');
+  document.getElementById('kaartlees').innerHTML =
+    `<p class="hint">Volhoudkaart van ${esc(reis.voornaam || 'mij')}${reis.programma ? ' · ' + esc(reis.programma) : ''} · ${datum(k.datum)}</p>` +
+    vak('Mijn doel', 'Wat ik wil volhouden', k.doel) +
+    vak('Vak 1 · Zien', 'Mijn afhaakmoment', moment) +
+    vak('', 'Mijn zin', k.vak1_zin ? `"${k.vak1_zin}"` : '') +
+    vak('Vak 2 · Sturen', 'Wat ik anders inricht', k.vak2_inrichting) +
+    vak('Vak 3 · Doen', 'Mijn als-dan-plan', `Als ${k.vak3_als}, dan ${k.vak3_dan}.`) +
+    vak('Vak 4 · Blijven', 'Mijn woorden', k.vak4_woorden);
+  toon('s-kaart-lees');
+}
+
+document.getElementById('kaartform').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = e.target;
+  const fout = document.getElementById('kaartfout');
+  const kaart = {};
+  for (const el of f.elements) if (el.name) kaart[el.name] = el.value.trim();
+  kaart.vak1_weekdag = kaart.vak1_weekdag ? Number(kaart.vak1_weekdag) : null;
+  kaart.vak1_dagdeel = kaart.vak1_dagdeel || null;
+  if (!kaart.vak3_als || !kaart.vak3_dan) { fout.textContent = 'Vul je als-dan-plan in, dat is het hart van de kaart.'; fout.hidden = false; return; }
+  const knop = document.getElementById('kaart-opslaan');
+  knop.disabled = true; knop.textContent = 'Bewaren';
+  try {
+    const r = await fetch('/api/reis-kaart', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, kaart }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.ok) { fout.textContent = d.error || 'Bewaren lukte niet. Probeer het nog eens.'; fout.hidden = false; return; }
+    await laad();
+  } catch { fout.textContent = 'Bewaren lukte niet. Probeer het nog eens.'; fout.hidden = false; }
+  finally { knop.disabled = false; knop.textContent = 'Bewaar'; }
+});
+
+document.getElementById('kaart-terug').onclick = () => toon('s-reis');
+document.getElementById('lees-terug').onclick = () => toon('s-reis');
+document.getElementById('lees-wijzig').onclick = vulKaart;
+document.getElementById('instellingen').onclick = (e) => { e.preventDefault(); toon('s-instellingen'); };
+document.getElementById('inst-terug').onclick = () => toon('s-reis');
+
+laad();
+</script>
+</body>
+</html>

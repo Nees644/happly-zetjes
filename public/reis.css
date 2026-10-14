@@ -1,0 +1,87 @@
+/* Stijl van de Volhoudreis: dezelfde letters en kleuren als de Zetjes-app. */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap');
+:root {
+  --pink: #CC0066; --pink-d: #99004D; --pink-l: #FFF0F7; --pink-m: #FFD6EC;
+  --ok: #1E7B55; --ok-l: #E0F4EC;
+  --bg: #FDF8FB; --surface: #FFFFFF;
+  --text: #1A0A12; --text-mid: #5E3A4E; --text-soft: #A87A94;
+  --border: #ECD8E4; --r: 16px; --r-lg: 24px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; }
+body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text);
+  min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 16px; }
+.shell { width: 100%; max-width: 440px; background: var(--surface); border-radius: 28px;
+  box-shadow: 0 40px 100px rgba(204,0,102,.10), 0 8px 32px rgba(26,10,18,.08);
+  display: flex; flex-direction: column; overflow: hidden; }
+.shell::before { content: ''; display: block; height: 3px;
+  background: linear-gradient(90deg, var(--pink) 0%, #FF66AA 100%); }
+.topbar { padding: 18px 24px 0; display: flex; align-items: center; justify-content: space-between; }
+.logo-wrap { display: flex; flex-direction: column; gap: 1px; }
+.happly-logo { height: 24px; width: auto; display: block; }
+.product-tag { font-size: 10px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--text-soft); }
+.dagteller { font-family: 'Lora', serif; font-size: 14px; color: var(--pink); font-weight: 600; text-align: right; }
+.dagteller small { display: block; font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 10px; color: var(--text-soft); letter-spacing: .5px; text-transform: uppercase; }
+.pad { padding: 22px 24px 28px; display: flex; flex-direction: column; gap: 14px; }
+.art { background: linear-gradient(135deg, var(--pink-l) 0%, #FFE8F4 100%); border-radius: var(--r-lg); padding: 24px 22px 20px; }
+.art h1 { font-family: 'Lora', serif; font-size: 24px; font-weight: 600; line-height: 1.15; letter-spacing: -.3px; margin-bottom: 10px; }
+.art h1 em { color: var(--pink); font-style: italic; }
+.art p { font-size: 14px; color: var(--text-mid); line-height: 1.55; }
+.veld { display: flex; flex-direction: column; gap: 6px; }
+.veld > span { font-size: 12px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase; color: var(--text-soft); }
+input[type=text], input[type=email], textarea, select { background: #FDFAFB; border: 2px solid var(--border); border-radius: var(--r);
+  padding: 13px 14px; font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--text); width: 100%; line-height: 1.5; }
+textarea { resize: vertical; min-height: 72px; }
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--pink); }
+.vink { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; color: var(--text-mid); line-height: 1.45; }
+.vink input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--pink); flex-shrink: 0; }
+.vink a { color: var(--pink); }
+.btn-pink { background: var(--pink); color: #fff; border: none; border-radius: var(--r); padding: 15px 22px;
+  font-family: 'DM Sans', sans-serif; font-size: 15.5px; font-weight: 600; cursor: pointer; width: 100%;
+  box-shadow: 0 6px 24px rgba(204,0,102,.30); text-decoration: none; display: inline-block; text-align: center; }
+.btn-pink:disabled { opacity: .6; cursor: default; }
+.btn-ghost { background: transparent; border: 1.5px solid var(--border); border-radius: var(--r); padding: 13px 22px;
+  font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--text-mid); cursor: pointer; width: 100%; text-decoration: none; display: inline-block; text-align: center; }
+.fout { color: var(--pink-d); font-size: 13.5px; background: var(--pink-l); padding: 10px 12px; border-radius: 10px; }
+.hint { font-size: 13px; color: var(--text-soft); line-height: 1.5; }
+.voet { text-align: center; font-size: 11px; color: var(--text-soft); padding: 6px 20px 18px; }
+
+/* Tijdlijn van de zes stappen */
+.stappen { display: flex; flex-direction: column; }
+.stap { display: grid; grid-template-columns: 28px 1fr; gap: 12px; padding: 12px 0; position: relative; }
+.stap + .stap::before { content: ''; position: absolute; left: 13px; top: -12px; height: 24px; width: 2px; background: var(--border); }
+.stip { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); background: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--text-soft); }
+.stap.klaar .stip { background: var(--ok); border-color: var(--ok); color: #fff; }
+.stap.bezig .stip { border-color: var(--pink); color: var(--pink); box-shadow: 0 0 0 4px var(--pink-l); }
+.stap h2 { font-family: 'Lora', serif; font-size: 17px; font-weight: 600; line-height: 1.25; }
+.stap.nog h2 { color: var(--text-soft); }
+.stap .wat { font-size: 13.5px; color: var(--text-mid); line-height: 1.5; margin-top: 3px; }
+.stap .datum { font-size: 11.5px; color: var(--text-soft); margin-top: 2px; }
+.stap .actie { margin-top: 10px; }
+.getallen { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+.getal { background: var(--pink-l); border-radius: 12px; padding: 8px 6px; text-align: center; }
+.getal b { display: block; font-family: 'Lora', serif; font-size: 18px; color: var(--pink); }
+.getal span { font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-soft); }
+.plan { background: var(--ok-l); border-left: 3px solid var(--ok); border-radius: 0 12px 12px 0; padding: 10px 12px;
+  font-family: 'Lora', serif; font-style: italic; font-size: 14.5px; line-height: 1.5; margin-top: 10px; }
+
+/* De kaart */
+.kaart { border: 2px solid var(--border); border-radius: var(--r-lg); padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.kaart .vak { display: flex; flex-direction: column; gap: 8px; }
+.kaart .vak h3 { font-family: 'Lora', serif; font-size: 15px; font-weight: 600; }
+.kaart .vak h3 small { font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 10px; letter-spacing: .6px; text-transform: uppercase; color: var(--pink); display: block; margin-bottom: 2px; }
+.kaart .vak p { font-size: 13px; color: var(--text-mid); line-height: 1.45; }
+.rij { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.alsdan { display: grid; grid-template-columns: 44px 1fr; gap: 8px; align-items: center; }
+.alsdan label { font-family: 'Lora', serif; font-style: italic; font-size: 15px; color: var(--pink); }
+.kaart-lees .vak p.antwoord { font-family: 'Lora', serif; font-size: 15px; color: var(--text); font-style: normal; }
+.knoppen { display: flex; gap: 8px; }
+.knoppen > * { flex: 1; }
+
+@media print {
+  body { background: #fff; padding: 0; display: block; }
+  .shell { box-shadow: none; max-width: none; border-radius: 0; }
+  .shell::before, .topbar, .stappen, .knoppen, .voet, .geen-print { display: none; }
+  .kaart { border: 1.5px solid #000; page-break-inside: avoid; }
+}

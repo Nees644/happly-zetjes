@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Begin je reis</title>
+<link rel="stylesheet" href="/reis.css">
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="logo-wrap">
+      <img src="/happly-logo.png" alt="happly" class="happly-logo">
+      <span class="product-tag" id="aanbieder">Volhoudreis</span>
+    </div>
+  </div>
+
+  <section class="pad" id="s-form">
+    <div class="art">
+      <h1 id="kop">Regel eerst <em>volhouden.</em></h1>
+      <p id="intro">Je begint binnenkort met een programma. Dit is de plek waar je bijhoudt wat je wilt volhouden, met een kaart voor het lastige moment en een zetje als je het nodig hebt.</p>
+    </div>
+
+    <form id="f" novalidate>
+      <label class="veld">
+        <span>Je voornaam</span>
+        <input type="text" name="voornaam" autocomplete="given-name" maxlength="60" placeholder="Zoals je aangesproken wilt worden">
+      </label>
+      <label class="veld">
+        <span>Je e-mailadres</span>
+        <input type="email" name="email" autocomplete="email" required maxlength="200" placeholder="Hier komt je toegangslink">
+      </label>
+
+      <label class="vink">
+        <input type="checkbox" name="toestemming" required>
+        <span>Ik ga akkoord dat mijn voornaam, e-mailadres, scanuitslag en kaart worden bewaard voor deze reis. <a href="/privacy.html" target="_blank" rel="noopener">Hoe we met je gegevens omgaan</a>.</span>
+      </label>
+      <label class="vink">
+        <input type="checkbox" name="signaalOk">
+        <span>Mijn begeleider mag zien hoe ver ik ben. Niet wat ik invul.</span>
+      </label>
+      <label class="vink">
+        <input type="checkbox" name="proactiefOk">
+        <span>Stuur me op mijn lastige moment één keer per week een zetje per mail.</span>
+      </label>
+
+      <p class="fout" id="fout" hidden></p>
+      <button type="submit" class="btn-pink" id="knop">Begin</button>
+    </form>
+  </section>
+
+  <section class="pad" id="s-klaar" hidden>
+    <div class="art">
+      <h1>Kijk in je <em>mail.</em></h1>
+      <p id="klaar-tekst">Daar staat je link. Bewaar die mail: het is je toegang tot je reis, nu en de komende weken.</p>
+    </div>
+    <p class="hint">Geen mail? Kijk bij ongewenste post, of vul hetzelfde adres nog een keer in. Dan sturen we de link opnieuw.</p>
+    <button class="btn-ghost" onclick="location.reload()">Terug</button>
+  </section>
+
+  <section class="pad" id="s-fout" hidden>
+    <div class="art">
+      <h1 id="fout-kop">Deze link werkt <em>niet meer.</em></h1>
+      <p id="fout-tekst"></p>
+    </div>
+  </section>
+
+  <p class="voet">volhouden door Happly</p>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const inviteToken = params.get('invite') || location.pathname.split('/').filter(Boolean).pop() || '';
+
+function toon(id) {
+  for (const s of ['s-form', 's-klaar', 's-fout']) document.getElementById(s).hidden = (s !== id);
+}
+function toonFout(reden, d) {
+  const kop = document.getElementById('fout-kop');
+  const t = document.getElementById('fout-tekst');
+  const contact = d?.contactEmail ? ` Neem contact op via ${d.contactEmail}.` : '';
+  if (reden === 'vol') { kop.innerHTML = 'Deze groep is <em>vol.</em>'; t.textContent = 'Alle plekken zijn bezet.' + contact; }
+  else if (reden === 'verlopen') { kop.innerHTML = 'Deze link is <em>verlopen.</em>'; t.textContent = 'De groep is afgesloten.' + contact; }
+  else if (reden === 'onbekend') { kop.innerHTML = 'Deze link kennen we <em>niet.</em>'; t.textContent = 'Controleer of je de link helemaal hebt gekopieerd.'; }
+  else { kop.innerHTML = 'Er ging iets <em>mis.</em>'; t.textContent = 'Probeer het over een minuut nog eens.' + contact; }
+  toon('s-fout');
+}
+
+document.getElementById('f').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = e.target;
+  const fout = document.getElementById('fout');
+  fout.hidden = true;
+  const email = f.email.value.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { fout.textContent = 'Vul een geldig e-mailadres in.'; fout.hidden = false; return; }
+  if (!f.toestemming.checked) { fout.textContent = 'Zonder je akkoord kunnen we je reis niet bewaren.'; fout.hidden = false; return; }
+  const knop = document.getElementById('knop');
+  knop.disabled = true; knop.textContent = 'Even geduld';
+  try {
+    const r = await fetch('/api/reis-start', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        inviteToken, voornaam: f.voornaam.value.trim(), email,
+        toestemming: true, signaalOk: f.signaalOk.checked, proactiefOk: f.proactiefOk.checked,
+      }),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.ok) {
+      if (d.bestaand) document.getElementById('klaar-tekst').textContent = 'Je was al begonnen. We hebben je link opnieuw gestuurd.';
+      if (d.mailFout) document.getElementById('klaar-tekst').textContent = 'Je reis staat, maar de mail kwam niet weg. Vul hetzelfde adres over een minuut nog eens in, dan sturen we de link opnieuw.';
+      toon('s-klaar');
+      return;
+    }
+    if (r.status === 400) { fout.textContent = d.error || 'Controleer je invoer.'; fout.hidden = false; knop.disabled = false; knop.textContent = 'Begin'; return; }
+    toonFout(d.error, d);
+  } catch {
+    toonFout('fout');
+  }
+});
+
+if (!inviteToken) toonFout('onbekend');
+else fetch('/api/reis-start?invite=' + encodeURIComponent(inviteToken)).then(async (r) => {
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok || !d.ok) { toonFout(d.error || 'fout', d); return; }
+  document.getElementById('aanbieder').textContent = d.aanbieder;
+  if (d.programma && d.programma !== 'Volhoudreis') {
+    document.getElementById('intro').textContent = `Je begint binnenkort met ${d.programma}. Dit is de plek waar je bijhoudt wat je wilt volhouden, met een kaart voor het lastige moment en een zetje als je het nodig hebt.`;
+  }
+}).catch(() => {});
+</script>
+</body>
+</html>
