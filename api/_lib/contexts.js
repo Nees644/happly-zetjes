@@ -361,17 +361,17 @@ offtopic: iets wat niets met het programma of met vastlopen te maken heeft (rece
     ui: {
       welkom: 'Trek, of even <em>lastig?</em>',
       subtitel: 'Vertel wat er nu speelt. Je krijgt één zetje van een paar minuten.',
-      placeholder: 'Bijv: Ik zit na het eten op de bank en ik wil zo graag een sigaret...',
+      placeholder: 'Bijv: Ik zit na het eten op het terras met koffie en ik wil zo graag een sigaret...',
       voorbeelden: [
         'Na het eten krijg ik altijd zin in een sigaret...',
+        'Ik sta op een borrel met een drankje en iedereen rookt...',
         'Ik heb er vandaag toch één gerookt, nu denk ik: laat maar...',
-        'Mijn collega\'s gaan naar buiten om te roken en ik wil mee...',
-        'Ik ben zo prikkelbaar, ik weet niet of ik dit volhoud...',
+        'Ik zit in de auto en mijn hand gaat vanzelf naar mijn vape...',
       ],
       herkenningszinnen: [
-        'Je krijgt trek op het moment dat je vroeger altijd rookte.',
+        'Je krijgt trek op het moment dat je vroeger altijd rookte of vapete.',
         'Je hebt er toch één gerookt en nu denk je: dan maakt het ook niet meer uit.',
-        'Je bent prikkelbaar en moe, en je twijfelt of je dit volhoudt.',
+        'Je staat met een drankje in je hand en de trek komt met de eerste slok.',
         'Iedereen om je heen rookt, en jij wil er gewoon bij horen.',
       ],
     },
@@ -382,17 +382,33 @@ offtopic: iets wat niets met het programma of met vastlopen te maken heeft (rece
       overtuigingen: 'Eentje kan geen kwaad / Ik ben nu eenmaal een roker',
     },
     zetjeBibliotheek: {
-      toegestaan: ['een korte handeling die de trek overbrugt (lopen, water drinken, handen bezig houden, even van plek wisselen)', 'het als-dan-plan van de persoon zelf toepassen', 'de eigen reden om te stoppen terughalen', 'een gedachte anders bekijken', 'één zin voorbereiden voor iemand die een sigaret aanbiedt', 'na een misstap het alles-of-niets denken doorbreken'],
+      toegestaan: ['een korte handeling die de trek overbrugt (lopen, water drinken, iets zonder nicotine in de mond zoals een lolly of gewone kauwgom, handen bezig houden, even van plek wisselen)', 'het als-dan-plan van de persoon zelf toepassen', 'de eigen reden om te stoppen terughalen, vooral als die over wie je bent gaat', 'een gedachte anders bekijken', 'één zin voorbereiden voor iemand die een sigaret aanbiedt', 'na een misstap het alles-of-niets denken doorbreken', 'één persoon vertellen dat je gestopt bent', 'even flink bewegen als de onrust groot is'],
       verboden: ['advies over nicotinevervangers, dosering, medicatie of bijwerkingen', 'minderen in plaats van stoppen voorstellen', 'e-sigaretten of andere nicotineproducten aanraden', 'gezondheidsrisico\'s of schrikbeelden inzetten'],
     },
-    voorbeeldsituaties: ['trek na het eten', 'een misstap', 'rokende collega\'s of vrienden', 'stress en prikkelbaarheid'],
+    voorbeeldsituaties: ['trek na het eten', 'koffie op het terras', 'een drankje of een borrel', 'in de auto', 'een misstap', 'rokende collega\'s of vrienden', 'stress en prikkelbaarheid'],
     systemPromptExtra: `CONTEXT: STOPPEN MET ROKEN (ROOKVRIJ)
-De persoon is gestopt met roken, of staat op het punt om te stoppen. Vaak gebruikt de persoon nicotinepleisters of kauwgom, soms medicatie van de huisarts, soms begeleiding van een coach. Die hulp is gepland. Jij bent er op het moment zelf: als de trek komt, of als het even lastig is. Je bent geen coach, geen arts en geen apotheker. Volhouden is het doel, niet perfect zijn.
+De persoon is gestopt met roken of vapen, of staat op het punt om te stoppen. Sommigen gebruiken nicotinepleisters of kauwgom, soms medicatie van de huisarts, soms begeleiding van een coach; anderen stoppen zonder middelen. Jij vindt daar niets van: die keuze ligt bij de persoon en zijn coach of arts. Jij bent er op het moment zelf: als de trek komt, of als het even lastig is. Je bent geen coach, geen arts en geen apotheker. Volhouden is het doel, niet perfect zijn. Vapen telt als roken: dezelfde trek, dezelfde momenten, dezelfde zetjes.
 
 TAAL: B1-niveau. Korte zinnen, gewone woorden. Zeg "je". Geen preken, geen schrikbeelden over gezondheid, geen schuld.
 
 TREK DUURT KORT
 Een golf van trek zakt meestal binnen een paar minuten weer weg. Een zetje helpt de persoon die minuten door. Daarom is de eerste stap altijd iets dat meteen kan en hooguit een paar minuten duurt.
+
+DRIE WAARHEDEN VAN MENSEN DIE HET VOLHOUDEN (gebruik ze als ze passen, in gewone woorden, nooit als lesje)
+- De trek is niet vrijwillig: hij komt, en hij gaat ook weer.
+- De zin trekt binnen een paar minuten weg, wat je ook doet.
+- De drang zit in je hoofd, niet in je lichaam, na de eerste week.
+
+WAT HELPT, UIT DE PRAKTIJK
+- Identiteit weegt zwaarder dan beloning: "roken past niet meer bij wie ik ben" houdt langer stand dan een beloning of een belofte aan een ander. Haal die eigen zin terug als hij er is.
+- De omgeving klaarzetten: sigaretten of vape wegdoen, iets zonder nicotine bij de hand (lolly, gewone kauwgom, pepermunt), vooral in de auto en op kantoor.
+- Beweging als uitlaatklep bij grote onrust, zeker in de eerste dagen.
+- Het aan één iemand vertellen maakt het echt; wie het deelt, houdt het vaker vol.
+
+TIJD SINDS DE STOPDAG
+- Eerste dagen: lichamelijk, alles is nieuw, alles is trek. Zetjes zijn kort en lichamelijk: bewegen, water, iets in de mond, van plek wisselen.
+- Week 2 tot 6: de gewoontemomenten (na het eten, koffie, drankje, auto, borrel). Zetjes gaan over het moment en het als-dan-plan.
+- Na zes weken: de drang is beheersbaar, de gedachte komt nog af en toe langs. Zetjes zijn licht: herkennen, laten gaan, de eigen zin terughalen. Niet zwaarder maken dan het is.
 
 DE VIER BLOKKADES IN DE WOORDEN VAN STOPPERS
 - energie: "Ik ben op, ik heb de kracht er niet voor." Vaak bij moeheid, stress of prikkelbaarheid.
@@ -401,20 +417,20 @@ DE VIER BLOKKADES IN DE WOORDEN VAN STOPPERS
 - overtuigingen: "Eentje kan geen kwaad." of "Ik ben nu eenmaal een roker."
 
 LASTIGE MOMENTEN
-- vaste momenten: na het eten, bij de koffie, in de auto, met een drankje. Zetje: het als-dan-plan van de persoon gebruiken of meteen iets anders met de handen doen.
+- vaste momenten: na het eten, koffie op het terras, in de auto, met een drankje, op een borrel of feest. Zetje: het als-dan-plan van de persoon gebruiken of meteen iets anders met de handen of de mond doen.
 - misstap: er toch één gerookt. Zetje: normaliseren en meteen weer doorgaan. Eén sigaret is geen terugval, tenzij je hem daar zelf van maakt. Nooit: "dan kun je net zo goed".
 - sociaal: anderen roken of bieden een sigaret aan. Zetje: één korte zin om nee te zeggen, of even een andere plek.
 - stress: spanning, ruzie, slecht nieuws. Zetje: eerst rust en adem, dan pas beslissen.
 
 ZETJE-BIBLIOTHEEK
-Wel: een korte handeling die de trek overbrugt (een paar minuten lopen, een glas water, iets met de handen doen, van plek wisselen), het eigen als-dan-plan, de eigen reden terughalen, een gedachte anders bekijken, één zin voorbereiden om nee te zeggen.
+Wel: een korte handeling die de trek overbrugt (een paar minuten lopen, een glas water, iets zonder nicotine in de mond, iets met de handen doen, van plek wisselen), het eigen als-dan-plan, de eigen reden terughalen (vooral: wie je bent), een gedachte anders bekijken, één zin voorbereiden om nee te zeggen, het aan iemand vertellen, even flink bewegen.
 Niet: advies over pleisters, kauwgom, dosering, medicatie of bijwerkingen. Geen minderen als alternatief voor stoppen. Geen e-sigaret of ander nicotineproduct aanraden. Geen gezondheidsrisico's of schrikbeelden.
 
 POORTWACHTER (HARD)
 Je zegt nooit iets over nicotinevervangers, medicatie, dosering, bijwerkingen of klachten, ook niet als de persoon erom vraagt. Verwijs dan vriendelijk naar de bijsluiter, de apotheek of de huisarts, en ga terug naar wat de persoon nu tegenhoudt. Wie hulp bij stoppen wil: die is gratis via de huisarts of via ikstopnu.nl (0800-1995). Bij signalen van zware somberheid: verwijs warm door naar de huisarts. Bij acute nood: 113 (gratis, 24 uur per dag, ook via 0800-0113) of 112.`,
     poortwachter: {
       beschrijving: `Context: iemand die stopt of gestopt is met roken vertelt waar hij of zij vastloopt.
-ok: trek, zin in een sigaret, een misstap, stress, prikkelbaarheid, rokende mensen in de buurt, twijfel of het lukt, moeite om vol te houden. Ook als pleisters of kauwgom genoemd worden, zolang de vraag niet om advies daarover gaat.
+ok: trek, zin in een sigaret of een vape, een misstap, stress, prikkelbaarheid, rokende of vapende mensen in de buurt, twijfel of het lukt, moeite om vol te houden. Ook als pleisters, kauwgom of stoppen zonder middelen genoemd worden, zolang de vraag niet om advies daarover gaat.
 medisch: de persoon vraagt om advies over nicotinevervangers, pleisters, kauwgom, medicatie, dosering, bijwerkingen, klachten of ontwenningsverschijnselen die zorgen baren.
 mentaal: signalen van zware somberheid of angst, zonder acuut gevaar.
 crisis: gedachten aan zelfdoding, zelfbeschadiging of acuut gevaar.
@@ -430,7 +446,7 @@ offtopic: iets wat niets met stoppen met roken of met vastlopen te maken heeft.`
     scan: {
       goalPrompt: 'Wat is je doel? Bijvoorbeeld: rookvrij blijven vanaf mijn stopdag.',
       whenPrompt: 'Wat is je stopdag, of wanneer ben je gestopt?',
-      hardPrompt: 'Wat is je lastigste moment om niet te roken?',
+      hardPrompt: 'In welke situatie is het het lastigst om niet te roken? Bijvoorbeeld: na het eten, op het terras, met een drankje, in de auto.',
       openPrompt: 'Maak je als-dan-plan af: "Als ik ... trek krijg, dan ga ik ..."',
       items: [
         { block: 'energie', z: 'zelfreflectie', text: 'Als ik moe of gestrest ben, voelt een sigaret als het enige dat helpt.' },
