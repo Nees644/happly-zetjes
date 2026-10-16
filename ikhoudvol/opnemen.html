@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="nl"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Opnemen · Ik houd vol.</title>
+<meta name="description" content="Vul je zinnen in en neem je verhaal op met je eigen telefoon. De tekst staat als autocue vlak onder de camera.">
+<style>
+@font-face{font-family:"DM Serif";src:url(DMSerifDisplay-Regular.ttf);font-display:swap}
+@font-face{font-family:"DM Sans";src:url(DMSans-Variable.ttf);font-weight:100 900;font-display:swap}
+:root{--zand:#F7F3F0;--zand2:#EFE8E4;--zw:#1A0B2E;--mag:#D6026F;--mut:#6B6472;--lijn:#E2D8D2;--lila:#B9AECB}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--zand);color:var(--zw);font-family:"DM Sans",system-ui,sans-serif;font-size:17px;line-height:1.5}
+[hidden]{display:none!important}
+.wrap{max-width:560px;margin:0 auto;padding:28px 20px 40px}
+h1{font-family:"DM Serif",Georgia,serif;font-weight:400;font-size:40px;line-height:1.05}
+h1 em{color:var(--mag);font-style:normal}
+.lead{color:var(--mut);margin:10px 0 22px}
+.veld{background:#fff;border:1px solid var(--lijn);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.veld label{display:block;font-weight:600;font-size:15px}
+.veld small{display:block;color:var(--mut);font-size:14px;margin:2px 0 8px}
+.veld textarea{width:100%;border:1px solid var(--lijn);border-radius:10px;padding:10px 12px;font:inherit;font-size:18px;resize:none;background:var(--zand);color:var(--zw);min-height:52px}
+.veld textarea:focus{outline:2px solid var(--mag);outline-offset:1px;background:#fff}
+.vast{background:var(--zw);color:#fff;border-color:var(--zw)}
+.vast small{color:var(--lila)}
+.vast .slot{font-family:"DM Serif",Georgia,serif;font-size:24px;margin-top:4px}
+.knop{display:block;width:100%;background:var(--mag);color:#fff;border:0;border-radius:14px;padding:17px;font:inherit;font-weight:600;font-size:18px;cursor:pointer;margin-top:8px;text-align:center;text-decoration:none}
+.knop.licht{background:#fff;color:var(--zw);border:1px solid var(--lijn)}
+.knop:disabled{opacity:.45}
+.klein{font-size:14px;color:var(--mut);margin-top:12px}
+.tel{font-size:14px;color:var(--mut);text-align:right;margin-top:-4px}
+/* Opnemen */
+#studio{position:fixed;inset:0;background:#000;color:#fff;overflow:hidden}
+#cam,#terug{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#cam{transform:scaleX(-1)}
+#cue{position:absolute;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top) + 18px) 18px 26px;background:linear-gradient(rgba(26,11,46,.82),rgba(26,11,46,.55) 70%,rgba(26,11,46,0));text-align:center}
+#cue p{font-family:"DM Serif",Georgia,serif;font-size:clamp(24px,7vw,34px);line-height:1.18;transition:opacity .25s;margin:0 0 8px}
+#cue p.na,#cue p.voor{opacity:.28;font-size:clamp(17px,4.6vw,21px)}
+#cue p.voor{display:none}
+#cue p.nu{opacity:1}
+.balk{position:absolute;left:0;right:0;bottom:0;padding:18px 20px calc(env(safe-area-inset-bottom) + 22px);display:flex;align-items:center;justify-content:center;gap:22px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.6))}
+.rond{width:78px;height:78px;border-radius:50%;border:5px solid #fff;background:var(--mag);cursor:pointer}
+.rond.bezig{border-radius:16px;width:62px;height:62px;margin:8px}
+.klein-knop{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:12px;padding:12px 14px;font:inherit;font-size:15px;cursor:pointer}
+#aftel{position:absolute;inset:0;display:grid;place-items:center;font-family:"DM Serif",Georgia,serif;font-size:140px;text-shadow:0 4px 20px rgba(0,0,0,.5);pointer-events:none}
+#tijd{position:absolute;top:calc(env(safe-area-inset-top) + 8px);right:14px;font-size:14px;background:var(--mag);border-radius:8px;padding:2px 8px}
+.tip{position:absolute;left:0;right:0;bottom:120px;text-align:center;font-size:14px;color:rgba(255,255,255,.85);padding:0 24px}
+#klaar .wrap video{width:100%;border-radius:14px;background:#000;aspect-ratio:9/16;object-fit:cover}
+.rij{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fout{background:#fff;border:1px solid var(--mag);border-radius:14px;padding:16px;margin-top:14px}
+</style></head><body>
+
+<!-- 1. Invullen -->
+<section id="invullen"><div class="wrap">
+  <h1>Jouw zinnen, <em>jouw woorden.</em></h1>
+  <p class="lead">Schrijf ze zoals je ze zou zeggen. Daarna staan ze bovenin je scherm, vlak onder de camera, terwijl je opneemt. Haperen mag.</p>
+
+  <div class="veld"><label for="z1">Wie ben je?</label><small>Bijvoorbeeld: Ik ben Manon, ik maak video's voor de bouw.</small>
+    <textarea id="z1" rows="2" maxlength="120" placeholder="Ik ben ..."></textarea></div>
+  <div class="veld"><label for="z2">Wat houd je vol?</label><small>Gewoon zoals je het zou vertellen. Bijvoorbeeld: Sinds eind augustus rook ik niet meer.</small>
+    <textarea id="z2" rows="2" maxlength="140" placeholder="Ik ..."></textarea></div>
+  <div class="veld"><label for="z3">Waarvoor doe je het?</label><small>Je reden, niet je doel. Bijvoorbeeld: Ik doe het omdat roken niet past bij wie ik wil zijn.</small>
+    <textarea id="z3" rows="2" maxlength="160" placeholder="Ik doe het ..."></textarea></div>
+  <div class="veld"><label for="z4">Wanneer is het lastig?</label><small>Het moment. Bijvoorbeeld: Het lastigst is koffie op het terras.</small>
+    <textarea id="z4" rows="2" maxlength="140" placeholder="Het lastigst is ..."></textarea></div>
+  <div class="veld vast"><label>En je sluit af met</label><small>Iedereen eindigt hetzelfde.</small><div class="slot">Ik houd vol.</div></div>
+  <p class="tel" id="duur"></p>
+
+  <button class="knop" id="naarStudio" disabled>Naar de camera</button>
+  <button class="knop licht" id="printen">Liever een briefje bij je telefoon</button>
+  <p class="klein">Je opname blijft op je eigen telefoon tot jij hem verstuurt. Er gaat niets naar ons toe zonder dat je dat zelf doet.</p>
+</div></section>
+
+<!-- 2. Opnemen -->
+<section id="studio" hidden>
+  <video id="cam" playsinline muted autoplay></video>
+  <div id="cue"></div>
+  <div id="tijd" hidden>0:00</div>
+  <div id="aftel" hidden></div>
+  <p class="tip" id="tip">Telefoon staand, op ooghoogte, licht van voren. Tik op het scherm voor de volgende zin.</p>
+  <div class="balk">
+    <button class="klein-knop" id="stopStudio">Terug</button>
+    <button class="rond" id="rec" aria-label="Opnemen"></button>
+    <button class="klein-knop" id="autoKnop">Zelf tikken</button>
+  </div>
+</section>
+
+<!-- 3. Klaar -->
+<section id="klaar" hidden><div class="wrap">
+  <h1>Zo <em>klinkt</em> het.</h1>
+  <p class="lead">Kijk hem één keer terug. Tevreden? Stuur hem op. Niet tevreden? Nog een keer; de eerste is vaak de beste.</p>
+  <video id="terug" controls playsinline></video>
+  <div class="rij" style="margin-top:14px">
+    <button class="knop licht" id="opnieuw">Nog een keer</button>
+    <button class="knop" id="delen">Versturen</button>
+  </div>
+  <a class="knop licht" id="bewaar" download>Bewaren op mijn telefoon</a>
+  <p class="klein">Versturen opent WhatsApp of je mail. Stuur hem naar het nummer waarop je de uitnodiging kreeg, of naar maarten@happly.nl. Je ziet de eindversie voordat hij ergens staat.</p>
+</div></section>
+
+<div id="foutmelding" class="wrap" hidden><div class="fout" id="foutTekst"></div></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const velden = ['z1','z2','z3','z4'];
+const SLOT = 'Ik houd vol.';
+const OPSLAG = 'ikhoudvol-zinnen';
+
+function bewaarZinnen() {
+  try { localStorage.setItem(OPSLAG, JSON.stringify(velden.map(v => $(v).value))); } catch (e) {}
+}
+function laadZinnen() {
+  try { const z = JSON.parse(localStorage.getItem(OPSLAG) || '[]'); velden.forEach((v, i) => { if (z[i]) $(v).value = z[i]; }); } catch (e) {}
+}
+function netjes(t) {
+  t = t.replace(/\s+/g, ' ').trim();
+  if (!t) return '';
+  t = t[0].toUpperCase() + t.slice(1);
+  if (!/[.?…]$/.test(t)) t += '.';
+  return t;
+}
+function zinnen() { return velden.map(v => netjes($(v).value)).filter(Boolean).concat(SLOT); }
+function woorden(t) { return t.split(/\s+/).filter(Boolean).length; }
+function werkBij() {
+  const ingevuld = velden.every(v => $(v).value.trim().length > 1);
+  $('naarStudio').disabled = !ingevuld;
+  const sec = Math.round(zinnen().reduce((s, z) => s + woorden(z), 0) / 2.3 + zinnen().length * 0.6);
+  $('duur').textContent = ingevuld ? `Ongeveer ${sec} seconden hardop.` : '';
+  bewaarZinnen();
+}
+velden.forEach(v => $(v).addEventListener('input', werkBij));
+laadZinnen(); werkBij();
+
+$('printen').onclick = () => {
+  const w = window.open('', '_blank');
+  if (!w) return;
+  const regels = zinnen().map(z => `<p>${z.replace(/</g,'&lt;')}</p>`).join('');
+  w.document.write(`<html><head><meta charset="utf-8"><title>Mijn zinnen</title><style>body{font-family:Georgia,serif;font-size:20pt;line-height:1.3;padding:12mm;max-width:90mm}p{margin:0 0 6mm}</style></head><body>${regels}<script>print()<\/script></body></html>`);
+  w.document.close();
+};
+
+// Studio
+let stream = null, recorder = null, stukken = [], blob = null, mime = '', huidig = 0, auto = true, timer = null, start = 0, klok = null;
+
+function toonFout(t) { $('foutTekst').textContent = t; $('foutmelding').hidden = false; }
+
+function tekenCue() {
+  const z = zinnen();
+  $('cue').innerHTML = z.map((t, i) => `<p class="${i < huidig ? 'voor' : i === huidig ? 'nu' : 'na'}">${t.replace(/</g,'&lt;')}</p>`).join('');
+}
+function volgende() {
+  const z = zinnen();
+  if (huidig < z.length - 1) { huidig++; tekenCue(); planAuto(); }
+}
+function planAuto() {
+  clearTimeout(timer);
+  if (!auto || !recorder || recorder.state !== 'recording') return;
+  const z = zinnen()[huidig];
+  timer = setTimeout(volgende, (woorden(z) / 2.3 + 0.9) * 1000);
+}
+
+async function openStudio() {
+  $('foutmelding').hidden = true;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 1080 }, height: { ideal: 1920 } },
+      audio: { echoCancellation: true, noiseSuppression: true },
+    });
+  } catch (e) {
+    toonFout('Je camera of microfoon is niet beschikbaar. Geef de browser toestemming, of gebruik het briefje en de gewone camera van je telefoon.');
+    return;
+  }
+  $('cam').srcObject = stream;
+  huidig = 0; tekenCue();
+  $('invullen').hidden = true; $('studio').hidden = false;
+}
+function sluitStudio() {
+  clearTimeout(timer); clearInterval(klok);
+  if (recorder && recorder.state === 'recording') recorder.stop();
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  stream = null; $('studio').hidden = true;
+}
+
+function kiesMime() {
+  const opties = ['video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm'];
+  for (const m of opties) if (window.MediaRecorder && MediaRecorder.isTypeSupported(m)) return m;
+  return '';
+}
+
+async function aftellen() {
+  $('aftel').hidden = false;
+  for (const n of [3, 2, 1]) { $('aftel').textContent = n; await new Promise(r => setTimeout(r, 800)); }
+  $('aftel').hidden = true;
+}
+
+async function startOpname() {
+  if (!window.MediaRecorder) { toonFout('Je browser kan hier niet opnemen. Gebruik het briefje en de gewone camera van je telefoon.'); return; }
+  $('tip').hidden = true;
+  await aftellen();
+  mime = kiesMime(); stukken = [];
+  recorder = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 6000000 } : undefined);
+  recorder.ondataavailable = (e) => { if (e.data && e.data.size) stukken.push(e.data); };
+  recorder.onstop = klaarMetOpname;
+  recorder.start(500);
+  $('rec').classList.add('bezig');
+  huidig = 0; tekenCue();
+  start = Date.now(); $('tijd').hidden = false;
+  klok = setInterval(() => { const s = Math.floor((Date.now() - start) / 1000); $('tijd').textContent = `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; if (s >= 60) stopOpname(); }, 250);
+  // Eerste zin even laten staan voor de automatische doorloop begint
+  setTimeout(planAuto, 600);
+}
+function stopOpname() {
+  clearTimeout(timer); clearInterval(klok);
+  if (recorder && recorder.state === 'recording') recorder.stop();
+  $('rec').classList.remove('bezig'); $('tijd').hidden = true;
+}
+function klaarMetOpname() {
+  const type = (recorder && recorder.mimeType) || mime || 'video/webm';
+  blob = new Blob(stukken, { type });
+  const url = URL.createObjectURL(blob);
+  $('terug').src = url;
+  const ext = type.includes('mp4') ? 'mp4' : 'webm';
+  const naam = 'ik-houd-vol-' + new Date().toISOString().slice(0,10) + '.' + ext;
+  $('bewaar').href = url; $('bewaar').download = naam; $('bewaar').dataset.naam = naam;
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  stream = null;
+  $('studio').hidden = true; $('klaar').hidden = false;
+  $('delen').hidden = !(navigator.canShare && navigator.canShare({ files: [new File([blob], naam, { type })] }));
+}
+
+$('naarStudio').onclick = openStudio;
+$('stopStudio').onclick = () => { sluitStudio(); $('invullen').hidden = false; };
+$('rec').onclick = () => { if (recorder && recorder.state === 'recording') stopOpname(); else startOpname(); };
+$('autoKnop').onclick = () => { auto = !auto; $('autoKnop').textContent = auto ? 'Zelf tikken' : 'Automatisch'; planAuto(); };
+$('cue').onclick = volgende;
+$('cam').onclick = volgende;
+$('opnieuw').onclick = () => { $('klaar').hidden = true; openStudio(); };
+$('delen').onclick = async () => {
+  const naam = $('bewaar').dataset.naam;
+  const file = new File([blob], naam, { type: blob.type });
+  try { await navigator.share({ files: [file], title: 'Ik houd vol', text: 'Mijn aflevering voor Ik houd vol.' }); } catch (e) {}
+};
+</script>
+</body></html>

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="nl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ik houd vol.</title>
+<meta name="description" content="Gewone mensen op een gewoon moment. Twintig seconden over wat ze volhouden, waarvoor, en wanneer het lastig is.">
+<meta property="og:title" content="Ik houd vol."><meta property="og:description" content="Gewone mensen. Een gewoon moment. Twintig seconden.">
+<meta property="og:image" content="https://ikhoudvol.nl/omslag.png">
+<style>
+@font-face{font-family:"DM Serif";src:url(DMSerifDisplay-Regular.ttf);font-display:swap}
+@font-face{font-family:"DM Sans";src:url(DMSans-Variable.ttf);font-weight:100 900;font-display:swap}
+:root{--zand:#F7F3F0;--zand2:#EFE8E4;--zw:#1A0B2E;--mag:#D6026F;--mut:#6B6472;--lijn:#E2D8D2;--lila:#B9AECB}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--zand);color:var(--zw);font-family:"DM Sans",system-ui,sans-serif;font-size:17px;line-height:1.55}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.kop{background:var(--zw);color:#fff;padding:72px 0 64px}
+header.kop h1{font-family:"DM Serif",Georgia,serif;font-weight:400;font-size:clamp(56px,13vw,120px);line-height:1}
+header.kop p{color:var(--lila);font-size:clamp(18px,2.6vw,22px);margin-top:18px;max-width:560px}
+h2{font-family:"DM Serif",Georgia,serif;font-weight:400;font-size:clamp(28px,5vw,40px);line-height:1.15;margin-bottom:14px}
+h2 em{color:var(--mag);font-style:normal}
+section{padding:56px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px;margin-top:24px}
+.afl{background:#fff;border:1px solid var(--lijn);border-radius:14px;overflow:hidden}
+.afl video{width:100%;aspect-ratio:9/16;display:block;background:var(--zw);object-fit:cover}
+.afl .onder{padding:12px 14px}
+.afl b{font-family:"DM Serif",Georgia,serif;font-weight:400;font-size:20px;display:block}
+.afl span{color:var(--mut);font-size:15px}
+.leeg{background:#fff;border:1px dashed var(--lila);border-radius:14px;padding:28px;color:var(--mut);margin-top:24px}
+.vier{counter-reset:z;list-style:none;margin-top:20px;display:grid;gap:12px}
+.vier li{counter-increment:z;background:#fff;border:1px solid var(--lijn);border-radius:14px;padding:16px 18px 16px 64px;position:relative}
+.vier li::before{content:counter(z);position:absolute;left:16px;top:14px;width:34px;height:34px;border-radius:50%;background:var(--mag);color:#fff;font-weight:700;display:grid;place-items:center}
+.vier i{color:var(--mut);font-style:normal;display:block;font-size:15px}
+.knop{display:inline-block;background:var(--mag);color:#fff;text-decoration:none;font-weight:600;padding:15px 24px;border-radius:12px;margin-top:22px}
+.knop.licht{background:#fff;color:var(--zw);border:1px solid var(--lijn)}
+.donker{background:var(--zw);color:#fff}
+.donker p{color:rgba(255,255,255,.85);max-width:620px}
+p+p{margin-top:12px}
+.klein{font-size:14px;color:var(--mut)}
+footer{padding:36px 0 48px;border-top:1px solid var(--lijn)}
+footer img{height:30px;vertical-align:middle}
+footer p{margin-top:10px}
+</style></head><body>
+<header class="kop"><div class="wrap">
+  <h1>Ik houd vol.</h1>
+  <p>Gewone mensen. Een gewoon moment. Twintig seconden over wat ze volhouden, waarvoor, en wanneer het lastig is.</p>
+</div></header>
+
+<section><div class="wrap">
+  <h2>De <em>verhalen</em></h2>
+  <p>Geen helden, geen voor en na. Iemand die op jou lijkt, op een dinsdagavond.</p>
+  <div id="afleveringen"></div>
+</div></section>
+
+<section style="background:var(--zand2)"><div class="wrap">
+  <h2>Vertel <em>jouw</em> verhaal</h2>
+  <p>Twintig seconden, op je eigen telefoon. Vier vragen, in je eigen woorden, en je sluit af zoals iedereen.</p>
+  <ol class="vier">
+    <li>Wie ben je? <i>Ik ben Manon, ik maak video's voor de bouw.</i></li>
+    <li>Wat houd je vol? <i>Sinds eind augustus rook ik niet meer.</i></li>
+    <li>Waarvoor doe je het? <i>Ik doe het omdat roken niet past bij wie ik wil zijn.</i></li>
+    <li>Wanneer is het lastig? <i>Het lastigst is koffie op het terras.</i></li>
+    <li>En dan: <i>Ik houd vol.</i></li>
+  </ol>
+  <a class="knop" href="opnemen">Schrijf je zinnen en neem op</a>
+  <p class="klein" style="margin-top:12px">Je zinnen staan als autocue vlak onder de camera. Je opname blijft op je telefoon tot jij hem verstuurt.</p>
+  <a class="knop licht" href="mailto:maarten@happly.nl?subject=Ik%20houd%20vol%3A%20mijn%20verhaal">Liever eerst even overleggen</a>
+  <p class="klein" style="margin-top:12px">Je krijgt eerst een korte instructie en een toestemmingsformulier. Je ziet de eindversie voordat hij online gaat, en je kunt hem altijd laten weghalen.</p>
+</div></section>
+
+<section class="donker"><div class="wrap">
+  <h2 style="color:#fff">Volhouden kun je <em>organiseren.</em></h2>
+  <p>Wat al deze mensen gemeen hebben, is geen karakter. Ze weten waar ze het voor doen, en ze weten wanneer het lastig wordt. Daar kun je iets voor regelen: een kaart met je eigen moment en je eigen woorden, en een klein zetje op het moment dat je het nodig hebt.</p>
+  <p>Dat is Zetjes, de volhoudassistent van Happly.</p>
+  <a class="knop" href="https://scan.happly.nl">Begin met de Zelfkracht Scan</a>
+</div></section>
+
+<footer><div class="wrap">
+  <img src="happly-logo.png" alt="Happly">
+  <p class="klein">Ik houd vol is een reeks van Happly. Klein zetje. Grote beweging. Wil je dat jouw aflevering verdwijnt? Mail maarten@happly.nl, dan is hij binnen twee werkdagen weg.</p>
+</div></footer>
+
+<script>
+// Afleveringen: voeg per aflevering één regel toe. Nieuwste bovenaan.
+const AFLEVERINGEN = [
+  // { naam: 'Manon, 22', wat: 'houdt vol: niet roken', video: 'afleveringen/01-manon_staand.mp4', omslag: 'afleveringen/01-manon_omslag.jpg' },
+];
+const doel = document.getElementById('afleveringen');
+if (!AFLEVERINGEN.length) {
+  doel.innerHTML = '<div class="leeg">De eerste verhalen komen binnenkort. Wil je zelf de eerste zijn? Kijk hieronder.</div>';
+} else {
+  const g = document.createElement('div'); g.className = 'grid';
+  for (const a of AFLEVERINGEN) {
+    const d = document.createElement('div'); d.className = 'afl';
+    d.innerHTML = `<video controls playsinline preload="none" poster="${a.omslag}" src="${a.video}"></video><div class="onder"><b></b><span></span></div>`;
+    d.querySelector('b').textContent = a.naam; d.querySelector('span').textContent = a.wat;
+    g.appendChild(d);
+  }
+  doel.appendChild(g);
+}
+</script>
+</body></html>
