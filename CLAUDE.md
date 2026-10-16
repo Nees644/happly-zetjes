@@ -81,6 +81,12 @@ Stand per stap (zie paragraaf 13 van de briefing):
   kolommen. QR-code via api.qrserver.com (externe dienst; de groepslink is
   toch bedoeld om te delen).
 
+## ikhoudvol.nl (sinds 16 oktober 2026)
+
+De reeks Ik houd vol: gewone mensen, twintig seconden, vijf zinnen (wie, wat, waarvoor, wanneer lastig, slotzin Ik houd vol). Statische site in `ikhoudvol/`, eigen Vercel-project met Root Directory `ikhoudvol`; de Zetjes-app serveert alleen `public` en ziet deze map niet. `ikhoudvol/opnemen.html` is de opneempagina: zinnen invullen, autocue onder de camera, kader voor hoofd en ogen (alleen op het scherm, gelijk aan de snit van de montage), opname blijft op de telefoon tot de deelnemer hem verstuurt. Montage gebeurt buiten deze repository (monteer.py in het startpakket).
+
+Open punt, afgesproken 16 oktober 2026: dezelfde opneempagina als stap in de Volhoudreis, direct na de kaart. De deelnemer spreekt zijn als-dan-plan hardop in en stuurt het naar een vriend of deelt het (openbare toezegging). Eerst ontwerpen en melden, dan bouwen.
+
 ## Werkregels
 
 - Nederlands in code en commentaar. Geen gedachtestreepjes, geen uitroeptekens.
