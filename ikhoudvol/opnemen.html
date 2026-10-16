@@ -47,20 +47,24 @@ h1 em{color:var(--mag);font-style:normal}
 #cue p.na{opacity:.5;font-size:clamp(18px,5vw,23px)}
 #cue p.verder{opacity:.25;font-size:clamp(16px,4.4vw,19px)}
 #cue p.voor{display:none}
+#cue .teller{display:flex;align-items:center;justify-content:center;gap:10px;font-size:13px;color:rgba(255,255,255,.85);margin-bottom:10px;font-family:"DM Sans",sans-serif}
+#cue .bol{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.3);display:inline-block;margin:0 2px}
+#cue .bol.af{background:#fff}
+#cue .bol.nu{background:var(--mag);box-shadow:0 0 0 3px rgba(214,2,111,.35)}
+#cue p.slotzin{color:#FF7FB8;opacity:1}
+#cue p.slotzin.nu{color:#fff}
+#cue .en{display:block;font-family:"DM Sans",sans-serif;font-size:13px;opacity:.85;margin-bottom:2px}
+#stopTip{font-size:13px;color:#fff;background:var(--mag);border-radius:8px;padding:1px 8px;animation:pols 1.4s ease-in-out infinite}
+@keyframes pols{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 .balk{position:absolute;left:0;right:0;bottom:0;padding:16px 20px calc(env(safe-area-inset-bottom) + 20px);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.65))}
 .rondvak{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:14px}
 .rond{width:78px;height:78px;border-radius:50%;border:5px solid #fff;background:var(--mag);cursor:pointer}
 .rond.bezig{border-radius:14px;width:60px;height:60px;margin:9px}
 .klein-knop{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:12px;padding:12px 10px;font:inherit;font-size:15px;cursor:pointer}
 .klein-knop.links{justify-self:start}.klein-knop.rechts{justify-self:end}
-#slot{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 168px);text-align:center;pointer-events:none}
-#slot span{display:inline-block;font-family:"DM Serif",Georgia,serif;font-size:clamp(22px,6.4vw,30px);background:var(--mag);color:#fff;border-radius:12px;padding:6px 16px;box-shadow:0 4px 18px rgba(0,0,0,.35)}
-#slot small{display:block;font-size:13px;color:rgba(255,255,255,.85);margin-bottom:6px;font-family:"DM Sans",sans-serif}
-#slot.nu span{animation:pols 1.4s ease-in-out infinite}
-@keyframes pols{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
 #aftel{position:absolute;inset:0;display:grid;place-items:center;font-family:"DM Serif",Georgia,serif;font-size:140px;text-shadow:0 4px 20px rgba(0,0,0,.5);pointer-events:none}
-#tijd{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 132px);left:50%;transform:translateX(-50%);font-size:15px;background:var(--mag);border-radius:8px;padding:2px 10px}
-.tip{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 250px);text-align:center;font-size:14px;color:rgba(255,255,255,.88);padding:0 24px}
+#tijd{position:absolute;top:calc(env(safe-area-inset-top) + 12px);right:12px;font-size:13px;background:var(--mag);border-radius:8px;padding:1px 8px;z-index:2}
+.tip{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 150px);text-align:center;font-size:14px;color:rgba(255,255,255,.88);padding:0 24px}
 
 /* Klaar */
 #terug{width:100%;border-radius:14px;background:#000;aspect-ratio:9/16;object-fit:contain;display:block}
@@ -113,12 +117,11 @@ h1 em{color:var(--mag);font-style:normal}
   <video id="cam" playsinline muted autoplay></video>
   <div id="cue"></div>
   <div id="aftel" hidden></div>
-  <div id="slot" hidden><small>Je laatste zin, daarna Stop</small><span>Ik houd vol.</span></div>
   <p class="tip" id="tip">Telefoon staand, op ooghoogte, licht van voren. De zinnen lopen vanzelf; tik erop om sneller door te gaan.</p>
   <div id="tijd" hidden>0:00</div>
   <div class="balk">
     <button class="klein-knop links" id="terugKnop">Terug</button>
-    <div class="rondvak"><button class="rond" id="rec" aria-label="Opnemen"></button><span id="recLabel">Opnemen</span></div>
+    <div class="rondvak"><span id="stopTip" hidden>daarna Stop</span><button class="rond" id="rec" aria-label="Opnemen"></button><span id="recLabel">Opnemen</span></div>
     <button class="klein-knop rechts" id="autoKnop">Zelf tikken</button>
   </div>
 </section>
@@ -170,8 +173,7 @@ function netjes(t) {
   if (!/[.?…]$/.test(t)) t += '.';
   return t;
 }
-function eigenZinnen() { return velden.map(v => netjes($(v).value)).filter(Boolean); }
-function zinnen() { return eigenZinnen().concat(SLOT); }
+function zinnen() { return velden.map(v => netjes($(v).value)).filter(Boolean).concat(SLOT); }
 function woorden(t) { return t.split(/\s+/).filter(Boolean).length; }
 function duurZin(z) { return woorden(z) / TEMPI[tempo] + PAUZE; }
 function werkBij() {
@@ -239,20 +241,26 @@ async function laadOpname() {
 let stream = null, recorder = null, stukken = [], blob = null, mime = '', huidig = 0, auto = true, timer = null, start = 0, klok = null;
 
 function tekenCue() {
-  const z = eigenZinnen();
-  $('cue').innerHTML = z.map((t, i) => {
-    const k = i < huidig ? 'voor' : i === huidig ? 'nu' : i === huidig + 1 ? 'na' : 'verder';
-    return `<p class="${k}">${esc(t)}</p>`;
+  const z = zinnen(), n = z.length;
+  const bollen = z.map((_, i) => `<span class="bol ${i < huidig ? 'af' : i === huidig ? 'nu' : ''}"></span>`).join('');
+  const regels = z.map((t, i) => {
+    const slot = i === n - 1;
+    let k = i < huidig ? 'voor' : i === huidig ? 'nu' : i === huidig + 1 ? 'na' : 'verder';
+    if (slot) k += ' slotzin';
+    const en = slot && i > huidig ? '<span class="en">en je sluit af met</span>' : '';
+    return `<p class="${k}">${en}${esc(t)}</p>`;
   }).join('');
+  $('cue').innerHTML = `<div class="teller"><span>zin ${huidig + 1} van ${n}</span><span>${bollen}</span></div>` + regels;
+  $('stopTip').hidden = !(huidig === n - 1 && recorder && recorder.state === 'recording');
 }
 function volgende() {
-  if (huidig < eigenZinnen().length - 1) { huidig++; tekenCue(); planAuto(); }
-  else { $('slot').classList.add('nu'); clearTimeout(timer); }
+  if (huidig < zinnen().length - 1) { huidig++; tekenCue(); planAuto(); }
 }
 function planAuto() {
   clearTimeout(timer);
   if (!auto || !recorder || recorder.state !== 'recording') return;
-  timer = setTimeout(volgende, duurZin(eigenZinnen()[huidig]) * 1000);
+  if (huidig >= zinnen().length - 1) return;
+  timer = setTimeout(volgende, duurZin(zinnen()[huidig]) * 1000);
 }
 
 async function openStudio() {
@@ -283,7 +291,6 @@ async function openStudio() {
   }
   $('cam').srcObject = stream;
   huidig = 0; tekenCue();
-  $('slot').hidden = false; $('slot').classList.remove('nu');
   $('tip').hidden = false; $('terugKnop').hidden = false; $('autoKnop').hidden = false;
   $('recLabel').textContent = 'Opnemen';
   toon('studio');
@@ -313,7 +320,7 @@ async function startOpname() {
   recorder.onstop = klaarMetOpname;
   recorder.start(1000);
   $('rec').disabled = false; $('rec').classList.add('bezig'); $('recLabel').textContent = 'Stop';
-  huidig = 0; tekenCue(); $('slot').classList.remove('nu');
+  huidig = 0; tekenCue();
   start = Date.now(); $('tijd').hidden = false; $('tijd').textContent = '0:00';
   klok = setInterval(() => {
     const s = Math.floor((Date.now() - start) / 1000);
@@ -325,7 +332,7 @@ async function startOpname() {
 function stopOpname() {
   clearTimeout(timer); clearInterval(klok);
   if (recorder && recorder.state === 'recording') recorder.stop();
-  $('rec').classList.remove('bezig'); $('tijd').hidden = true; $('recLabel').textContent = 'Opnemen';
+  $('rec').classList.remove('bezig'); $('tijd').hidden = true; $('recLabel').textContent = 'Opnemen'; $('stopTip').hidden = true;
 }
 function toonOpname(b) {
   blob = b;
