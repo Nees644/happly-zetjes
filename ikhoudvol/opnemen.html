@@ -47,7 +47,10 @@ h1 em{color:var(--mag);font-style:normal}
 .tip{position:absolute;left:0;right:0;bottom:120px;text-align:center;font-size:14px;color:rgba(255,255,255,.85);padding:0 24px}
 #klaar .wrap video{width:100%;border-radius:14px;background:#000;aspect-ratio:9/16;object-fit:cover}
 .rij{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.fout{background:#fff;border:1px solid var(--mag);border-radius:14px;padding:16px;margin-top:14px}
+.fout{background:#fff;border:2px solid var(--mag);border-radius:14px;padding:14px 16px;margin-top:12px;font-size:16px}
+.fout b{display:block;margin-bottom:4px}
+.veld.leeg{border-color:var(--mag);box-shadow:0 0 0 2px rgba(214,2,111,.15)}
+.klaar-melding{position:absolute;left:16px;right:16px;top:40%;background:#fff;color:var(--zw);border-radius:14px;padding:16px;font-size:16px;text-align:center}
 </style></head><body>
 
 <!-- 1. Invullen -->
@@ -66,7 +69,8 @@ h1 em{color:var(--mag);font-style:normal}
   <div class="veld vast"><label>En je sluit af met</label><small>Iedereen eindigt hetzelfde.</small><div class="slot">Ik houd vol.</div></div>
   <p class="tel" id="duur"></p>
 
-  <button class="knop" id="naarStudio" disabled>Naar de camera</button>
+  <button class="knop" id="naarStudio">Naar de camera</button>
+  <div class="fout" id="melding" hidden></div>
   <button class="knop licht" id="printen">Liever een briefje bij je telefoon</button>
   <p class="klein">Je opname blijft op je eigen telefoon tot jij hem verstuurt. Er gaat niets naar ons toe zonder dat je dat zelf doet.</p>
 </div></section>
@@ -98,7 +102,6 @@ h1 em{color:var(--mag);font-style:normal}
   <p class="klein">Versturen opent WhatsApp of je mail. Stuur hem naar het nummer waarop je de uitnodiging kreeg, of naar maarten@happly.nl. Je ziet de eindversie voordat hij ergens staat.</p>
 </div></section>
 
-<div id="foutmelding" class="wrap" hidden><div class="fout" id="foutTekst"></div></div>
 
 <script>
 const $ = (id) => document.getElementById(id);
@@ -123,7 +126,8 @@ function zinnen() { return velden.map(v => netjes($(v).value)).filter(Boolean).c
 function woorden(t) { return t.split(/\s+/).filter(Boolean).length; }
 function werkBij() {
   const ingevuld = velden.every(v => $(v).value.trim().length > 1);
-  $('naarStudio').disabled = !ingevuld;
+  velden.forEach(v => { if ($(v).value.trim().length > 1) $(v).closest('.veld').classList.remove('leeg'); });
+  if (ingevuld) $('melding').hidden = true;
   const sec = Math.round(zinnen().reduce((s, z) => s + woorden(z), 0) / 2.3 + zinnen().length * 0.6);
   $('duur').textContent = ingevuld ? `Ongeveer ${sec} seconden hardop.` : '';
   bewaarZinnen();
@@ -142,7 +146,18 @@ $('printen').onclick = () => {
 // Studio
 let stream = null, recorder = null, stukken = [], blob = null, mime = '', huidig = 0, auto = true, timer = null, start = 0, klok = null;
 
-function toonFout(t) { $('foutTekst').textContent = t; $('foutmelding').hidden = false; }
+function toonFout(kop, t) {
+  $('melding').innerHTML = '<b></b><span></span>';
+  $('melding').querySelector('b').textContent = kop;
+  $('melding').querySelector('span').textContent = t;
+  $('melding').hidden = false;
+  $('melding').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+// Ingebouwde browsers van apps kunnen meestal niet bij de camera.
+function inAppBrowser() {
+  const ua = navigator.userAgent || '';
+  return /FBAN|FBAV|Instagram|LinkedInApp|WhatsApp|Line\/|Snapchat|TikTok|musical_ly|GSA\/|Twitter/i.test(ua);
+}
 
 function tekenCue() {
   const z = zinnen();
@@ -160,14 +175,34 @@ function planAuto() {
 }
 
 async function openStudio() {
-  $('foutmelding').hidden = true;
+  $('melding').hidden = true;
+  const leeg = velden.filter(v => $(v).value.trim().length <= 1);
+  if (leeg.length) {
+    leeg.forEach(v => $(v).closest('.veld').classList.add('leeg'));
+    toonFout('Nog niet alles ingevuld', leeg.length === 1 ? 'Eén vraag is nog leeg; die staat nu gemarkeerd.' : `Er zijn nog ${leeg.length} vragen leeg; ze staan nu gemarkeerd.`);
+    $(leeg[0]).focus();
+    return;
+  }
+  if (!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    toonFout('Deze browser kan niet bij je camera',
+      inAppBrowser()
+        ? 'Je opende de link in een app (bijvoorbeeld WhatsApp, LinkedIn of je mail). Tik rechtsboven op de drie puntjes of het deelicoon en kies Openen in Safari of Openen in Chrome. Je zinnen blijven bewaard.'
+        : 'Open ikhoudvol.nl/opnemen in Safari (iPhone) of Chrome (Android). Je zinnen blijven bewaard.');
+    return;
+  }
   try {
     stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'user', width: { ideal: 1080 }, height: { ideal: 1920 } },
       audio: { echoCancellation: true, noiseSuppression: true },
     });
   } catch (e) {
-    toonFout('Je camera of microfoon is niet beschikbaar. Geef de browser toestemming, of gebruik het briefje en de gewone camera van je telefoon.');
+    const geweigerd = e && (e.name === 'NotAllowedError' || e.name === 'SecurityError');
+    toonFout(geweigerd ? 'Geen toestemming voor camera of microfoon' : 'De camera start niet',
+      geweigerd
+        ? 'Je telefoon vroeg om toestemming en die is (nog) niet gegeven. iPhone: tik op aA links in de adresbalk, kies Website-instellingen en zet Camera en Microfoon op Sta toe. Android: tik op het slotje in de adresbalk en zet Camera en Microfoon aan. Probeer het daarna opnieuw.'
+        : (inAppBrowser()
+            ? 'Je opende de link in een app. Kies Openen in Safari of Openen in Chrome via de drie puntjes of het deelicoon.'
+            : 'Misschien gebruikt een andere app je camera. Sluit die en probeer het opnieuw, of gebruik het briefje en de gewone camera van je telefoon.'));
     return;
   }
   $('cam').srcObject = stream;
@@ -194,7 +229,11 @@ async function aftellen() {
 }
 
 async function startOpname() {
-  if (!window.MediaRecorder) { toonFout('Je browser kan hier niet opnemen. Gebruik het briefje en de gewone camera van je telefoon.'); return; }
+  if (!window.MediaRecorder) {
+    const m = document.createElement('div'); m.className = 'klaar-melding';
+    m.textContent = 'Je browser kan hier niet opnemen. Werk je telefoon bij, of gebruik het briefje en de gewone camera van je telefoon.';
+    $('studio').appendChild(m); return;
+  }
   $('tip').hidden = true;
   await aftellen();
   mime = kiesMime(); stukken = [];
