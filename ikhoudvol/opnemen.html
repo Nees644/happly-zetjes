@@ -274,9 +274,10 @@ async function openStudio() {
     return;
   }
   try {
-    // Geen resolutie opvragen: dan knipt de iPhone een stuk uit de sensor en lijkt het ingezoomd.
+    // Hoge resolutie in de verhouding van de sensor (4:3). Een andere verhouding laat de iPhone
+    // uit de sensor knippen, en dat lijkt ingezoomd. Zonder eis krijg je maar 640 bij 480.
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'user', frameRate: { ideal: 30 } },
+      video: { facingMode: 'user', width: { ideal: 1920 }, height: { ideal: 1440 }, frameRate: { ideal: 30 } },
       audio: { echoCancellation: true, noiseSuppression: true },
     });
   } catch (e) {
@@ -315,7 +316,7 @@ async function startOpname() {
   $('tip').hidden = true; $('terugKnop').hidden = true; $('rec').disabled = true;
   await aftellen();
   mime = kiesMime(); stukken = [];
-  recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+  recorder = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 8000000 } : undefined);
   recorder.ondataavailable = (e) => { if (e.data && e.data.size) stukken.push(e.data); };
   recorder.onstop = klaarMetOpname;
   recorder.start(1000);
