@@ -73,6 +73,12 @@ h1 em{color:var(--mag);font-style:normal}
 .klein-knop{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:12px;padding:12px 10px;font:inherit;font-size:15px;cursor:pointer}
 .klein-knop.links{justify-self:start}.klein-knop.rechts{justify-self:end}
 #aftel{position:absolute;inset:0;display:grid;place-items:center;font-family:"DM Serif",Georgia,serif;font-size:140px;text-shadow:0 4px 20px rgba(0,0,0,.5);pointer-events:none}
+#aftel.woord{font-size:34px;line-height:1.15;text-align:center;padding:0 24px calc(env(safe-area-inset-bottom) + 140px);place-items:end center;white-space:pre-line}
+#flits{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .35s ease-out}
+#flits.aan{opacity:.85;transition:none}
+.startfoto{display:flex;gap:14px;align-items:center;margin:16px 0 4px}
+.startfoto img{width:72px;height:96px;object-fit:cover;border-radius:10px;transform:scaleX(-1)}
+.startfoto p{font-size:14px;margin:0}
 #tijd{position:absolute;top:calc(env(safe-area-inset-top) + 12px);right:12px;font-size:13px;background:var(--mag);border-radius:8px;padding:1px 8px;z-index:2}
 .tip{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 150px);text-align:center;font-size:14px;color:rgba(255,255,255,.88);padding:0 24px}
 
@@ -134,6 +140,7 @@ h1 em{color:var(--mag);font-style:normal}
   <div id="kader" hidden><div class="snit"><div class="hoofd"></div><div class="ogen"><span>ogen op deze lijn</span></div></div></div>
   <div id="cue"></div>
   <div id="aftel" hidden></div>
+  <div id="flits"></div>
   <p class="tip" id="tip">Zet je hoofd in het ovaal en je ogen op de roze lijn. Kom dichterbij of zet de telefoon hoger of lager tot het past. Het kader komt niet in je opname.</p>
   <div id="tijd" hidden>0:00</div>
   <div class="balk">
@@ -148,12 +155,14 @@ h1 em{color:var(--mag);font-style:normal}
   <h1>Je opname staat klaar.</h1>
   <p class="lead">Kijk hem één keer terug. Tevreden? Bewaar of verstuur hem. Niet tevreden? Nog een keer; de eerste is vaak de beste.</p>
   <video id="terug" controls playsinline></video>
+  <div class="startfoto" id="fotoVak" hidden><img id="fotoKlein" alt="Je startfoto"><p>Je startfoto gaat mee. Die staat straks als eerste beeld op je aflevering.</p></div>
   <button class="knop" id="delen">Bewaren of versturen</button>
   <a class="knop" id="bewaar" download hidden>Bewaren op mijn telefoon</a>
+  <a class="knop licht" id="bewaarFoto" download hidden>Startfoto bewaren</a>
   <button class="knop licht" id="opnieuw">Nog een keer opnemen</button>
   <button class="knop licht" id="kopieer">Kopieer mijn zinnen</button>
   <button class="knop licht" id="naarZinnen">Zinnen aanpassen</button>
-  <p class="klein" id="uitlegDelen">Op een iPhone kies je <b>Bewaar video</b> om hem in je Foto's te zetten, of WhatsApp of Mail om hem te versturen. Stuur hem naar het nummer waarop je de uitnodiging kreeg, of naar maarten@happly.nl. Je zinnen gaan als tekst mee, voor de ondertiteling; gaan ze niet mee, tik dan op Kopieer mijn zinnen en plak ze erbij. Je ziet de eindversie voordat hij ergens staat.</p>
+  <p class="klein" id="uitlegDelen">Op een iPhone kies je <b>Bewaar video</b> om hem in je Foto's te zetten, of WhatsApp of Mail om hem te versturen. Stuur hem naar het nummer waarop je de uitnodiging kreeg, of naar maarten@happly.nl. Je startfoto en je zinnen gaan mee, voor het openingsbeeld en de ondertiteling; gaan ze niet mee, tik dan op Kopieer mijn zinnen en plak ze erbij. Je ziet de eindversie voordat hij ergens staat.</p>
   <p class="klein">Deze opname blijft ook op deze pagina staan tot je een nieuwe maakt.</p>
 </div></section>
 
@@ -269,13 +278,14 @@ function openDb() {
   });
 }
 async function bewaarOpname(b) {
-  try { const db = await openDb(); await new Promise((ok, nee) => { const t = db.transaction(DB.winkel, 'readwrite'); t.objectStore(DB.winkel).put({ blob: b, type: b.type, at: Date.now() }, 'laatste'); t.oncomplete = ok; t.onerror = () => nee(t.error); }); } catch (e) {}
+  try { const db = await openDb(); await new Promise((ok, nee) => { const t = db.transaction(DB.winkel, 'readwrite'); t.objectStore(DB.winkel).put({ blob: b, type: b.type, foto, at: Date.now() }, 'laatste'); t.oncomplete = ok; t.onerror = () => nee(t.error); }); } catch (e) {}
 }
 async function laadOpname() {
   try { const db = await openDb(); return await new Promise((ok) => { const r = db.transaction(DB.winkel).objectStore(DB.winkel).get('laatste'); r.onsuccess = () => ok(r.result || null); r.onerror = () => ok(null); }); } catch (e) { return null; }
 }
 
 // Studio
+let foto = null;
 let stream = null, recorder = null, stukken = [], blob = null, mime = '', huidig = 0, auto = true, timer = null, start = 0, klok = null;
 
 function tekenCue() {
@@ -365,10 +375,28 @@ function kiesMime() {
   for (const m of opties) if (window.MediaRecorder && MediaRecorder.isTypeSupported(m)) return m;
   return '';
 }
+const wacht = (ms) => new Promise(r => setTimeout(r, ms));
+async function tel(woord, tot) {
+  const a = $('aftel'); a.hidden = false;
+  // Onderin, zodat je jezelf blijft zien terwijl je lacht
+  a.classList.add('woord'); a.textContent = woord; await wacht(1000);
+  for (let n = tot; n >= 1; n--) { a.textContent = woord + '\n' + n; await wacht(700); }
+  a.hidden = true; a.classList.remove('woord');
+}
+// Startfoto: één beeld uit de camera, in dezelfde snit als de opname.
+// In de montage wordt dit het openingsbeeld en de omslag op de site.
+function maakFoto() {
+  const v = $('cam'), c = document.createElement('canvas');
+  c.width = v.videoWidth; c.height = v.videoHeight;
+  c.getContext('2d').drawImage(v, 0, 0);
+  return new Promise(r => c.toBlob(r, 'image/jpeg', 0.92));
+}
 async function aftellen() {
-  $('aftel').hidden = false;
-  for (const n of [3, 2, 1]) { $('aftel').textContent = n; await new Promise(r => setTimeout(r, 750)); }
-  $('aftel').hidden = true;
+  await tel('Eerst een foto.\nLach maar.', 3);
+  try { foto = await maakFoto(); } catch (e) { foto = null; }
+  $('flits').classList.add('aan'); await wacht(60); $('flits').classList.remove('aan');
+  await wacht(500);
+  await tel('Mooi. Nu je zinnen.', 2);
 }
 async function startOpname() {
   if (!window.MediaRecorder) {
@@ -408,6 +436,11 @@ function toonOpname(b) {
   $('bewaar').href = url; $('bewaar').download = naam; $('bewaar').dataset.naam = naam;
   const kanDelen = !!(navigator.canShare && navigator.canShare({ files: [new File([b], naam, { type })] }));
   $('delen').hidden = !kanDelen; $('bewaar').hidden = kanDelen;
+  $('fotoVak').hidden = !foto; $('bewaarFoto').hidden = !foto || kanDelen;
+  if (foto) {
+    const fu = URL.createObjectURL(foto);
+    $('fotoKlein').src = fu; $('bewaarFoto').href = fu; $('bewaarFoto').download = naam.replace(/\.\w+$/, '-startfoto.jpg');
+  }
   toon('klaar');
 }
 function klaarMetOpname() {
@@ -426,7 +459,7 @@ $('autoKnop').onclick = () => { auto = !auto; $('autoKnop').textContent = auto ?
 $('cue').onclick = volgende;
 $('opnieuw').onclick = () => { $('terug').pause(); openStudio(); };
 $('naarZinnen').onclick = () => { $('terug').pause(); toon('invullen'); };
-$('naarVorige').onclick = async () => { const r = await laadOpname(); if (r && r.blob) toonOpname(new Blob([r.blob], { type: r.type })); };
+$('naarVorige').onclick = async () => { const r = await laadOpname(); if (r && r.blob) { foto = r.foto || null; toonOpname(new Blob([r.blob], { type: r.type })); } };
 $('kopieer').onclick = async () => {
   const t = zinnen().join('\n');
   try { await navigator.clipboard.writeText(t); $('kopieer').textContent = 'Gekopieerd. Plak ze bij je opname.'; }
@@ -436,7 +469,12 @@ $('kopieer').onclick = async () => {
 $('delen').onclick = async () => {
   const naam = $('bewaar').dataset.naam;
   const file = new File([blob], naam, { type: blob.type || 'video/mp4' });
-  try { await navigator.share({ files: [file], title: 'Ik houd vol', text: 'Mijn zinnen:\n' + zinnen().join('\n') }); } catch (e) {}
+  let bestanden = [file];
+  if (foto) {
+    const f = new File([foto], naam.replace(/\.\w+$/, '-startfoto.jpg'), { type: 'image/jpeg' });
+    if (navigator.canShare && navigator.canShare({ files: [file, f] })) bestanden = [file, f];
+  }
+  try { await navigator.share({ files: bestanden, title: 'Ik houd vol', text: 'Mijn zinnen:\n' + zinnen().join('\n') }); } catch (e) {}
 };
 
 // Staat er nog een opname van eerder? Laat dat zien.
