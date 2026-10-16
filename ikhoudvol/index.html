@@ -39,6 +39,12 @@ p.lees{max-width:62ch}
 .opening .knoppen{display:flex;gap:12px;flex-wrap:wrap}
 .telefoon{justify-self:center;width:min(300px,100%);aspect-ratio:9/16;border-radius:34px;background:#000;padding:9px;box-shadow:0 30px 80px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.08)}
 .telefoon video{width:100%;height:100%;object-fit:cover;border-radius:26px;display:block;background:var(--aubergine-2)}
+.speel{position:relative;display:block}
+.telefoon .speel{height:100%}
+.speel button{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;border:0;background:var(--magenta,#D6026F);cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.speel button::after{content:"";position:absolute;left:31px;top:24px;border-style:solid;border-width:14px 0 14px 22px;border-color:transparent transparent transparent #fff}
+.speel button:focus-visible{outline:3px solid #fff;outline-offset:4px}
+.speel.speelt button{display:none}
 .telefoon figcaption{font-size:14px;color:var(--lila);text-align:center;margin-top:16px}
 
 /* De levende zin */
@@ -98,7 +104,7 @@ p.lees{max-width:62ch}
 .noot blockquote{font-family:"DM Serif",Georgia,serif;font-size:clamp(24px,3vw,34px);line-height:1.32;max-width:30ch}
 .noot blockquote p+p{margin-top:20px}
 .noot cite{display:block;font-style:normal;font-family:"DM Sans",sans-serif;font-size:16px;color:var(--mut);margin-top:28px}
-.noot-raster{display:grid;grid-template-columns:1.4fr .6fr;gap:64px;align-items:center}
+.noot-raster{display:grid;grid-template-columns:1fr;gap:64px;align-items:center}
 .portret{width:100%;max-width:300px;aspect-ratio:3/4;object-fit:cover;object-position:50% 20%;border-radius:22px;justify-self:end}
 
 /* Voet */
@@ -210,7 +216,6 @@ p.lees{max-width:62ch}
       <p>Mijn vader zei het in drie woorden: je kunt het. Deze reeks is voor iedereen die dat op een gewone dinsdagavond even moet horen.</p>
     <cite>Maarten Neeskens, oprichter van Happly</cite>
     </blockquote>
-    <img class="portret" src="afleveringen/01-maarten-portret.jpg" alt="Maarten Neeskens" loading="lazy">
   </div>
 </section>
 
@@ -240,16 +245,29 @@ const PLEKKEN = 3; // lege plekken die uitnodigen om mee te doen
 
 const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+// Speler zonder bedieningsbalk tot iemand op afspelen drukt: anders valt de balk
+// over naam en tekst op het openingsbeeld.
+function speler(a, preload) {
+  return `<span class="speel"><video playsinline preload="${preload}" poster="${esc(a.omslag)}" src="${esc(a.video)}" aria-label="Aflevering van ${esc(a.naam)}"></video><button type="button" aria-label="Speel de aflevering van ${esc(a.naam)}"></button></span>`;
+}
+document.addEventListener('click', (e) => {
+  const knop = e.target.closest('.speel button');
+  if (!knop) return;
+  const vak = knop.parentElement, v = vak.querySelector('video');
+  vak.classList.add('speelt'); v.controls = true; v.play();
+});
+
 // Uitgelicht in de opening: de nieuwste aflevering
 const eerste = AFLEVERINGEN[0];
 const uit = document.getElementById('uitgelicht');
 if (eerste) {
-  uit.innerHTML = `<video controls playsinline preload="metadata" poster="${esc(eerste.omslag)}" src="${esc(eerste.video)}" aria-label="Aflevering van ${esc(eerste.naam)}"></video><figcaption>${esc(eerste.naam)}</figcaption>`;
+  uit.innerHTML = speler(eerste, 'metadata');
 } else { uit.remove(); }
 
 // Alle verhalen, plus lege plekken
 const rij = document.getElementById('afleveringen');
-rij.innerHTML = AFLEVERINGEN.map(a => `<div class="afl"><video controls playsinline preload="none" poster="${esc(a.omslag)}" src="${esc(a.video)}"></video><p><b>${esc(a.naam)}</b><span>${esc(a.wat)}</span></p></div>`).join('')
+// De nieuwste staat al in de opening; hier de rest, zodat niemand twee keer in beeld komt.
+rij.innerHTML = AFLEVERINGEN.slice(1).map(a => `<div class="afl">${speler(a, 'none')}<p><b>${esc(a.naam)}</b><span>${esc(a.wat)}</span></p></div>`).join('')
   + Array.from({ length: PLEKKEN }, () => `<a class="plek" href="opnemen"><span class="stem">Hier komt jouw verhaal.</span><small>Twintig seconden, je eigen telefoon.</small></a>`).join('');
 
 // De levende zin: wisselt per context, en volgt wie over de lijst gaat
