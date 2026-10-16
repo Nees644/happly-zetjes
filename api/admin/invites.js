@@ -1,18 +1,16 @@
 // api/admin/invites.js
 // POST /api/admin/invites { tenantSlug, productSlug, count, appUrl }
 
-import { createClient } from '@supabase/supabase-js';
-import crypto from 'crypto';
-import access from '../_lib/access.js';
-
-const { cors } = access;
+const { createClient } = require('@supabase/supabase-js');
+const crypto = require('crypto');
+const { cors } = require('../_lib/access');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 );
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   cors(res, req, { methods: 'POST, GET, OPTIONS', headers: 'Content-Type, x-admin-key' });
   if (req.method === 'OPTIONS') return res.status(200).end();
 
@@ -51,4 +49,4 @@ export default async function handler(req, res) {
   }
 
   return res.status(405).end();
-}
+};
