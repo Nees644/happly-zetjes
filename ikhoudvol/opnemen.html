@@ -42,6 +42,12 @@ h1 em{color:var(--mag);font-style:normal}
 /* Opnemen */
 #studio{position:fixed;inset:0;background:#000;color:#fff;overflow:hidden}
 #cam{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transform:scaleX(-1)}
+#kader{position:absolute;pointer-events:none;transition:opacity .4s}
+#kader .snit{position:absolute;top:0;bottom:0;border-left:2px dashed rgba(255,255,255,.55);border-right:2px dashed rgba(255,255,255,.55);box-shadow:0 0 0 2000px rgba(0,0,0,.45)}
+#kader .hoofd{position:absolute;border:3px solid rgba(255,255,255,.85);border-radius:50%}
+#kader .ogen{position:absolute;height:0;border-top:2px solid #FF7FB8}
+#kader .ogen span{position:absolute;right:0;top:-22px;font-size:12px;color:#fff;background:rgba(214,2,111,.85);border-radius:6px;padding:0 6px;white-space:nowrap}
+#kader.stil{opacity:.35}
 #cue{position:absolute;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top) + 16px) 18px 30px;background:linear-gradient(rgba(26,11,46,.88),rgba(26,11,46,.62) 72%,rgba(26,11,46,0));text-align:center;cursor:pointer}
 #cue p{font-family:"DM Serif",Georgia,serif;font-size:clamp(24px,7vw,34px);line-height:1.18;margin:0 0 8px;transition:opacity .2s}
 #cue p.na{opacity:.5;font-size:clamp(18px,5vw,23px)}
@@ -115,9 +121,10 @@ h1 em{color:var(--mag);font-style:normal}
 <!-- 2. Opnemen -->
 <section id="studio" hidden>
   <video id="cam" playsinline muted autoplay></video>
+  <div id="kader" hidden><div class="snit"><div class="hoofd"></div><div class="ogen"><span>ogen op deze lijn</span></div></div></div>
   <div id="cue"></div>
   <div id="aftel" hidden></div>
-  <p class="tip" id="tip">Telefoon staand, op ooghoogte, licht van voren. De zinnen lopen vanzelf; tik erop om sneller door te gaan.</p>
+  <p class="tip" id="tip">Zet je hoofd in het ovaal en je ogen op de roze lijn. Kom dichterbij of zet de telefoon hoger of lager tot het past. Het kader komt niet in je opname.</p>
   <div id="tijd" hidden>0:00</div>
   <div class="balk">
     <button class="klein-knop links" id="terugKnop">Terug</button>
@@ -134,8 +141,9 @@ h1 em{color:var(--mag);font-style:normal}
   <button class="knop" id="delen">Bewaren of versturen</button>
   <a class="knop" id="bewaar" download hidden>Bewaren op mijn telefoon</a>
   <button class="knop licht" id="opnieuw">Nog een keer opnemen</button>
+  <button class="knop licht" id="kopieer">Kopieer mijn zinnen</button>
   <button class="knop licht" id="naarZinnen">Zinnen aanpassen</button>
-  <p class="klein" id="uitlegDelen">Op een iPhone kies je <b>Bewaar video</b> om hem in je Foto's te zetten, of WhatsApp of Mail om hem te versturen. Stuur hem naar het nummer waarop je de uitnodiging kreeg, of naar maarten@happly.nl. Je ziet de eindversie voordat hij ergens staat.</p>
+  <p class="klein" id="uitlegDelen">Op een iPhone kies je <b>Bewaar video</b> om hem in je Foto's te zetten, of WhatsApp of Mail om hem te versturen. Stuur hem naar het nummer waarop je de uitnodiging kreeg, of naar maarten@happly.nl. Je zinnen gaan als tekst mee, voor de ondertiteling; gaan ze niet mee, tik dan op Kopieer mijn zinnen en plak ze erbij. Je ziet de eindversie voordat hij ergens staat.</p>
   <p class="klein">Deze opname blijft ook op deze pagina staan tot je een nieuwe maakt.</p>
 </div></section>
 
@@ -263,6 +271,29 @@ function planAuto() {
   timer = setTimeout(volgende, duurZin(zinnen()[huidig]) * 1000);
 }
 
+// Vaste maten, gelijk aan de montage: midden van het beeld, 9:16, ogen op 34 procent van de hoogte.
+const KADER = { ogen: 0.34, hoofdMidden: 0.32, hoofdHoogte: 0.30, hoofdBreedte: 0.44 };
+function plaatsKader() {
+  const v = $('cam'), vw = v.videoWidth, vh = v.videoHeight;
+  if (!vw || !vh) return;
+  const bw = v.clientWidth, bh = v.clientHeight;
+  const schaal = Math.min(bw / vw, bh / vh);
+  const w = vw * schaal, h = vh * schaal, x = (bw - w) / 2, y = (bh - h) / 2;
+  // 9:16-snit uit het midden; is het beeld smaller dan 9:16, dan de volle breedte
+  const sw = Math.min(w, h * 9 / 16), sh = Math.min(h, w * 16 / 9);
+  const k = $('kader');
+  Object.assign(k.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' });
+  const snit = k.querySelector('.snit');
+  Object.assign(snit.style, { left: (w - sw) / 2 + 'px', width: sw + 'px', top: (h - sh) / 2 + 'px', height: sh + 'px', bottom: 'auto' });
+  const hoofd = k.querySelector('.hoofd');
+  const hh = sh * KADER.hoofdHoogte, hb = sw * KADER.hoofdBreedte;
+  Object.assign(hoofd.style, { width: hb + 'px', height: hh + 'px', left: (sw - hb) / 2 + 'px', top: sh * KADER.hoofdMidden - hh / 2 + 'px' });
+  const ogen = k.querySelector('.ogen');
+  Object.assign(ogen.style, { left: sw * 0.12 + 'px', width: sw * 0.76 + 'px', top: sh * KADER.ogen + 'px' });
+  k.hidden = false;
+}
+window.addEventListener('resize', plaatsKader);
+
 async function openStudio() {
   $('melding').hidden = true;
   if (legeVelden()) return;
@@ -291,6 +322,7 @@ async function openStudio() {
     return;
   }
   $('cam').srcObject = stream;
+  $('cam').onloadedmetadata = plaatsKader;
   huidig = 0; tekenCue();
   $('tip').hidden = false; $('terugKnop').hidden = false; $('autoKnop').hidden = false;
   $('recLabel').textContent = 'Opnemen';
@@ -320,7 +352,7 @@ async function startOpname() {
   recorder.ondataavailable = (e) => { if (e.data && e.data.size) stukken.push(e.data); };
   recorder.onstop = klaarMetOpname;
   recorder.start(1000);
-  $('rec').disabled = false; $('rec').classList.add('bezig'); $('recLabel').textContent = 'Stop';
+  $('rec').disabled = false; $('rec').classList.add('bezig'); $('recLabel').textContent = 'Stop'; $('kader').classList.add('stil');
   huidig = 0; tekenCue();
   start = Date.now(); $('tijd').hidden = false; $('tijd').textContent = '0:00';
   klok = setInterval(() => {
@@ -331,6 +363,7 @@ async function startOpname() {
   planAuto();
 }
 function stopOpname() {
+  $('kader').classList.remove('stil');
   clearTimeout(timer); clearInterval(klok);
   if (recorder && recorder.state === 'recording') recorder.stop();
   $('rec').classList.remove('bezig'); $('tijd').hidden = true; $('recLabel').textContent = 'Opnemen'; $('stopTip').hidden = true;
@@ -364,10 +397,16 @@ $('cue').onclick = volgende;
 $('opnieuw').onclick = () => { $('terug').pause(); openStudio(); };
 $('naarZinnen').onclick = () => { $('terug').pause(); toon('invullen'); };
 $('naarVorige').onclick = async () => { const r = await laadOpname(); if (r && r.blob) toonOpname(new Blob([r.blob], { type: r.type })); };
+$('kopieer').onclick = async () => {
+  const t = zinnen().join('\n');
+  try { await navigator.clipboard.writeText(t); $('kopieer').textContent = 'Gekopieerd. Plak ze bij je opname.'; }
+  catch (e) { prompt('Kopieer je zinnen:', t); }
+  setTimeout(() => { $('kopieer').textContent = 'Kopieer mijn zinnen'; }, 3000);
+};
 $('delen').onclick = async () => {
   const naam = $('bewaar').dataset.naam;
   const file = new File([blob], naam, { type: blob.type || 'video/mp4' });
-  try { await navigator.share({ files: [file], title: 'Ik houd vol' }); } catch (e) {}
+  try { await navigator.share({ files: [file], title: 'Ik houd vol', text: 'Mijn zinnen:\n' + zinnen().join('\n') }); } catch (e) {}
 };
 
 // Staat er nog een opname van eerder? Laat dat zien.
