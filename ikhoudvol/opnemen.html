@@ -20,7 +20,7 @@ h1 em{color:var(--mag);font-style:normal}
 .veld{background:#fff;border:1px solid var(--lijn);border-radius:14px;padding:14px 16px;margin-bottom:12px}
 .veld label{display:block;font-weight:600;font-size:15px}
 .veld small{display:block;color:var(--mut);font-size:14px;margin:2px 0 8px}
-.veld textarea{width:100%;border:1px solid var(--lijn);border-radius:10px;padding:10px 12px;font:inherit;font-size:18px;resize:none;background:var(--zand);color:var(--zw);min-height:52px}
+.veld textarea{width:100%;overflow:hidden;border:1px solid var(--lijn);border-radius:10px;padding:10px 12px;font:inherit;font-size:18px;resize:none;background:var(--zand);color:var(--zw);min-height:52px}
 .veld textarea:focus{outline:2px solid var(--mag);outline-offset:1px;background:#fff}
 .veld.leeg{border-color:var(--mag);box-shadow:0 0 0 2px rgba(214,2,111,.15)}
 .vast{background:var(--zw);color:#fff;border-color:var(--zw)}
@@ -193,9 +193,11 @@ function werkBij() {
   document.querySelectorAll('#tempo button').forEach(b => b.classList.toggle('aan', b.dataset.t === tempo));
   bewaarZinnen();
 }
-velden.forEach(v => $(v).addEventListener('input', werkBij));
+// Invulvakken groeien mee met de tekst, zodat je altijd je hele zin ziet
+function groei(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 2 + 'px'; }
+velden.forEach(v => $(v).addEventListener('input', () => { groei($(v)); werkBij(); }));
 document.querySelectorAll('#tempo button').forEach(b => b.onclick = () => { tempo = b.dataset.t; schrijf('ikhoudvol-tempo', tempo); werkBij(); });
-laadZinnen(); werkBij();
+laadZinnen(); werkBij(); velden.forEach(v => groei($(v)));
 
 function toonFout(kop, t) {
   $('melding').innerHTML = '<b></b><span></span>';
