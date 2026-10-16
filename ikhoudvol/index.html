@@ -1,100 +1,273 @@
 <!doctype html>
 <html lang="nl"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ik houd vol.</title>
-<meta name="description" content="Gewone mensen op een gewoon moment. Twintig seconden over wat ze volhouden, waarvoor, en wanneer het lastig is.">
-<meta property="og:title" content="Ik houd vol."><meta property="og:description" content="Gewone mensen. Een gewoon moment. Twintig seconden.">
+<title>Ik houd vol. Gewone mensen, een gewoon moment</title>
+<meta name="description" content="Gewone mensen vertellen in twintig seconden wat ze volhouden, waarvoor, en wanneer het lastig is. Een reeks van Happly. Vertel ook jouw verhaal.">
+<meta property="og:title" content="Ik houd vol.">
+<meta property="og:description" content="Gewone mensen vertellen in twintig seconden wat ze volhouden, waarvoor, en wanneer het lastig is.">
 <meta property="og:image" content="https://ikhoudvol.nl/omslag.png">
 <style>
 @font-face{font-family:"DM Serif";src:url(DMSerifDisplay-Regular.ttf);font-display:swap}
 @font-face{font-family:"DM Sans";src:url(DMSans-Variable.ttf);font-weight:100 900;font-display:swap}
-:root{--zand:#F7F3F0;--zand2:#EFE8E4;--zw:#1A0B2E;--mag:#D6026F;--mut:#6B6472;--lijn:#E2D8D2;--lila:#B9AECB}
+:root{
+  --aubergine:#1A0B2E; --aubergine-2:#2A1745; --zand:#F7F3F0; --zand-2:#EFE8E4;
+  --magenta:#D6026F; --lila:#B9AECB; --tekst:#1A0B2E; --mut:#6B6472; --lijn:#E2D8D2;
+  --breed:1120px;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--zand);color:var(--zw);font-family:"DM Sans",system-ui,sans-serif;font-size:17px;line-height:1.55}
-.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
-header.kop{background:var(--zw);color:#fff;padding:72px 0 64px}
-header.kop h1{font-family:"DM Serif",Georgia,serif;font-weight:400;font-size:clamp(56px,13vw,120px);line-height:1}
-header.kop p{color:var(--lila);font-size:clamp(18px,2.6vw,22px);margin-top:18px;max-width:560px}
-h2{font-family:"DM Serif",Georgia,serif;font-weight:400;font-size:clamp(28px,5vw,40px);line-height:1.15;margin-bottom:14px}
-h2 em{color:var(--mag);font-style:normal}
-section{padding:56px 0}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px;margin-top:24px}
-.afl{background:#fff;border:1px solid var(--lijn);border-radius:14px;overflow:hidden}
-.afl video{width:100%;aspect-ratio:9/16;display:block;background:var(--zw);object-fit:cover}
-.afl .onder{padding:12px 14px}
-.afl b{font-family:"DM Serif",Georgia,serif;font-weight:400;font-size:20px;display:block}
-.afl span{color:var(--mut);font-size:15px}
-.leeg{background:#fff;border:1px dashed var(--lila);border-radius:14px;padding:28px;color:var(--mut);margin-top:24px}
-.vier{counter-reset:z;list-style:none;margin-top:20px;display:grid;gap:12px}
-.vier li{counter-increment:z;background:#fff;border:1px solid var(--lijn);border-radius:14px;padding:16px 18px 16px 64px;position:relative}
-.vier li::before{content:counter(z);position:absolute;left:16px;top:14px;width:34px;height:34px;border-radius:50%;background:var(--mag);color:#fff;font-weight:700;display:grid;place-items:center}
-.vier i{color:var(--mut);font-style:normal;display:block;font-size:15px}
-.knop{display:inline-block;background:var(--mag);color:#fff;text-decoration:none;font-weight:600;padding:15px 24px;border-radius:12px;margin-top:22px}
-.knop.licht{background:#fff;color:var(--zw);border:1px solid var(--lijn)}
-.donker{background:var(--zw);color:#fff}
-.donker p{color:rgba(255,255,255,.85);max-width:620px}
-p+p{margin-top:12px}
-.klein{font-size:14px;color:var(--mut)}
-footer{padding:36px 0 48px;border-top:1px solid var(--lijn)}
-footer img{height:30px;vertical-align:middle}
-footer p{margin-top:10px}
+html{scroll-behavior:smooth}
+body{background:var(--zand);color:var(--tekst);font-family:"DM Sans",system-ui,sans-serif;font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--magenta);outline-offset:3px;border-radius:4px}
+.wrap{max-width:var(--breed);margin:0 auto;padding:0 24px}
+.stem{font-family:"DM Serif",Georgia,serif;font-weight:400}
+p.lees{max-width:62ch}
+.knop{display:inline-block;background:var(--magenta);color:#fff;text-decoration:none;font-weight:600;padding:16px 26px;border-radius:999px;font-size:17px}
+.knop:hover{background:#b8015f}
+.knop.rustig{background:transparent;color:inherit;border:1.5px solid currentColor}
+.knop.rustig:hover{background:rgba(255,255,255,.08)}
+
+/* Opening */
+.opening{background:var(--aubergine);color:#fff;padding:28px 0 72px;overflow:hidden}
+.balk{display:flex;justify-content:space-between;align-items:center;margin-bottom:56px}
+.balk img{height:28px;filter:brightness(0) invert(1)}
+.balk a{font-size:15px;color:var(--lila);text-decoration:none}
+.balk a:hover{color:#fff}
+.opening .raster{display:grid;grid-template-columns:1.25fr .75fr;gap:56px;align-items:center}
+.opening h1{font-family:"DM Serif",Georgia,serif;font-weight:400;font-size:clamp(64px,11vw,148px);line-height:.92;letter-spacing:-.01em}
+.opening .onder{font-size:clamp(19px,2.2vw,23px);color:rgba(255,255,255,.86);margin:28px 0 36px;max-width:30ch;line-height:1.45}
+.opening .knoppen{display:flex;gap:12px;flex-wrap:wrap}
+.telefoon{justify-self:center;width:min(300px,100%);aspect-ratio:9/16;border-radius:34px;background:#000;padding:9px;box-shadow:0 30px 80px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.08)}
+.telefoon video{width:100%;height:100%;object-fit:cover;border-radius:26px;display:block;background:var(--aubergine-2)}
+.telefoon figcaption{font-size:14px;color:var(--lila);text-align:center;margin-top:16px}
+
+/* De levende zin */
+.zin{padding:96px 0 40px}
+.zin .regel{font-family:"DM Serif",Georgia,serif;font-size:clamp(34px,5.4vw,64px);line-height:1.12;max-width:20ch}
+.zin .wissel{color:var(--magenta);display:inline}
+.zin .wissel.weg{opacity:0}
+.zin .wissel{transition:opacity .35s ease}
+.zin .regel{min-height:3.4em}
+.contexten{list-style:none;margin:64px 0 0;border-top:1px solid var(--lijn)}
+.contexten li{display:grid;grid-template-columns:minmax(180px,1fr) 2fr;gap:24px;padding:22px 0;border-bottom:1px solid var(--lijn);align-items:baseline}
+.contexten b{font-weight:600;font-size:18px}
+.contexten span{font-family:"DM Serif",Georgia,serif;font-size:clamp(20px,2.4vw,26px);line-height:1.3}
+.contexten li.aan span{color:var(--magenta)}
+
+/* Waarom */
+.waarom{padding:96px 0}
+.waarom .raster{display:grid;grid-template-columns:1fr 1fr;gap:64px}
+.waarom h2{font-family:"DM Serif",Georgia,serif;font-weight:400;font-size:clamp(36px,4.6vw,56px);line-height:1.05;margin-bottom:24px}
+.waarom p+p{margin-top:16px}
+.getal{font-family:"DM Serif",Georgia,serif;font-size:clamp(88px,12vw,150px);line-height:.9;color:var(--magenta)}
+.getal-uitleg{max-width:34ch;margin-top:12px;font-size:17px}
+.bron{font-size:13px;color:var(--mut);margin-top:10px}
+.formule{margin-top:48px;padding-top:28px;border-top:1px solid var(--lijn);font-size:17px}
+.formule .stem{font-size:clamp(24px,3vw,32px);display:block;margin-bottom:8px}
+
+/* Verhalen */
+.verhalen{background:var(--aubergine);color:#fff;padding:96px 0}
+.verhalen h2{font-family:"DM Serif",Georgia,serif;font-weight:400;font-size:clamp(36px,4.6vw,56px);line-height:1.05}
+.verhalen .lees{color:rgba(255,255,255,.82);margin:16px 0 40px}
+.rij{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:20px}
+.afl video{width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:18px;display:block;background:var(--aubergine-2)}
+.afl p{margin-top:12px;font-size:16px;line-height:1.35}
+.afl p b{font-family:"DM Serif",Georgia,serif;font-weight:400;font-size:21px;display:block}
+.afl p span{color:var(--lila)}
+.plek{aspect-ratio:9/16;border-radius:18px;border:1.5px dashed rgba(185,174,203,.55);display:flex;flex-direction:column;justify-content:flex-end;padding:22px;text-decoration:none;color:#fff;transition:border-color .2s,background .2s}
+.plek:hover{border-color:var(--magenta);background:rgba(214,2,111,.08)}
+.plek .stem{font-size:26px;line-height:1.15}
+.plek small{display:block;color:var(--lila);font-size:15px;margin-top:8px}
+
+/* Meedoen */
+.meedoen{padding:96px 0}
+.meedoen .raster{display:grid;grid-template-columns:.9fr 1.1fr;gap:64px;align-items:start}
+.meedoen h2{font-family:"DM Serif",Georgia,serif;font-weight:400;font-size:clamp(40px,5.4vw,68px);line-height:1}
+.meedoen .lees{margin:20px 0 32px}
+.stappen{list-style:none;counter-reset:s}
+.stappen li{counter-increment:s;position:relative;padding:0 0 26px 58px}
+.stappen li::before{content:counter(s);position:absolute;left:0;top:-2px;width:38px;height:38px;border-radius:50%;background:var(--aubergine);color:#fff;font-weight:600;display:grid;place-items:center;font-size:16px}
+.stappen b{display:block;font-size:19px}
+.vragen{background:#fff;border-radius:24px;padding:32px 34px;border:1px solid var(--lijn)}
+.vragen p{font-family:"DM Serif",Georgia,serif;font-size:clamp(22px,2.6vw,28px);line-height:1.25;padding:12px 0;border-bottom:1px solid var(--zand-2)}
+.vragen p:last-child{border-bottom:0;color:var(--magenta)}
+.vragen small{display:block;font-family:"DM Sans",sans-serif;font-size:15px;color:var(--mut);margin-top:4px}
+
+/* Noot */
+.noot{background:var(--zand-2);padding:96px 0}
+.noot blockquote{font-family:"DM Serif",Georgia,serif;font-size:clamp(24px,3vw,34px);line-height:1.32;max-width:30ch}
+.noot blockquote p+p{margin-top:20px}
+.noot cite{display:block;font-style:normal;font-family:"DM Sans",sans-serif;font-size:16px;color:var(--mut);margin-top:28px}
+.noot-raster{display:grid;grid-template-columns:1.4fr .6fr;gap:64px;align-items:center}
+.portret{width:100%;max-width:300px;aspect-ratio:3/4;object-fit:cover;object-position:50% 20%;border-radius:22px;justify-self:end}
+
+/* Voet */
+.voet{background:var(--aubergine);color:rgba(255,255,255,.82);padding:72px 0 48px;font-size:16px}
+.voet .raster{display:grid;grid-template-columns:1.2fr 1fr;gap:48px}
+.voet img{height:30px;filter:brightness(0) invert(1);margin-bottom:18px}
+.voet a{color:#fff}
+.voet .klein{font-size:14px;color:var(--lila);margin-top:40px;padding-top:24px;border-top:1px solid rgba(255,255,255,.12)}
+
+@media (max-width:860px){
+  .opening .raster,.waarom .raster,.meedoen .raster,.voet .raster,.noot-raster{grid-template-columns:1fr;gap:44px}
+  .portret{justify-self:start;max-width:220px}
+  .opening{padding-bottom:56px}
+  .balk{margin-bottom:36px}
+  .contexten li{grid-template-columns:1fr;gap:4px}
+  .zin,.waarom,.verhalen,.meedoen,.noot{padding:72px 0}
+  .vragen{padding:24px}
+}
+@media (prefers-reduced-motion:reduce){.zin .wissel{transition:none}}
 </style></head><body>
-<header class="kop"><div class="wrap">
-  <h1>Ik houd vol.</h1>
-  <p>Gewone mensen. Een gewoon moment. Twintig seconden over wat ze volhouden, waarvoor, en wanneer het lastig is.</p>
-</div></header>
 
-<section><div class="wrap">
-  <h2>De <em>verhalen</em></h2>
-  <p>Geen helden, geen voor en na. Iemand die op jou lijkt, op een dinsdagavond.</p>
-  <div id="afleveringen"></div>
-</div></section>
+<header class="opening">
+  <div class="wrap">
+    <div class="balk">
+      <a href="https://happly.nl" aria-label="Happly"><img src="happly-logo.png" alt="Happly"></a>
+      <a href="#meedoen">Vertel jouw verhaal</a>
+    </div>
+    <div class="raster">
+      <div>
+        <h1>Ik houd vol.</h1>
+        <p class="onder">Gewone mensen vertellen in twintig seconden wat ze volhouden, waarvoor, en wanneer het lastig is.</p>
+        <div class="knoppen">
+          <a class="knop" href="opnemen">Vertel jouw verhaal</a>
+          <a class="knop rustig" href="#verhalen">Bekijk de verhalen</a>
+        </div>
+      </div>
+      <figure class="telefoon" id="uitgelicht"></figure>
+    </div>
+  </div>
+</header>
 
-<section style="background:var(--zand2)"><div class="wrap">
-  <h2>Vertel <em>jouw</em> verhaal</h2>
-  <p>Twintig seconden, op je eigen telefoon. Vier vragen, in je eigen woorden, en je sluit af zoals iedereen.</p>
-  <ol class="vier">
-    <li>Wie ben je? <i>Ik ben Manon, ik maak video's voor de bouw.</i></li>
-    <li>Wat houd je vol? <i>Sinds eind augustus rook ik niet meer.</i></li>
-    <li>Waarvoor doe je het? <i>Ik doe het omdat roken niet past bij wie ik wil zijn.</i></li>
-    <li>Wanneer is het lastig? <i>Het lastigst is koffie op het terras.</i></li>
-    <li>En dan: <i>Ik houd vol.</i></li>
-  </ol>
-  <a class="knop" href="opnemen">Schrijf je zinnen en neem op</a>
-  <p class="klein" style="margin-top:12px">Je zinnen staan als autocue vlak onder de camera. Je opname blijft op je telefoon tot jij hem verstuurt.</p>
-  <a class="knop licht" href="mailto:maarten@happly.nl?subject=Ik%20houd%20vol%3A%20mijn%20verhaal">Liever eerst even overleggen</a>
-  <p class="klein" style="margin-top:12px">Je krijgt eerst een korte instructie en een toestemmingsformulier. Je ziet de eindversie voordat hij online gaat, en je kunt hem altijd laten weghalen.</p>
-</div></section>
+<section class="zin" aria-labelledby="zin-kop">
+  <div class="wrap">
+    <p class="regel" id="zin-kop">Ik houd vol, zodat <span class="wissel" id="wissel">wat ik leerde ook op maandag blijft.</span></p>
+    <ul class="contexten" id="contexten">
+      <li data-zin="wat ik leerde ook op maandag blijft"><b>Na een training</b><span>Wat je leerde blijven doen, ook als de dagelijkse drukte terugkomt.</span></li>
+      <li data-zin="mijn kinderen me nooit zien roken"><b>Stoppen met roken of vapen</b><span>Rookvrij blijven, ook op een feestje en na een lange dag.</span></li>
+      <li data-zin="ik me weer licht voel"><b>Afvallen</b><span>Het nieuwe ritme houden, ook als het programma voorbij is.</span></li>
+      <li data-zin="ik over tien jaar nog meedoe"><b>Sterker en fitter worden</b><span>Blijven gaan, ook als het regent en de bank lonkt.</span></li>
+      <li data-zin="ik weer ergens bij hoor"><b>Werk vinden</b><span>Blijven solliciteren, ook na de derde afwijzing.</span></li>
+      <li data-zin="ik van mijn vak kan leven"><b>Ondernemen</b><span>Blijven bouwen, ook in een stille week.</span></li>
+    </ul>
+  </div>
+</section>
 
-<section class="donker"><div class="wrap">
-  <h2 style="color:#fff">Volhouden kun je <em>organiseren.</em></h2>
-  <p>Wat al deze mensen gemeen hebben, is geen karakter. Ze weten waar ze het voor doen, en ze weten wanneer het lastig wordt. Daar kun je iets voor regelen: een kaart met je eigen moment en je eigen woorden, en een klein zetje op het moment dat je het nodig hebt.</p>
-  <p>Dat is Zetjes, de volhoudassistent van Happly.</p>
-  <a class="knop" href="https://scan.happly.nl">Begin met de Zelfkracht Scan</a>
-</div></section>
+<section class="waarom" aria-labelledby="waarom-kop">
+  <div class="wrap raster">
+    <div>
+      <h2 id="waarom-kop">Volhouden is geen karakter. Je kunt het organiseren.</h2>
+      <p class="lees">Wie aan iets begint, wil het. Een training, een stoppoging, een leefstijlprogramma: het begin is vaak goed geregeld. Wat volgt is een gewone dinsdagavond waar niemand iets voor heeft geregeld. Daar wordt het lastig, en daar beslist het.</p>
+      <p class="lees">Deze verhalen laten zien dat iedereen zo'n moment heeft, en dat je er iets voor kunt regelen. Wie hardop zegt waar hij het voor doet, maakt er een afspraak van met zichzelf. Wie kijkt, ziet iemand die op hem lijkt.</p>
+    </div>
+    <div>
+      <div class="getal">66</div>
+      <p class="getal-uitleg">dagen heeft nieuw gedrag gemiddeld nodig voordat het vanzelf gaat. Een training duurt één dag.</p>
+      <p class="bron">Lally e.a., 2010</p>
+      <div class="formule">
+        <span class="stem">Inzicht + impuls + volhouden = succes</span>
+        Happly organiseert het volhouden: een meting vooraf, een kaart met je eigen moment en je eigen woorden, een zetje als het lastig wordt, en een meting achteraf.
+      </div>
+    </div>
+  </div>
+</section>
 
-<footer><div class="wrap">
-  <img src="happly-logo.png" alt="Happly">
-  <p class="klein">Ik houd vol is een reeks van Happly. Klein zetje. Grote beweging. Wil je dat jouw aflevering verdwijnt? Mail maarten@happly.nl, dan is hij binnen twee werkdagen weg.</p>
-</div></footer>
+<section class="verhalen" id="verhalen" aria-labelledby="verhalen-kop">
+  <div class="wrap">
+    <h2 id="verhalen-kop">De verhalen</h2>
+    <p class="lees">Geen helden, geen voor en na. Iemand die op jou lijkt, op een gewoon moment. Elke week één.</p>
+    <div class="rij" id="afleveringen"></div>
+  </div>
+</section>
+
+<section class="meedoen" id="meedoen" aria-labelledby="meedoen-kop">
+  <div class="wrap raster">
+    <div>
+      <h2 id="meedoen-kop">Twintig seconden. Wie volgt?</h2>
+      <p class="lees">Je hoeft niets te kunnen en niets te bewijzen. Alleen te vertellen wat je volhoudt en waarvoor. Het kost je vijf minuten met je eigen telefoon.</p>
+      <ol class="stappen">
+        <li><b>Schrijf je zinnen</b>Vier vragen, in je eigen woorden. Je slotzin is voor iedereen dezelfde.</li>
+        <li><b>Neem op met de autocue</b>Je zinnen staan vlak onder de camera. Je hoeft niets uit je hoofd te leren.</li>
+        <li><b>Stuur op en keur goed</b>Wij monteren. Jij ziet de eindversie voordat hij ergens staat, en je kunt hem altijd laten weghalen.</li>
+      </ol>
+      <a class="knop" href="opnemen">Vertel jouw verhaal</a>
+    </div>
+    <div class="vragen" aria-label="De vijf zinnen">
+      <p>Wie ben je?<small>Je voornaam, en als je wilt wat je doet.</small></p>
+      <p>Wat houd je vol?<small>Zoals je het aan een vriend zou vertellen.</small></p>
+      <p>Waarvoor doe je het?<small>Je reden, niet je doel.</small></p>
+      <p>Wanneer is het lastig?<small>Het moment, de plek, de situatie.</small></p>
+      <p>Ik houd vol.<small>Zo sluit iedereen af.</small></p>
+    </div>
+  </div>
+</section>
+
+<section class="noot" aria-label="Waarom deze reeks">
+  <div class="wrap noot-raster">
+    <blockquote>
+      <p>Op mijn 57e kwam ik niet verder dan 250 meter hardlopen. Achttien maanden later liep ik mijn eerste halve marathon. Niet omdat ik ineens een ander karakter had, maar omdat ik mijn dagen anders had ingericht en wist wat ik moest doen op de avonden dat ik geen zin had.</p>
+      <p>Mijn vader zei het in drie woorden: je kunt het. Deze reeks is voor iedereen die dat op een gewone dinsdagavond even moet horen.</p>
+    <cite>Maarten Neeskens, oprichter van Happly</cite>
+    </blockquote>
+    <img class="portret" src="afleveringen/01-maarten-portret.jpg" alt="Maarten Neeskens" loading="lazy">
+  </div>
+</section>
+
+<footer class="voet">
+  <div class="wrap">
+    <div class="raster">
+      <div>
+        <img src="happly-logo.png" alt="Happly">
+        <p class="lees">Ik houd vol is een reeks van Happly. Happly helpt mensen volhouden waar ze aan begonnen zijn, zodat wat ze leerden of besloten niet vervliegt. Voor werkgevers, trainers en coaches, en aanbieders in health en vitality.</p>
+      </div>
+      <div>
+        <p><a href="https://happly.nl">happly.nl</a>, alles over Happly</p>
+        <p><a href="https://scan.happly.nl">De Zelfkracht Scan</a>, ontdek waar je kracht zit</p>
+        <p><a href="mailto:maarten@happly.nl">maarten@happly.nl</a>, voor vragen en samenwerking</p>
+      </div>
+    </div>
+    <p class="klein">Wil je dat jouw aflevering verdwijnt? Mail maarten@happly.nl, dan is hij binnen twee werkdagen weg. Klein zetje. Grote beweging.</p>
+  </div>
+</footer>
 
 <script>
-// Afleveringen: voeg per aflevering één regel toe. Nieuwste bovenaan.
+// Afleveringen: voeg per aflevering één regel toe, nieuwste bovenaan.
 const AFLEVERINGEN = [
-  { naam: 'Maarten, 62', wat: 'hardlopen, fietsen en yoga', video: 'afleveringen/01-maarten.mp4', omslag: 'afleveringen/01-maarten.jpg' },
+  { naam: 'Maarten, 62', wat: 'Blijft in beweging met hardlopen, fietsen en yoga', video: 'afleveringen/01-maarten.mp4', omslag: 'afleveringen/01-maarten.jpg' },
 ];
-const doel = document.getElementById('afleveringen');
-if (!AFLEVERINGEN.length) {
-  doel.innerHTML = '<div class="leeg">De eerste verhalen komen binnenkort. Wil je zelf de eerste zijn? Kijk hieronder.</div>';
-} else {
-  const g = document.createElement('div'); g.className = 'grid';
-  for (const a of AFLEVERINGEN) {
-    const d = document.createElement('div'); d.className = 'afl';
-    d.innerHTML = `<video controls playsinline preload="none" poster="${a.omslag}" src="${a.video}"></video><div class="onder"><b></b><span></span></div>`;
-    d.querySelector('b').textContent = a.naam; d.querySelector('span').textContent = a.wat;
-    g.appendChild(d);
-  }
-  doel.appendChild(g);
+const PLEKKEN = 3; // lege plekken die uitnodigen om mee te doen
+
+const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+// Uitgelicht in de opening: de nieuwste aflevering
+const eerste = AFLEVERINGEN[0];
+const uit = document.getElementById('uitgelicht');
+if (eerste) {
+  uit.innerHTML = `<video controls playsinline preload="metadata" poster="${esc(eerste.omslag)}" src="${esc(eerste.video)}" aria-label="Aflevering van ${esc(eerste.naam)}"></video><figcaption>${esc(eerste.naam)}</figcaption>`;
+} else { uit.remove(); }
+
+// Alle verhalen, plus lege plekken
+const rij = document.getElementById('afleveringen');
+rij.innerHTML = AFLEVERINGEN.map(a => `<div class="afl"><video controls playsinline preload="none" poster="${esc(a.omslag)}" src="${esc(a.video)}"></video><p><b>${esc(a.naam)}</b><span>${esc(a.wat)}</span></p></div>`).join('')
+  + Array.from({ length: PLEKKEN }, () => `<a class="plek" href="opnemen"><span class="stem">Hier komt jouw verhaal.</span><small>Twintig seconden, je eigen telefoon.</small></a>`).join('');
+
+// De levende zin: wisselt per context, en volgt wie over de lijst gaat
+const wissel = document.getElementById('wissel');
+const regels = [...document.querySelectorAll('#contexten li')];
+let i = 0, pauze = false;
+function toon(n) {
+  i = n;
+  regels.forEach((r, k) => r.classList.toggle('aan', k === n));
+  wissel.classList.add('weg');
+  setTimeout(() => { wissel.textContent = regels[n].dataset.zin + '.'; wissel.classList.remove('weg'); }, 350);
 }
+regels.forEach((r, k) => {
+  r.addEventListener('mouseenter', () => { pauze = true; toon(k); });
+  r.addEventListener('mouseleave', () => { pauze = false; });
+});
+const rustig = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+toon(0);
+if (!rustig) setInterval(() => { if (!pauze) toon((i + 1) % regels.length); }, 3200);
 </script>
 </body></html>

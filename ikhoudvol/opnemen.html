@@ -29,6 +29,10 @@ h1 em{color:var(--mag);font-style:normal}
 .knop{display:block;width:100%;background:var(--mag);color:#fff;border:0;border-radius:14px;padding:17px;font:inherit;font-weight:600;font-size:18px;cursor:pointer;margin-top:10px;text-align:center;text-decoration:none}
 .knop.licht{background:#fff;color:var(--zw);border:1px solid var(--lijn)}
 .klein{font-size:14px;color:var(--mut);margin-top:12px}
+.terugsite{display:inline-block;font-size:14px;color:var(--mut);text-decoration:none;margin-bottom:18px}
+.ctx{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 22px}
+.ctx button{background:#fff;border:1px solid var(--lijn);border-radius:999px;padding:9px 14px;font:inherit;font-size:15px;color:var(--zw);cursor:pointer}
+.ctx button.aan{background:var(--zw);color:#fff;border-color:var(--zw)}
 .tel{font-size:14px;color:var(--mut);text-align:right;margin-top:-4px}
 .fout{background:#fff;border:2px solid var(--mag);border-radius:14px;padding:14px 16px;margin-top:12px;font-size:16px}
 .fout b{display:block;margin-bottom:4px}
@@ -93,16 +97,22 @@ h1 em{color:var(--mag);font-style:normal}
     <div><button id="naarVorige">Bekijk hem</button></div>
   </div>
 
-  <h1>Jouw zinnen, <em>jouw woorden.</em></h1>
-  <p class="lead">Schrijf ze zoals je ze zou zeggen. Daarna staan ze bovenin je scherm, vlak onder de camera, terwijl je opneemt. Haperen mag.</p>
+  <a class="terugsite" href="/">ikhoudvol.nl</a>
+  <h1>Jouw verhaal in vijf zinnen.</h1>
+  <p class="lead">Schrijf ze zoals je ze zou zeggen. Daarna staan ze vlak onder de camera terwijl je opneemt. Haperen mag.</p>
 
-  <div class="veld"><label for="z1">Wie ben je?</label><small>Bijvoorbeeld: Ik ben Manon, ik maak video's voor de bouw.</small>
+  <p class="label">Waar houd jij iets vol?</p>
+  <div class="ctx" id="ctx" role="group" aria-label="Kies je onderwerp">
+    <button data-c="training">Na een training</button><button data-c="roken">Stoppen met roken</button><button data-c="afvallen">Afvallen</button><button data-c="fitter">Fitter worden</button><button data-c="werk">Werk vinden</button><button data-c="ondernemen">Ondernemen</button><button data-c="anders">Iets anders</button>
+  </div>
+
+  <div class="veld"><label for="z1">Wie ben je?</label><small id="v1"></small>
     <textarea id="z1" rows="2" maxlength="120" placeholder="Ik ben ..."></textarea></div>
-  <div class="veld"><label for="z2">Wat houd je vol?</label><small>Gewoon zoals je het zou vertellen. Bijvoorbeeld: Sinds eind augustus rook ik niet meer.</small>
+  <div class="veld"><label for="z2">Wat houd je vol?</label><small id="v2"></small>
     <textarea id="z2" rows="2" maxlength="140" placeholder="Ik ..."></textarea></div>
-  <div class="veld"><label for="z3">Waarvoor doe je het?</label><small>Je reden, niet je doel. Bijvoorbeeld: Ik doe het omdat roken niet past bij wie ik wil zijn.</small>
+  <div class="veld"><label for="z3">Waarvoor doe je het?</label><small id="v3"></small>
     <textarea id="z3" rows="2" maxlength="160" placeholder="Ik doe het ..."></textarea></div>
-  <div class="veld"><label for="z4">Wanneer is het lastig?</label><small>Het moment. Bijvoorbeeld: Het lastigst is koffie op het terras.</small>
+  <div class="veld"><label for="z4">Wanneer is het lastig?</label><small id="v4"></small>
     <textarea id="z4" rows="2" maxlength="140" placeholder="Het lastigst is ..."></textarea></div>
   <div class="veld vast"><label>En je sluit af met</label><small>Iedereen eindigt hetzelfde.</small><div class="slot">Ik houd vol.</div></div>
 
@@ -135,7 +145,7 @@ h1 em{color:var(--mag);font-style:normal}
 
 <!-- 3. Klaar -->
 <section id="klaar" hidden><div class="wrap">
-  <h1>Je opname <em>staat klaar.</em></h1>
+  <h1>Je opname staat klaar.</h1>
   <p class="lead">Kijk hem één keer terug. Tevreden? Bewaar of verstuur hem. Niet tevreden? Nog een keer; de eerste is vaak de beste.</p>
   <video id="terug" controls playsinline></video>
   <button class="knop" id="delen">Bewaren of versturen</button>
@@ -149,7 +159,7 @@ h1 em{color:var(--mag);font-style:normal}
 
 <!-- Briefje -->
 <section id="briefje" hidden><div class="wrap">
-  <h1>Je <em>briefje.</em></h1>
+  <h1>Je briefje.</h1>
   <p class="lead">Schrijf het over en plak het net onder de camera, of druk het af. Daarna neem je op met de gewone camera van je telefoon, staand.</p>
   <div class="zinnen" id="briefjeZinnen"></div>
   <button class="knop" id="afdrukken">Afdrukken</button>
@@ -184,6 +194,24 @@ function netjes(t) {
 function zinnen() { return velden.map(v => netjes($(v).value)).filter(Boolean).concat(SLOT); }
 function woorden(t) { return t.split(/\s+/).filter(Boolean).length; }
 function duurZin(z) { return woorden(z) / TEMPI[tempo] + PAUZE; }
+const VOORBEELD = {
+  algemeen:   ['Je voornaam, en als je wilt wat je doet.', 'Zoals je het aan een vriend zou vertellen.', 'Je reden, niet je doel. Waar doe je het eigenlijk voor?', 'Het moment, de plek of de situatie waarop het lastig wordt.'],
+  training:   ['Bijvoorbeeld: Ik ben Ruud, ik werk in de zorg.', 'Bijvoorbeeld: Sinds de training geef ik elke dag één compliment op het werk.', 'Bijvoorbeeld: Ik doe het omdat ik wil dat mensen graag in mijn team werken.', 'Bijvoorbeeld: Het lastigst is als het druk is en iedereen moe is.'],
+  roken:      ['Bijvoorbeeld: Ik ben Esther, ik ben verpleegkundige.', 'Bijvoorbeeld: Sinds de zomer rook ik niet meer.', 'Bijvoorbeeld: Ik doe het omdat ik wil dat mijn dochter mij nooit ziet roken.', 'Bijvoorbeeld: Het lastigst is na het werk, met een drankje.'],
+  afvallen:   ['Bijvoorbeeld: Ik ben Henk, ik ben chauffeur.', 'Bijvoorbeeld: Ik eet anders sinds ik meedoe aan een leefstijlprogramma.', 'Bijvoorbeeld: Ik doe het omdat ik mijn knieën nog lang wil gebruiken.', 'Bijvoorbeeld: Het lastigst is onderweg, bij het tankstation.'],
+  fitter:     ['Bijvoorbeeld: Ik ben Fatma, ik heb een eigen zaak.', 'Bijvoorbeeld: Ik train twee keer per week.', 'Bijvoorbeeld: Ik doe het omdat ik de hele dag op mijn benen sta.', 'Bijvoorbeeld: Het lastigst is de maandagochtend.'],
+  werk:       ['Bijvoorbeeld: Ik ben Dennis, ik zoek een nieuwe baan.', 'Bijvoorbeeld: Ik solliciteer elke week op twee vacatures.', 'Bijvoorbeeld: Ik doe het omdat ik weer ergens bij wil horen.', 'Bijvoorbeeld: Het lastigst is de dag na een afwijzing.'],
+  ondernemen: ['Bijvoorbeeld: Ik ben Lotte, ik ben net gestart als fotograaf.', 'Bijvoorbeeld: Ik bel elke week drie nieuwe klanten.', 'Bijvoorbeeld: Ik doe het omdat ik van mijn vak wil leven.', 'Bijvoorbeeld: Het lastigst is na een stille week.'],
+};
+VOORBEELD.anders = VOORBEELD.algemeen;
+let onderwerp = lees('ikhoudvol-onderwerp') || '';
+function toonVoorbeelden() {
+  const v = VOORBEELD[onderwerp] || VOORBEELD.algemeen;
+  ['v1','v2','v3','v4'].forEach((id, i) => $(id).textContent = v[i]);
+  document.querySelectorAll('#ctx button').forEach(b => b.classList.toggle('aan', b.dataset.c === onderwerp));
+}
+document.querySelectorAll('#ctx button').forEach(b => b.onclick = () => { onderwerp = b.dataset.c; schrijf('ikhoudvol-onderwerp', onderwerp); toonVoorbeelden(); });
+
 function werkBij() {
   const ingevuld = velden.every(v => $(v).value.trim().length > 1);
   velden.forEach(v => { if ($(v).value.trim().length > 1) $(v).closest('.veld').classList.remove('leeg'); });
@@ -197,7 +225,7 @@ function werkBij() {
 function groei(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 2 + 'px'; }
 velden.forEach(v => $(v).addEventListener('input', () => { groei($(v)); werkBij(); }));
 document.querySelectorAll('#tempo button').forEach(b => b.onclick = () => { tempo = b.dataset.t; schrijf('ikhoudvol-tempo', tempo); werkBij(); });
-laadZinnen(); werkBij(); velden.forEach(v => groei($(v)));
+laadZinnen(); werkBij(); toonVoorbeelden(); velden.forEach(v => groei($(v)));
 
 function toonFout(kop, t) {
   $('melding').innerHTML = '<b></b><span></span>';
