@@ -186,7 +186,7 @@ async function openStudio() {
   if (!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     toonFout('Deze browser kan niet bij je camera',
       inAppBrowser()
-        ? 'Je opende de link in een app (bijvoorbeeld WhatsApp, LinkedIn of je mail). Tik rechtsboven op de drie puntjes of het deelicoon en kies Openen in Safari of Openen in Chrome. Je zinnen blijven bewaard.'
+        ? 'Je opende de pagina in een app (bijvoorbeeld de Google-app, WhatsApp, LinkedIn of je mail). Tik rechtsboven op de drie puntjes of het deelicoon en kies Openen in Safari of Openen in Chrome. Je zinnen blijven bewaard.'
         : 'Open ikhoudvol.nl/opnemen in Safari (iPhone) of Chrome (Android). Je zinnen blijven bewaard.');
     return;
   }
