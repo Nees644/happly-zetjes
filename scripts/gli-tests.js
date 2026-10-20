@@ -1,7 +1,7 @@
 // scripts/gli-tests.js
 // Bewaakt de afspraken voor Zetjes bij het leefstijlprogramma (GLI):
-// uitdrukkelijke toestemming, alleen verwerking in Europa, en een privacyverklaring
-// die zegt wat de code doet. Start: node scripts/gli-tests.js
+// uitdrukkelijke toestemming, eerlijk over verwerking buiten Europa zolang
+// Bedrock EU niet werkt, en een privacyverklaring die zegt wat de code doet. Start: node scripts/gli-tests.js
 
 const assert = require('assert');
 const fs = require('fs');
@@ -28,16 +28,28 @@ async function test(naam, fn) {
     assert.ok(!/[—–!]/.test(tekst), 'verboden teken gevonden');
   });
 
-  await test('GLI verwerkt alleen in Europa', () => {
-    assert.strictEqual(gli.alleenEU, true);
+  await test('toestemming en code zeggen hetzelfde over de plek van verwerking', () => {
+    const tekst = [gli.ui.toestemming.vinkje, ...gli.ui.toestemming.alineas].join(' ');
+    if (gli.alleenEU) {
+      assert.ok(!tekst.includes('Verenigde Staten'), 'alleenEU aan, maar de tekst noemt de VS');
+    } else {
+      assert.ok(tekst.includes('Verenigde Staten'), 'route buiten Europa, maar de toestemming zegt het niet');
+      assert.ok(gli.ui.toestemming.vinkje.includes('buiten Europa'), 'vinkje noemt buiten Europa niet');
+      assert.notStrictEqual(gli.ui.toestemming.versie, 'gli-1', 'versie niet verhoogd');
+    }
   });
 
   await test('privacyverklaring GLI klopt met de afspraken', () => {
     const p = fs.readFileSync(path.join(__dirname, '../public/privacy-gli.html'), 'utf8');
     assert.ok(p.includes('tien deelnemers'), 'minimum van tien ontbreekt');
     assert.ok(p.includes('artikel 9 lid 2 sub a'), 'grondslag artikel 9 ontbreekt');
-    assert.ok(p.includes('Frankfurt'), 'Europese verwerking ontbreekt');
-    assert.ok(!/>VS</.test(p) && !p.includes('Verenigde Staten'), 'VS genoemd als verwerkingsplek');
+    assert.ok(p.includes(gli.ui.toestemming.versie), 'versie wijkt af van de toestemming');
+    if (gli.alleenEU) {
+      assert.ok(!p.includes('Verenigde Staten'), 'VS genoemd terwijl alleenEU aan staat');
+    } else {
+      assert.ok(p.includes('Verenigde Staten') && p.includes('standaardcontractbepalingen'), 'doorgifte buiten Europa niet beschreven');
+      assert.ok(p.includes('artikel 49 lid 1 sub a'), 'toestemming voor doorgifte ontbreekt');
+    }
     assert.ok(!/[—–]/.test(p), 'gedachtestreepje gevonden');
   });
 

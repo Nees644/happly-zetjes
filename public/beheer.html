@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Zetjes beheer</title>
+<style>
+  :root { --pink:#CC0066; --text:#1A0A12; --text-mid:#5E3A4E; --border:#ECD8E4; --bg:#FDF8FB; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:system-ui, sans-serif; line-height:1.5; }
+  main { max-width:560px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:24px; margin:0 0 4px; }
+  p.meta { color:var(--text-mid); font-size:14px; margin:0 0 24px; }
+  label { display:block; font-size:14px; font-weight:600; margin:16px 0 4px; }
+  small { display:block; color:var(--text-mid); font-weight:400; }
+  input, select { width:100%; padding:10px 12px; font-size:15px; border:1.5px solid var(--border); border-radius:10px; background:#fff; }
+  button { margin-top:24px; width:100%; padding:14px; font-size:16px; font-weight:600; color:#fff; background:var(--pink); border:0; border-radius:12px; cursor:pointer; }
+  button:disabled { opacity:.5; }
+  #uit { margin-top:24px; }
+  .link { background:#fff; border:1.5px solid var(--border); border-radius:10px; padding:10px 12px; font-size:14px; word-break:break-all; margin-bottom:8px; }
+  .fout { color:#B00020; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Zetjes beheer</h1>
+  <p class="meta">Maak toegangslinks. De beheersleutel wordt nergens bewaard.</p>
+
+  <label for="sleutel">Beheersleutel</label>
+  <input id="sleutel" type="password" autocomplete="off">
+
+  <label for="slug">Organisatie (korte naam)<small>Bestaat die nog niet, dan wordt hij aangemaakt met de naam hieronder.</small></label>
+  <input id="slug" value="monter-proef">
+
+  <label for="naam">Naam organisatie</label>
+  <input id="naam" value="Monter, proef coaches">
+
+  <label for="context">Context</label>
+  <select id="context">
+    <option value="gli" selected>Leefstijlprogramma (GLI)</option>
+    <option value="werk">Werk</option>
+    <option value="ondernemen">Ondernemen</option>
+    <option value="managers">Managers</option>
+    <option value="sales">Sales</option>
+    <option value="voornemen">Voornemen</option>
+    <option value="rookvrij">Rookvrij</option>
+  </select>
+
+  <label for="label">Label<small>Voor jezelf, bijvoorbeeld de naam van de coach of groep.</small></label>
+  <input id="label" value="Proef coaches vrijdag">
+
+  <label for="start">Startdatum programma<small>Bepaalt in welke fase Zetjes de deelnemer plaatst.</small></label>
+  <input id="start" type="date">
+
+  <label for="max">Hoeveel mensen mogen één link gebruiken</label>
+  <input id="max" type="number" min="1" value="10">
+
+  <label for="aantal">Aantal links</label>
+  <input id="aantal" type="number" min="1" max="50" value="1">
+
+  <button id="maak">Maak link</button>
+  <div id="uit"></div>
+</main>
+<script>
+  document.getElementById('start').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('maak').addEventListener('click', async () => {
+    const knop = document.getElementById('maak');
+    const uit = document.getElementById('uit');
+    const v = (id) => document.getElementById(id).value.trim();
+    knop.disabled = true;
+    uit.textContent = 'Bezig...';
+    try {
+      const r = await fetch('/api/admin/invites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': v('sleutel') },
+        body: JSON.stringify({
+          tenantSlug: v('slug'),
+          nieuweTenant: { name: v('naam') },
+          context: v('context'),
+          label: v('label'),
+          startDate: v('start') || undefined,
+          maxUses: v('max') || undefined,
+          count: v('aantal') || 1,
+          appUrl: location.origin,
+        }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(r.status === 401 ? 'Beheersleutel klopt niet.' : (d.error || 'Er ging iets fout.'));
+      uit.innerHTML = '';
+      d.links.forEach((l) => {
+        const div = document.createElement('div');
+        div.className = 'link';
+        div.textContent = l;
+        uit.appendChild(div);
+      });
+    } catch (e) {
+      uit.innerHTML = '';
+      const p = document.createElement('p');
+      p.className = 'fout';
+      p.textContent = e.message;
+      uit.appendChild(p);
+    } finally {
+      knop.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

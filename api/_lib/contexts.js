@@ -234,22 +234,27 @@ Niet relevant (offtopic): technische vragen (btw, KvK), juridische vragen, recep
     label: 'Zetjes bij je leefstijlprogramma',
     taalniveau: 'A2',
     faseweter: true,
-    // Gezondheidsgegevens: verwerking alleen in Europa, geen terugval naar de VS.
-    alleenEU: true,
+    // Besluit 20 oktober 2026: Bedrock EU is op korte termijn niet beschikbaar.
+    // De GLI loopt daarom via de gewone route: eerst Bedrock als die werkt, anders
+    // de Claude API van Anthropic (buiten Europa). Toestemmingstekst en
+    // privacy-gli.html zeggen dat. Zet alleenEU terug op true zodra Bedrock werkt.
+    alleenEU: false,
     ui: {
-      // Uitdrukkelijke toestemming (AVG artikel 9 lid 2 sub a). Versie gli-1, 11 oktober 2026.
+      // Uitdrukkelijke toestemming (AVG artikel 9 lid 2 sub a en artikel 49 lid 1 sub a).
+      // Versie gli-2, 20 oktober 2026: verwerking door het taalmodel ook buiten Europa.
       // Wijzig je de tekst, verhoog dan de versie en loop privacy-gli.html na.
       toestemming: {
-        versie: 'gli-1',
+        versie: 'gli-2',
         titel: 'Voor je <em>begint</em>',
         alineas: [
           'Je krijgt Zetjes via je leefstijlprogramma. Je aanbieder is verantwoordelijk voor je gegevens. Happly maakt Zetjes in opdracht van je aanbieder.',
           'Zetjes bewaart wat je typt. Zo kan het je de volgende keer beter helpen. Wat je typt, kan iets zeggen over je gezondheid. Daarom vragen we eerst je toestemming.',
           'Je coach ziet nooit wat je typt. Je aanbieder ziet alleen cijfers over een hele groep, nooit over jou.',
           'We gebruiken gegevens zonder naam en samengevoegd om Zetjes beter te maken.',
-          'Alles blijft in Europa. Je kunt je gegevens altijd zelf wissen. Je kunt ook altijd stoppen.',
+          'Je gegevens worden in Europa bewaard. De antwoorden maakt een computerprogramma van het bedrijf Anthropic. Dat kan ook in de Verenigde Staten gebeuren. Anthropic gebruikt wat je typt niet om te leren.',
+          'Typ daarom geen naam, adres of telefoonnummer. Je kunt je gegevens altijd zelf wissen. Je kunt ook altijd stoppen.',
         ],
-        vinkje: 'Ik geef toestemming. Zetjes mag bewaren wat ik typ en dit gebruiken zoals hierboven staat.',
+        vinkje: 'Ik geef toestemming. Zetjes mag bewaren wat ik typ en dit gebruiken zoals hierboven staat, ook buiten Europa.',
         knop: 'Start',
         privacy: '/privacy-gli.html',
       },
