@@ -141,6 +141,7 @@ function kaartBlokTekst(kaart, dag, voornaam) {
   if (!kaart) return '';
   const r = ['DE KAART VAN DEZE PERSOON (zelf ingevuld bij de start, in eigen woorden):'];
   if (voornaam) r.push(`Voornaam: ${voornaam}`);
+  if (kaart.waarom) r.push(`Waarom hij dit wil, in eigen woorden: "${kaart.waarom}"`);
   if (kaart.doel) r.push(`Doel: ${kaart.doel}`);
   const moment = [kaart.vak1_moment, kaart.vak1_weekdag ? `${WEEKDAGEN[kaart.vak1_weekdag]}${kaart.vak1_dagdeel ? ', ' + kaart.vak1_dagdeel : ''}` : null].filter(Boolean).join('; ');
   if (moment) r.push(`Moeilijk moment: ${moment}`);
@@ -150,7 +151,7 @@ function kaartBlokTekst(kaart, dag, voornaam) {
   if (kaart.vak4_woorden) r.push(`Zijn eigen woorden als het zwaar wordt: "${kaart.vak4_woorden}"`);
   if (dag != null && dag >= 1) r.push(`Dag ${dag} van ${DAGEN}.`);
   r.push('');
-  r.push('Gebruik dit zo: herken de zin uit "wat hij dan tegen zichzelf zegt" als die terugkomt en benoem dat het het moment is, niet de waarheid. Verwijs naar het als-dan-plan als eerste stap, of maak hem kleiner als hij vandaag te groot is. Sluit af met zijn eigen woorden, letterlijk, als dat past. Verzin geen andere woorden voor hem en herhaal de kaart niet als lijst.');
+  r.push('Gebruik dit zo: zakt de zin weg of schrijft hij dat het geen nut heeft, geef dan eerst zijn waarom terug, letterlijk, als vraag of herinnering. Herken de zin uit "wat hij dan tegen zichzelf zegt" als die terugkomt en benoem dat het het moment is, niet de waarheid. Verwijs naar het als-dan-plan als eerste stap, of maak hem kleiner als hij vandaag te groot is. Sluit af met zijn eigen woorden, letterlijk, als dat past. Verzin geen andere woorden voor hem en herhaal de kaart niet als lijst.');
   return r.join('\n');
 }
 

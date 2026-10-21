@@ -1,6 +1,6 @@
 // api/reis-kaart.js
 // POST /api/reis-kaart { token, kaart: { doel, vak1_moment, vak1_weekdag, vak1_dagdeel,
-//   vak1_zin, vak2_inrichting, vak3_als, vak3_dan, vak4_woorden } }
+//   vak1_zin, vak2_inrichting, vak3_als, vak3_dan, vak4_woorden, waarom } }
 // Slaat de Volhoudkaart op als nieuwe versie. De oude blijft staan; Zetjes
 // leest de hoogste. Vak 3 (als-dan) is het minimum: zonder plan geen kaart.
 
@@ -19,6 +19,7 @@ module.exports = async function handler(req, res) {
   if (!k || typeof k !== 'object') return res.status(400).json({ error: 'Geen kaart meegegeven' });
 
   const rij = {
+    waarom: schoon(k.waarom, 200),
     doel: schoon(k.doel, 200),
     vak1_moment: schoon(k.vak1_moment),
     vak1_weekdag: Number.isInteger(k.vak1_weekdag) && k.vak1_weekdag >= 1 && k.vak1_weekdag <= 7 ? k.vak1_weekdag : null,

@@ -100,6 +100,7 @@ async function mailProactief(reis, kaart, dag) {
     `${dagdeel.charAt(0).toUpperCase() + dagdeel.slice(1)} is je moment${kaart.vak1_moment ? `: ${esc(kaart.vak1_moment)}` : ''}.`,
     `Je plan: als ${esc(kaart.vak3_als)}, dan ${esc(kaart.vak3_dan)}.`,
   ];
+  if (kaart.waarom) alineas.push(`Waarom je dit doet: ${esc(kaart.waarom)}`);
   if (kaart.vak4_woorden) alineas.push(`In je eigen woorden: ${esc(kaart.vak4_woorden)}`);
   if (dag != null && dag >= 1 && dag <= DAGEN) alineas.push(`Dag ${dag} van ${DAGEN}.`);
   await stuurMail({

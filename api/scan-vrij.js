@@ -69,6 +69,7 @@ function uitslag(ctx, profile) {
 async function handleScan(req, res, tenant) {
   const anonId = String(req.body?.anonId || '').trim() || 'vrij_' + crypto.randomBytes(12).toString('hex');
   const goalText = schoon(req.body?.goalText, 200);
+  const goalWhy = schoon(req.body?.goalWhy, 200);
   const goalWhen = schoon(req.body?.goalWhen, 150);
   const goalHard = schoon(req.body?.goalHard, 150);
   const firstStep = schoon(req.body?.firstStep, 300);
@@ -90,6 +91,7 @@ async function handleScan(req, res, tenant) {
     user_key: anonId,
     context: CONTEXT_KEY,
     goal_text: goalText,
+    goal_why: goalWhy || null,
     goal_when: goalWhen || null,
     goal_hard: goalHard || null,
     scores: score.scores,

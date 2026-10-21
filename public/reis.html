@@ -34,7 +34,12 @@
     </div>
     <form class="kaart" id="kaartform" novalidate>
       <div class="vak">
-        <h3><small>Mijn doel</small>Wat wil je volhouden?</h3>
+        <h3><small>Mijn waarom</small>Waarom wil je dit?</h3>
+        <p>Zeg het zoals je het tegen een vriend zou zeggen. Dit is wat Zetjes je teruggeeft als het zwaar wordt.</p>
+        <input type="text" name="waarom" maxlength="200" placeholder="Bijvoorbeeld: omdat ik met mijn kleinkinderen wil kunnen skiën">
+      </div>
+      <div class="vak">
+        <h3><small>Mijn doel</small>Wat houd je daarvoor vol?</h3>
         <input type="text" name="doel" maxlength="200" placeholder="Bijvoorbeeld: twee keer per week trainen">
       </div>
       <div class="vak">
@@ -184,7 +189,7 @@ function teken() {
       s[1].status !== 'klaar' ? knop(d.links.scanStart, 'Doe de scan', true) : ''),
     stap(3, s[2], 'Volhoudkaart', s[2].status === 'klaar'
       ? `Ingevuld op ${datum(s[2].datum)}${s[2].versie > 1 ? ', versie ' + s[2].versie : ''}.${plan}`
-      : 'Vier vakken: je afhaakmoment, wat je anders inricht, je als-dan-plan en je eigen woorden.',
+      : 'Je waarom, en vier vakken: je afhaakmoment, wat je anders inricht, je als-dan-plan en je eigen woorden.',
       s[2].status === 'klaar'
         ? `<button class="btn-ghost" onclick="leesKaart()">Bekijk of wijzig je kaart</button>`
         : `<button class="${s[2].status === 'bezig' ? 'btn-pink' : 'btn-ghost'}" onclick="vulKaart()">Vul je kaart in</button>`),
@@ -226,7 +231,8 @@ function leesKaart() {
   const moment = [k.vak1_moment, k.vak1_weekdag ? `${WEEKDAG[k.vak1_weekdag]}${k.vak1_dagdeel ? ', ' + k.vak1_dagdeel : ''}` : ''].filter(Boolean).join(' · ');
   document.getElementById('kaartlees').innerHTML =
     `<p class="hint">Volhoudkaart van ${esc(reis.voornaam || 'mij')}${reis.programma ? ' · ' + esc(reis.programma) : ''} · ${datum(k.datum)}</p>` +
-    vak('Mijn doel', 'Wat ik wil volhouden', k.doel) +
+    vak('Mijn waarom', 'Waarom ik dit wil', k.waarom) +
+    vak('Mijn doel', 'Wat ik daarvoor volhoud', k.doel) +
     vak('Vak 1 · Zien', 'Mijn afhaakmoment', moment) +
     vak('', 'Mijn zin', k.vak1_zin ? `"${k.vak1_zin}"` : '') +
     vak('Vak 2 · Sturen', 'Wat ik anders inricht', k.vak2_inrichting) +
