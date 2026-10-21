@@ -47,6 +47,8 @@ async function scanStatus(ctx, invite, anonId) {
   return {
     nodig: true,
     config: {
+      whyPrompt: ctx.scan.whyPrompt,
+      whyPlaceholder: ctx.scan.whyPlaceholder,
       goalPrompt: ctx.scan.goalPrompt,
       whenPrompt: ctx.scan.whenPrompt,
       hardPrompt: ctx.scan.hardPrompt,

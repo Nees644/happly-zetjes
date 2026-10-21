@@ -103,8 +103,8 @@ Niet relevant (offtopic): recepten, technische vragen, medisch advies, puur zake
     },
     ankerFrequentie: null,
     scan: {
-      whyPrompt: 'Wat wordt er voor jou beter als het je lukt?',
-      whyPlaceholder: 'Bijv: dan ga ik weer met plezier naar mijn werk',
+      whyPrompt: 'Waarvoor doe je het?',
+      whyPlaceholder: 'Bijv: om weer met plezier naar mijn werk te gaan',
       goalPrompt: 'Wat ga je daarvoor doen?',
       whenPrompt: 'Wanneer en waar ga je de eerste stap zetten?',
       hardPrompt: 'Waar verwacht je dat het lastig wordt?',
@@ -197,8 +197,8 @@ Niet relevant (offtopic): technische vragen (btw, KvK), juridische vragen, recep
     // deze context is ook wat Zetjes | personal gebruikt (bijlage 15 hoofdstuk 6),
     // en personal krijgt expliciet de neutrale kern.
     scan: {
-      whyPrompt: 'Wat wordt er voor jou beter als het je lukt?',
-      whyPlaceholder: 'Bijv: dan groeit mijn bedrijf zonder dat ik er elke avond aan zit',
+      whyPrompt: 'Waarvoor doe je het?',
+      whyPlaceholder: 'Bijv: om mijn bedrijf te laten groeien zonder er elke avond aan te zitten',
       goalPrompt: 'Wat ga je daarvoor doen?',
       whenPrompt: 'Wanneer en waar ga je de eerste stap zetten?',
       hardPrompt: 'Waar verwacht je dat het lastig wordt?',
@@ -346,8 +346,8 @@ offtopic: iets wat niets met het programma of met vastlopen te maken heeft (rece
     ankerFrequentie: { eersteCheckin: 3, daarna: 7 },
     scan: {
       // Het doel is deels voorgegeven: doorgaan met het programma, niet een open vraag.
-      whyPrompt: 'Waarom ben je aan dit programma begonnen?',
-      whyPlaceholder: 'Bijv: omdat ik met mijn kleinkinderen wil kunnen spelen',
+      whyPrompt: 'Waarvoor doe je dit programma?',
+      whyPlaceholder: 'Bijv: om met mijn kleinkinderen te kunnen spelen',
       goalPrompt: 'Wat wil je deze periode volhouden?',
       whenPrompt: 'Wanneer ga je daar deze week mee aan de slag?',
       hardPrompt: 'Wat maakt dat nu lastig voor je?',
@@ -473,8 +473,8 @@ offtopic: iets wat niets met stoppen met roken of met vastlopen te maken heeft.`
       },
     },
     scan: {
-      whyPrompt: 'Waarom wil je stoppen, in je eigen woorden?',
-      whyPlaceholder: 'Bijv: omdat ik de trap op wil zonder te hijgen',
+      whyPrompt: 'Waarvoor stop je?',
+      whyPlaceholder: 'Bijv: om de trap op te kunnen zonder te hijgen',
       goalPrompt: 'Wat is je doel? Bijvoorbeeld: rookvrij blijven vanaf mijn stopdag.',
       whenPrompt: 'Wat is je stopdag, of wanneer ben je gestopt?',
       hardPrompt: 'In welke situatie is het het lastigst om niet te roken? Bijvoorbeeld: na het eten, op het terras, met een drankje, in de auto.',
