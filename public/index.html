@@ -462,9 +462,9 @@
       </div>
     </div>
     <div class="pad">
-      <p class="q-label">Wat wil je?</p>
-      <p class="q-sub">Twee minuten, dan weet Zetjes waar je naartoe werkt.</p>
-      <label class="field-label" id="scan-why-label">Waarom wil je dit veranderen?</label>
+      <p class="q-label">Wat wil je bereiken?</p>
+      <p class="q-sub">Twee minuten. Eerst je reden, dan je doel.</p>
+      <label class="field-label" id="scan-why-label">Wat wordt er beter als het je lukt?</label>
       <input class="text-input" id="scan-goal-why" maxlength="200" placeholder="In je eigen woorden">
       <label class="field-label" id="scan-goal-label">Wat ga je daarvoor doen?</label>
       <input class="text-input" id="scan-goal-text" maxlength="200" placeholder="Bijv: drie keer per week wandelen">
@@ -1000,7 +1000,7 @@ function startScan(config) {
   scanConfig = config;
   scanAnswers = new Array(config.items.length).fill(null);
   scanIndex = 0;
-  document.getElementById('scan-why-label').textContent = config.whyPrompt || 'Waarom wil je dit veranderen?';
+  document.getElementById('scan-why-label').textContent = config.whyPrompt || 'Wat wordt er beter als het je lukt?';
   document.getElementById('scan-goal-why').placeholder = config.whyPlaceholder || 'In je eigen woorden';
   document.getElementById('scan-goal-why').value = '';
   document.getElementById('scan-goal-label').textContent = config.goalPrompt;

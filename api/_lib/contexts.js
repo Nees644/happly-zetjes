@@ -103,8 +103,8 @@ Niet relevant (offtopic): recepten, technische vragen, medisch advies, puur zake
     },
     ankerFrequentie: null,
     scan: {
-      whyPrompt: 'Waarom wil je dit veranderen?',
-      whyPlaceholder: 'Bijv: omdat ik weer plezier in mijn werk wil',
+      whyPrompt: 'Wat wordt er voor jou beter als het je lukt?',
+      whyPlaceholder: 'Bijv: dan ga ik weer met plezier naar mijn werk',
       goalPrompt: 'Wat ga je daarvoor doen?',
       whenPrompt: 'Wanneer en waar ga je de eerste stap zetten?',
       hardPrompt: 'Waar verwacht je dat het lastig wordt?',
@@ -197,8 +197,8 @@ Niet relevant (offtopic): technische vragen (btw, KvK), juridische vragen, recep
     // deze context is ook wat Zetjes | personal gebruikt (bijlage 15 hoofdstuk 6),
     // en personal krijgt expliciet de neutrale kern.
     scan: {
-      whyPrompt: 'Waarom wil je dit veranderen?',
-      whyPlaceholder: 'Bijv: omdat ik mijn bedrijf wil laten groeien zonder er elke avond aan te zitten',
+      whyPrompt: 'Wat wordt er voor jou beter als het je lukt?',
+      whyPlaceholder: 'Bijv: dan groeit mijn bedrijf zonder dat ik er elke avond aan zit',
       goalPrompt: 'Wat ga je daarvoor doen?',
       whenPrompt: 'Wanneer en waar ga je de eerste stap zetten?',
       hardPrompt: 'Waar verwacht je dat het lastig wordt?',
