@@ -99,5 +99,11 @@ Open punt, afgesproken 16 oktober 2026: dezelfde opneempagina als stap in de Vol
 - Geen inhoud van deelnemers in logs. Alleen labels en aantallen.
 - Migraties zijn idempotent, verwijderen niets en eindigen met een
   controleregel die één rij teruggeeft.
+- Sinds 30 oktober 2026 geeft Supabase nieuwe tabellen in `public` geen
+  Data API-toegang meer vanzelf. Elke migratie die een tabel aanmaakt, geeft
+  in dezelfde migratie `grant select, insert, update, delete on public.<tabel>
+  to service_role;`. Niets aan `anon` of `authenticated`: de app praat alleen
+  met de service-sleutel en de tabellen blijven dicht. Bestaande tabellen en
+  nieuwe kolommen zijn niet geraakt.
 - Testen lokaal: `scripts/` met node. Een migratie eerst afspelen op een lokale
   Postgres (schema plus alle eerdere migraties, dan de nieuwe twee keer).
