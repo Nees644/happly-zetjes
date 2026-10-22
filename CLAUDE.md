@@ -87,8 +87,8 @@ Stand per stap (zie paragraaf 13 van de briefing):
 
 ## De gewoontemeting en het tempo (sinds 22 oktober 2026)
 
-- **Volhoud Framework (22 oktober 2026).** Vier sectoren (Werk, Health en
-  Vitality, Abonnementen, Defensie), drie productgroepen (Behavior Analyst,
+- **Volhoud Framework (22 oktober 2026).** Vijf sectoren (Werk, Health en
+  Vitality, Maatschappelijke organisaties, Abonnementen, Defensie), drie productgroepen (Behavior Analyst,
   Behavior Intelligence, Behavior Tools; Tools vervangt Facilitator), twee
   kanalen. De gewoontemeting en het begeleidersdashboard vallen onder de
   **Progress Monitor**, het product van Behavior Intelligence; bij Defensie
