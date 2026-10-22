@@ -6,7 +6,7 @@
 const { supabase } = require('./_lib/supabase');
 const { cors, resolveAccess, sendAccessError } = require('./_lib/access');
 const { hermetingItems } = require('./_lib/scan-engine');
-const { laadReisOpAnon, laadKaart, dagInReis, DAGEN, reisLink } = require('./_lib/reis');
+const { laadReisOpAnon, laadKaart, dagInReis, DAGEN, reisLink, gewoonteVraag } = require('./_lib/reis');
 
 const TERUGVRAAG_NA_UUR = 2;
 const TERUGVRAAG_MAX_DAGEN = 30;
@@ -112,7 +112,10 @@ module.exports = async function handler(req, res) {
       const kaart = await laadKaart(r.id);
       reis = { link: reisLink(r), dag: dagInReis(r.invites || {}), dagen: DAGEN,
                programma: r.invites?.programma_naam || r.invites?.label || 'Volhoudreis',
-               kaart: !!kaart, alsdan: kaart ? `Als ${kaart.vak3_als}, dan ${kaart.vak3_dan}.` : null };
+               kaart: !!kaart, alsdan: kaart ? `Als ${kaart.vak3_als}, dan ${kaart.vak3_dan}.` : null,
+               // De weekvraag van de gewoontemeting, als hij aan de beurt is.
+               // Alleen de vraag gaat mee, nooit een eerdere score.
+               gewoonteVraag: consent ? await gewoonteVraag(r, kaart) : null };
     }
     const scan = consent && !reis ? await scanStatus(a.ctx, a.invite, a.anonId) : { nodig: false };
     // Hermeting pas aanbieden ná de Doelscan zelf, nooit tegelijk.

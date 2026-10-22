@@ -85,6 +85,28 @@ Stand per stap (zie paragraaf 13 van de briefing):
   kolommen. QR-code via api.qrserver.com (externe dienst; de groepslink is
   toch bedoeld om te delen).
 
+## De gewoontemeting en het tempo (sinds 22 oktober 2026)
+
+- De gemiddelde tijd tot een gewoonte is 66 dagen (Lally 2010; Singh 2024:
+  mediaan 59 tot 66, spreiding 4 tot 335). Wat die spreiding verklaart, is in
+  de literatuur nauwelijks onderzocht; zelfcontrole en een zelfgekozen doel
+  zijn de enige bekende versnellers. Happly meet het zelf: zelfkrachtscore
+  bij de start, gewoontemeting onderweg, hermeting aan het eind.
+- De gewoontemeting is de weekvraag in Zetjes voor reizen: vier zinnen
+  (SRBAI, Gardner 2012) over het doel van de kaart, elk 1 tot 7, vanaf dag 7
+  tot dag 100, nooit vaker dan eens per zeven dagen, overslaan telt als
+  beurt. Tabel `gewoontemeting` (migratie `migrations/2026-10-gewoontemeting.sql`),
+  route `api/reis-gewoonte.js`, de vraag komt mee in `api/validate.js` onder
+  `reis.gewoonteVraag`. **De deelnemer ziet nooit een cijfer en de begeleider
+  ook niet**; de test op de begeleidersroute bewaakt de tabel.
+- Het tempo is de boodschap op de reispagina na de kaart, tot en met dag 7
+  (`tempoTekst` in `api/_lib/reis.js`): het gemiddelde van 66 als anker, de
+  eigen hoogste dimensie uit de scan als sterkte (nooit een tekort), en nooit
+  een persoonlijk aantal dagen. Het is geen wedstrijd. Een band per profiel
+  ("meestal tussen dag 50 en 65") komt pas na ongeveer 200 reizen met
+  gewoontemeting, en dan alleen als hij gunstig is; anders het gemiddelde.
+  Onderweg mag wel "je ligt voor op je eigen curve", want dat is gemeten.
+
 ## ikhoudvol.nl (sinds 16 oktober 2026)
 
 De reeks Ik houd vol: gewone mensen, twintig seconden, vijf zinnen (wie, waarvoor, wat daarvoor, wanneer lastig, slotzin Ik houd vol; sinds 21 oktober 2026 staat het waarvoor voor het wat, want de reden draagt het volhouden). Statische site in `ikhoudvol/`, eigen Vercel-project met Root Directory `ikhoudvol`; de Zetjes-app serveert alleen `public` en ziet deze map niet. `ikhoudvol/opnemen.html` is de opneempagina: zinnen invullen, autocue onder de camera, kader voor hoofd en ogen (alleen op het scherm, gelijk aan de snit van de montage), opname blijft op de telefoon tot de deelnemer hem verstuurt. Vlak voor de opname maakt de pagina een startfoto (Lach maar); die gaat mee met de video en wordt in de montage het openingsbeeld en de omslag op de site (monteer.py --foto). Montage gebeurt buiten deze repository (monteer.py in het startpakket).

@@ -6,7 +6,7 @@
 
 const { supabase } = require('./_lib/supabase');
 const { cors } = require('./_lib/access');
-const { laadReis, laadKaart, standVanStappen, werkStapBij, weergave, scanLink, zetjesLink, appUrl } = require('./_lib/reis');
+const { laadReis, laadKaart, standVanStappen, werkStapBij, weergave, scanLink, zetjesLink, appUrl, tempoTekst } = require('./_lib/reis');
 
 module.exports = async function handler(req, res) {
   cors(res, req, { methods: 'GET, OPTIONS' });
@@ -37,6 +37,8 @@ module.exports = async function handler(req, res) {
       dagen: stand.dagen,
       huidig: stand.huidig,
       stappen: stand.stappen,
+      // De boodschap over het tempo: na de kaart, tot en met de eerste week.
+      tempo: kaart && stand.huidig >= 4 && (stand.dag == null || stand.dag <= 7) ? tempoTekst(reis, kaart) : null,
       kaart: kaart ? {
         doel: kaart.doel, vak1_moment: kaart.vak1_moment, vak1_weekdag: kaart.vak1_weekdag,
         vak1_dagdeel: kaart.vak1_dagdeel, vak1_zin: kaart.vak1_zin, vak2_inrichting: kaart.vak2_inrichting,

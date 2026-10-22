@@ -223,7 +223,7 @@ test('begeleiderslijst: voortgang, nooit inhoud', async () => {
   // De broncode zelf: geen verboden tabel of kolom in de route van de begeleider.
   const bron = fs.readFileSync(path.join(__dirname, '..', 'api', 'reis-begeleider.js'), 'utf8');
   const code = bron.replace(/\/\/.*$/gm, '');
-  for (const verboden of ["from('kaarten')", "from('sessions')", "from('session_messages')", 'scan_start', 'scan_eind', 'vak1', 'vak3', 'vak4', 'doel', 'email']) {
+  for (const verboden of ["from('kaarten')", "from('gewoontemeting')", "from('sessions')", "from('session_messages')", 'scan_start', 'scan_eind', 'vak1', 'vak3', 'vak4', 'doel', 'email']) {
     assert.ok(!code.includes(verboden), `reis-begeleider.js bevat ${verboden}`);
   }
   // Het antwoord: alleen de toegestane velden per deelnemer.
@@ -279,6 +279,75 @@ test('dagelijkse taken: startdagmail en proactief zetje, en nooit twee keer', as
   assert.equal(mails.length, voor + 3);
   const geweigerd = await call('reis-taken', { method: 'GET', headers: { authorization: 'Bearer fout' } });
   assert.equal(geweigerd.status, 401);
+});
+
+test('het tempo: gemiddelde als anker, de eigen sterkste dimensie als draai, nooit een getal per persoon', async () => {
+  const reis = db.tabel('reizen')[0];
+  const r = await call('reis', { method: 'GET', query: { token: reis.token } });
+  assert.ok(Array.isArray(r.tempo) && r.tempo.length === 4, 'tempo staat er in de eerste week na de kaart');
+  const tekst = r.tempo.join(' ');
+  assert.ok(tekst.includes('gemiddeld 66 dagen'));
+  assert.ok(tekst.includes('geen wedstrijd'));
+  // Zien is hier de hoogste (70): die sterkte, en niet die van doen.
+  assert.ok(tekst.includes('patronen herkent'), 'de hoogste dimensie geeft de sterkte');
+  assert.ok(!tekst.includes('beginnen en doorgaan jouw kracht'));
+  assert.doesNotMatch(tekst, /\bjij\b.*\d+ dagen/, 'geen persoonlijk aantal dagen');
+  for (const woord of [/zwak/i, /laag/i, /tekort/i, /moeite/i]) assert.doesNotMatch(tekst, woord);
+  // Zonder scan: het waarom van de kaart draagt.
+  const { tempoTekst } = require('../api/_lib/reis');
+  const zonder = tempoTekst({ scan_start: null }, { waarom: 'voor mijn kleinkinderen' }).join(' ');
+  assert.ok(zonder.includes('Jouw waarom staat op je kaart'));
+  // Een lage scan geeft ook geen tekort: dan draagt de kaart.
+  const laag = tempoTekst({ scan_start: { zien: 20, sturen: 30, doen: 40 } }, { waarom: null }).join(' ');
+  assert.ok(laag.includes('Je kaart staat'));
+});
+
+test('gewoontemeting: niet voor dag 7, daarna één keer per week, en nooit een cijfer terug', async () => {
+  const reis = db.tabel('reizen')[0];
+  const body = { token: groep.token, anonId: reis.anon_id };
+  // Dag 1: geen vraag, en een antwoord wordt geweigerd.
+  let v = await call('validate', { body });
+  assert.equal(v.reis.gewoonteVraag, null);
+  let r = await call('reis-gewoonte', { body: { ...body, antwoorden: [3, 3, 3, 3] } });
+  assert.equal(r.status, 409);
+  // Dag 10: de vraag, met het doel van de kaart als aanhef.
+  const start = new Date(); start.setDate(start.getDate() - 9);
+  groep.interventie_start = start.toISOString().slice(0, 10);
+  db.tabel('kaarten').find((k) => k.reis_id === reis.id && k.versie === 2).doel = 'twee keer per week trainen.';
+  v = await call('validate', { body });
+  assert.equal(v.reis.dag, 10);
+  assert.ok(v.reis.gewoonteVraag, 'vraag aan de beurt');
+  assert.equal(v.reis.gewoonteVraag.zinnen.length, 4);
+  assert.match(v.reis.gewoonteVraag.aanhef, /^Twee keer/);
+  assert.equal(JSON.stringify(v).includes('score'), false, 'geen score naar de browser');
+  // Slechte antwoorden: 400. Goede: opgeslagen met score, en dan een week stil.
+  r = await call('reis-gewoonte', { body: { ...body, antwoorden: [3, 8, 3, 3] } });
+  assert.equal(r.status, 400);
+  r = await call('reis-gewoonte', { body: { ...body, antwoorden: [2, 3, 4, 5] } });
+  assert.equal(r.ok, true);
+  assert.equal(r.score, undefined);
+  const rij = db.tabel('gewoontemeting').find((g) => g.reis_id === reis.id);
+  assert.equal(rij.dag, 10);
+  assert.equal(rij.score, 3.5);
+  assert.equal(rij.overgeslagen, false);
+  v = await call('validate', { body });
+  assert.equal(v.reis.gewoonteVraag, null, 'een week stil');
+  r = await call('reis-gewoonte', { body: { ...body, antwoorden: [2, 3, 4, 5] } });
+  assert.equal(r.status, 409);
+  // Overslaan telt ook als beurt.
+  rij.created_at = new Date(Date.now() - 8 * 86400000).toISOString();
+  v = await call('validate', { body });
+  assert.ok(v.reis.gewoonteVraag);
+  r = await call('reis-gewoonte', { body: { ...body, overgeslagen: true } });
+  assert.equal(r.ok, true);
+  assert.equal(db.tabel('gewoontemeting').filter((g) => g.reis_id === reis.id).length, 2);
+  v = await call('validate', { body });
+  assert.equal(v.reis.gewoonteVraag, null);
+  // Na de hermeting geen vraag meer.
+  groep.interventie_start = new Date(Date.now() - 120 * 86400000).toISOString().slice(0, 10);
+  v = await call('validate', { body });
+  assert.equal(v.reis.gewoonteVraag, null);
+  groep.interventie_start = vandaag;
 });
 
 test('verwijderen haalt ook de reis en de kaarten weg', async () => {

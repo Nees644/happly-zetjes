@@ -23,6 +23,7 @@
       <h1 id="kop">Jouw <em>reis.</em></h1>
       <p id="intro"></p>
     </div>
+    <div class="tempo" id="tempo" hidden></div>
     <div class="stappen" id="stappen"></div>
     <p class="hint geen-print">Instellingen en je gegevens: <a href="#" id="instellingen" style="color:var(--pink)">bekijk of wijzig</a>.</p>
   </section>
@@ -172,6 +173,14 @@ function teken() {
     7: 'Je reis is af. Je kaart blijft van jou, en Zetjes kan doorgaan als je dat wilt.',
   }[d.huidig] || '';
   document.getElementById('intro').textContent = intro;
+
+  // Het tempo: na de kaart, tot en met de eerste week. Het gemiddelde als
+  // anker, een sterkte uit de scan als draai. Geen persoonlijk getal.
+  const tempo = document.getElementById('tempo');
+  if (d.tempo && d.tempo.length) {
+    tempo.innerHTML = '<h2>Hoe lang duurt het?</h2>' + d.tempo.map((t) => `<p>${esc(t)}</p>`).join('');
+    tempo.hidden = false;
+  } else tempo.hidden = true;
 
   const k = d.kaart;
   const plan = k ? `<div class="plan">Als ${esc(k.vak3_als)}, dan ${esc(k.vak3_dan)}.</div>` : '';
