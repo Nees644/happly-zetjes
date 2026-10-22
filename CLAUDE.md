@@ -116,6 +116,19 @@ Stand per stap (zie paragraaf 13 van de briefing):
   gewoontemeting, en dan alleen als hij gunstig is; anders het gemiddelde.
   Onderweg mag wel "je ligt voor op je eigen curve", want dat is gemeten.
 
+## De poortwachter (sinds 22 oktober 2026)
+
+- `api/_lib/poortwachter.js` classificeert elk bericht voordat er een zetje
+  komt, in beide fasen: de situatie en het vrije antwoord op de
+  verhelderingsvraag. In de GLI staat `poortwachterVerplicht` aan: valt de
+  classificatie uit, dan geen zetje maar de vaste tekst "probeer het straks
+  nog eens". Nooit een antwoord van het model zonder classificatie.
+- `api/_lib/poortwachter-gevallen.js` zijn veertig verzonnen GLI-berichten
+  met de verwachte categorie; `api/admin/poortwachter-eval.js` (knop in
+  beheer.html) haalt ze door de echte poortwachter. Wijzigt de beschrijving
+  van de poortwachter in contexts.js, draai dan die test opnieuw en noteer
+  het getal hier. Crisis gemist telt apart en hoort nul te zijn.
+
 ## Direct voor consumenten, live 1 januari 2027 (besloten 22 oktober 2026)
 
 - De Volhoudreis wordt rechtstreeks verkocht via happly.nl, drie deuren naar
