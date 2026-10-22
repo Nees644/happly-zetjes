@@ -116,6 +116,22 @@ Stand per stap (zie paragraaf 13 van de briefing):
   gewoontemeting, en dan alleen als hij gunstig is; anders het gemiddelde.
   Onderweg mag wel "je ligt voor op je eigen curve", want dat is gemeten.
 
+## Direct voor consumenten, live 1 januari 2027 (besloten 22 oktober 2026)
+
+- De Volhoudreis wordt rechtstreeks verkocht via happly.nl, drie deuren naar
+  dezelfde reis: de eerste honderd dagen (starters), rookvrij, voornemen.
+  Zetjes voornemen gaat hierin op. Prijs 79 euro voor honderd dagen.
+- **Inzet op jezelf**: optioneel 20 euro extra, terug op dag 100 zodra de
+  hermeting is gedaan. Een commitment contract, geen kansspel: nooit loten,
+  de voorwaarde is een eigen handeling (hermeting voor dag 100), de inzet is
+  een waarborgsom en geen omzet tot hij niet wordt terugbetaald. Niet in de
+  GLI. Naar de deelnemer heet het altijd "je inzet".
+- Bouw 10 tot 21 november: betalen via Mollie (de koopweg van Zetjes
+  personal is het vertrekpunt), een reis in een eigen groep per deur,
+  magische link, inzet als optie, terugboeking via dezelfde betaling na de
+  hermeting. Daarna drie landingspagina's op happly.nl (TransIP, met de hand).
+  Niet eerder beginnen dan na Behavior Analyst v1.
+
 ## ikhoudvol.nl (sinds 16 oktober 2026)
 
 De reeks Ik houd vol: gewone mensen, twintig seconden, vijf zinnen (wie, waarvoor, wat daarvoor, wanneer lastig, slotzin Ik houd vol; sinds 21 oktober 2026 staat het waarvoor voor het wat, want de reden draagt het volhouden). Statische site in `ikhoudvol/`, eigen Vercel-project met Root Directory `ikhoudvol`; de Zetjes-app serveert alleen `public` en ziet deze map niet. `ikhoudvol/opnemen.html` is de opneempagina: zinnen invullen, autocue onder de camera, kader voor hoofd en ogen (alleen op het scherm, gelijk aan de snit van de montage), opname blijft op de telefoon tot de deelnemer hem verstuurt. Vlak voor de opname maakt de pagina een startfoto (Lach maar); die gaat mee met de video en wordt in de montage het openingsbeeld en de omslag op de site (monteer.py --foto). Montage gebeurt buiten deze repository (monteer.py in het startpakket).
