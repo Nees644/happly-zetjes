@@ -87,6 +87,13 @@ Stand per stap (zie paragraaf 13 van de briefing):
 
 ## De gewoontemeting en het tempo (sinds 22 oktober 2026)
 
+- **Volhoud Framework (22 oktober 2026).** Vier sectoren (Werk, Health en
+  Vitality, Abonnementen, Defensie), drie productgroepen (Behavior Analyst,
+  Behavior Intelligence, Behavior Tools; Tools vervangt Facilitator), twee
+  kanalen. De gewoontemeting en het begeleidersdashboard vallen onder de
+  **Progress Monitor**, het product van Behavior Intelligence; bij Defensie
+  heet dezelfde motor Risk Monitor. Zetjes blijft de naam naar de deelnemer.
+
 - De gemiddelde tijd tot een gewoonte is 66 dagen (Lally 2010; Singh 2024:
   mediaan 59 tot 66, spreiding 4 tot 335). Wat die spreiding verklaart, is in
   de literatuur nauwelijks onderzocht; zelfcontrole en een zelfgekozen doel
