@@ -155,6 +155,71 @@ function kaartBlokTekst(kaart, dag, voornaam) {
   return r.join('\n');
 }
 
+// ── De gewoontemeting ────────────────────────────────────────
+// Vier zinnen (SRBAI, Gardner 2012) over het doel van de kaart, één keer per
+// week vanaf dag 7, tot ruim na de hermeting. De deelnemer ziet nooit een
+// cijfer; de antwoorden zijn er om per persoon de curve te leren kennen.
+const GEWOONTE_VANAF_DAG = 7;
+const GEWOONTE_TOT_DAG = DAGEN + 34;
+const GEWOONTE_INTERVAL_DAGEN = 7;
+const GEWOONTE_ZINNEN = [
+  'iets wat ik automatisch doe',
+  'iets wat ik doe zonder erbij na te denken',
+  'iets wat ik doe zonder dat ik het bewust hoef te onthouden',
+  'iets waar ik al mee begonnen ben voordat ik het besef',
+];
+
+async function laatsteGewoontemeting(reisId) {
+  const { data } = await supabase
+    .from('gewoontemeting').select('id, dag, created_at').eq('reis_id', reisId)
+    .order('created_at', { ascending: false }).limit(1).maybeSingle();
+  return data || null;
+}
+
+// Is de weekvraag aan de beurt? Alleen in de dagen van de reis, alleen met
+// een kaart (anders is er geen doel om naar te vragen), en nooit vaker dan
+// eens per zeven dagen, overgeslagen of niet.
+async function gewoonteVraag(reis, kaart) {
+  const dag = dagInReis(reis.invites || {});
+  if (!kaart || dag == null || dag < GEWOONTE_VANAF_DAG || dag > GEWOONTE_TOT_DAG) return null;
+  const laatste = await laatsteGewoontemeting(reis.id);
+  if (laatste) {
+    const sinds = (Date.now() - Date.parse(laatste.created_at)) / 86400000;
+    if (sinds < GEWOONTE_INTERVAL_DAGEN) return null;
+  }
+  const doel = kaart.doel ? kaart.doel.replace(/\.$/, '') : 'Wat ik volhoud';
+  const aanhef = doel.charAt(0).toUpperCase() + doel.slice(1);
+  return { dag, aanhef, zinnen: GEWOONTE_ZINNEN };
+}
+
+// ── Het tempo, de boodschap bij de start ─────────────────────
+// Het gemiddelde is het anker, de scan geeft de persoonlijke draai. Altijd een
+// sterkte uit de scan (de eigen hoogste dimensie), nooit een tekort, en nooit
+// een persoonlijk aantal dagen: dat hebben we pas als de gewoontemeting
+// genoeg reizen heeft gezien, en dan nog alleen als band. Geen wedstrijd.
+const TEMPO_STERKTE = {
+  doen: 'Jouw scan zegt dat beginnen en doorgaan jouw kracht is.',
+  sturen: 'Jouw scan zegt dat je zelf je richting bepaalt, en dat draagt de eerste weken.',
+  zien: 'Jouw scan zegt dat je je eigen patronen herkent, en wie het moment ziet aankomen, kan het voor zijn.',
+};
+function tempoTekst(reis, kaart) {
+  const s = reis.scan_start || {};
+  const dims = ['doen', 'sturen', 'zien'].filter((d) => typeof s[d] === 'number');
+  let sterkte = null;
+  if (dims.length) {
+    const hoogste = dims.reduce((a, b) => (s[b] > s[a] ? b : a));
+    if (s[hoogste] >= 50) sterkte = TEMPO_STERKTE[hoogste];
+  }
+  if (!sterkte && kaart?.waarom) sterkte = 'Jouw waarom staat op je kaart, en dat is wat de eerste weken draagt.';
+  if (!sterkte) sterkte = 'Je kaart staat, en dat is wat de eerste weken draagt.';
+  return [
+    `Een nieuwe gewoonte kost gemiddeld ${DAGEN} dagen. Sommigen zijn er in 18, anderen hebben meer tijd nodig; het is geen wedstrijd.`,
+    'Wat het tempo bepaalt is niet wilskracht maar twee dingen: snel beginnen en doorgaan als de motivatie wegzakt.',
+    sterkte,
+    'Op de momenten dat het wegzakt staan wij ernaast. Daar winnen we de dagen.',
+  ];
+}
+
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
@@ -196,4 +261,5 @@ module.exports = {
   REIS_TOKEN_RE, DAGEN, appUrl, scanUrl, emailHash, geldigEmail, schoon, dagInReis,
   laadReis, laadReisOpAnon, laadKaart, standVanStappen, werkStapBij, log, weergave,
   reisLink, zetjesLink, scanLink, esc, mailHtml, mailMagischeLink, kaartBlokTekst,
+  GEWOONTE_ZINNEN, GEWOONTE_VANAF_DAG, gewoonteVraag, laatsteGewoontemeting, tempoTekst,
 };
