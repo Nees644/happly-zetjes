@@ -92,7 +92,9 @@ Stand per stap (zie paragraaf 13 van de briefing):
   Behavior Intelligence, Behavior Tools; Tools vervangt Facilitator), twee
   kanalen. De gewoontemeting en het begeleidersdashboard vallen onder de
   **Progress Monitor**, het product van Behavior Intelligence; bij Defensie
-  heet dezelfde motor Risk Monitor. Zetjes blijft de naam naar de deelnemer.
+  heet dezelfde motor Risk Monitor. Bij maatschappelijke organisaties heet de
+  Behavior Analyst de Behavior Scan: de gedragsmotor op het doelgedrag, in
+  drie smaken (ACDR, CASI, COM-B). Zetjes blijft de naam naar de deelnemer.
 
 - De gemiddelde tijd tot een gewoonte is 66 dagen (Lally 2010; Singh 2024:
   mediaan 59 tot 66, spreiding 4 tot 335). Wat die spreiding verklaart, is in
