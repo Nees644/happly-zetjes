@@ -921,6 +921,15 @@ function showSteps(stappen) {
 async function generateZetje(clarifyAnswer, extra) {
   try {
     const p = await apiClaude('zetje', situation, clarifyAnswer, extra);
+    if (p.off_topic) {
+      // Ook het tweede bericht gaat langs de poortwachter: dezelfde afhandeling als bij de eerste vraag.
+      document.getElementById('clarify-opts').innerHTML = '';
+      selectedOpt = ''; document.getElementById('ta2').value = '';
+      document.getElementById('clarify-q').textContent = p.redirect;
+      setClarifyInput(!p.crisis);
+      go('s-clarify');
+      return;
+    }
     document.getElementById('z-badge').textContent = p.badge||'✨ Jouw Zetje';
     document.getElementById('z-title').textContent = p.titel||'Jouw Zetje';
     document.getElementById('z-intro').textContent = p.intro||'';

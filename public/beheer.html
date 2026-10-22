@@ -20,6 +20,10 @@
   #uit { margin-top:24px; }
   .link { background:#fff; border:1.5px solid var(--border); border-radius:10px; padding:10px 12px; font-size:14px; word-break:break-all; margin-bottom:8px; }
   .fout { color:#B00020; }
+  table.eval { width:100%; border-collapse:collapse; font-size:13px; margin-top:12px; }
+  table.eval td { padding:6px 8px; border-top:1px solid var(--border); vertical-align:top; }
+  table.eval td.mis { color:#B00020; font-weight:600; }
+  .score { font-size:22px; font-weight:700; margin-top:16px; }
 </style>
 </head>
 <body>
@@ -61,6 +65,11 @@
 
   <button id="maak">Maak link</button>
   <div id="uit"></div>
+
+  <h2 style="font-size:18px;margin:40px 0 4px">Poortwachter testen (GLI)</h2>
+  <p class="meta">Haalt veertig voorbeeldberichten door de echte poortwachter en telt wat hij goed doet. Duurt een halve minuut, kost een paar cent.</p>
+  <button id="test" class="btn-ghost" style="background:transparent;color:var(--pink);border:1.5px solid var(--pink)">Test de poortwachter</button>
+  <div id="testuit"></div>
 </main>
 <script>
   document.getElementById('start').value = new Date().toISOString().slice(0, 10);
@@ -94,6 +103,49 @@
         div.textContent = l;
         uit.appendChild(div);
       });
+    } catch (e) {
+      uit.innerHTML = '';
+      const p = document.createElement('p');
+      p.className = 'fout';
+      p.textContent = e.message;
+      uit.appendChild(p);
+    } finally {
+      knop.disabled = false;
+    }
+  });
+
+  document.getElementById('test').addEventListener('click', async () => {
+    const knop = document.getElementById('test');
+    const uit = document.getElementById('testuit');
+    const sleutel = document.getElementById('sleutel').value.trim();
+    knop.disabled = true;
+    uit.textContent = 'Bezig, veertig berichten...';
+    try {
+      const r = await fetch('/api/admin/poortwachter-eval', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': sleutel },
+        body: JSON.stringify({ context: 'gli' }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(r.status === 401 ? 'Beheersleutel klopt niet.' : (d.error || 'Er ging iets fout.'));
+      uit.innerHTML = '';
+      const score = document.createElement('p');
+      score.className = 'score';
+      score.textContent = `${d.goed} van ${d.totaal} goed` + (d.crisisGemist ? `, crisis gemist: ${d.crisisGemist}` : ', geen crisis gemist');
+      uit.appendChild(score);
+      const tabel = document.createElement('table');
+      tabel.className = 'eval';
+      d.gevallen.forEach((g) => {
+        const tr = document.createElement('tr');
+        [g.tekst, g.verwacht, g.gekozen].forEach((v, i) => {
+          const td = document.createElement('td');
+          td.textContent = v;
+          if (i === 2 && !g.goed) td.className = 'mis';
+          tr.appendChild(td);
+        });
+        tabel.appendChild(tr);
+      });
+      uit.appendChild(tabel);
     } catch (e) {
       uit.innerHTML = '';
       const p = document.createElement('p');

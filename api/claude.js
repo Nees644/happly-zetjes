@@ -9,6 +9,7 @@ const { staticSystem } = require('./_lib/contexts');
 const { jsonCall } = require('./_lib/anthropic');
 const { profielBlokTekst } = require('./_lib/scan-engine');
 const { laadReisOpAnon, laadKaart, kaartBlokTekst, dagInReis } = require('./_lib/reis');
+const { classificeer, tekstVoor, TEKST_UIT } = require('./_lib/poortwachter');
 
 const MAX_INPUT = 2000;
 
@@ -37,15 +38,6 @@ const ZETJE_SCHEMA = {
   required: ['badge', 'titel', 'intro', 'stappen', 'pattern', 'intervention', 'blocker_type', 'moment'],
   additionalProperties: false,
 };
-
-function guardSchema(categorieen) {
-  return {
-    type: 'object',
-    properties: { categorie: { type: 'string', enum: categorieen } },
-    required: ['categorie'],
-    additionalProperties: false,
-  };
-}
 
 // Variabel deel van de systeemprompt: komt na het cache-breekpunt. Het
 // profielblok zelf (toon, kracht, doel) staat in scan-engine.js, gedeeld
@@ -169,32 +161,9 @@ module.exports = async function handler(req, res) {
     // ── FASE 1: poortwachter + verhelderingsvraag ────────────────
     if (phase === 'clarify') {
       if (!userMsg) return res.status(400).json({ error: 'Lege invoer' });
-      const pw = a.ctx.poortwachter;
-
-      let categorie = 'ok';
-      try {
-        const { data: guard } = await jsonCall({
-          label: 'poortwachter',
-          alleenEU: Boolean(a.ctx.alleenEU),
-          system: [{ text: `Je bent de poortwachter van Zetjes. Je classificeert alleen, je antwoordt de gebruiker niet.
-${pw.beschrijving}
-Kies precies één categorie uit: ${pw.categorieen.join(', ')}.
-crisis gaat altijd voor: kies crisis bij elk signaal van gedachten aan zelfdoding, zelfbeschadiging of acuut gevaar. Twijfel je tussen ok en een andere categorie zonder crisis-signaal, kies dan ok.`, cache: false }],
-          user: userMsg,
-          schema: guardSchema(pw.categorieen),
-          maxTokens: 256,
-          thinking: false,
-        });
-        categorie = guard?.categorie || 'ok';
-      } catch (err) {
-        // Alleen-EU en Bedrock weigert: niet doorgaan zonder poortwachter.
-        if (err.code === 'eu_niet_beschikbaar') throw err;
-        // Poortwachter faalt: doorgaan, de systeemprompt bevat dezelfde grenzen.
-        console.error('poortwachter', err.message);
-      }
-
+      const categorie = await classificeer(a.ctx, userMsg);
       if (categorie !== 'ok') {
-        const redirect = pw.teksten[categorie] || pw.teksten.offtopic;
+        const redirect = tekstVoor(a.ctx, categorie);
         const s = await createSession(a, {
           gatekeeper_triggered: true,
           gatekeeper_reason: categorie === 'crisis' ? 'mentaal' : categorie,
@@ -239,6 +208,22 @@ crisis gaat altijd voor: kies crisis bij elk signaal van gedachten aan zelfdodin
       }
       if (clarifyAnswer) await addMessage(s.id, 'user', clarifyAnswer);
 
+      // Het tweede bericht gaat ook langs de poortwachter: het vrije antwoord op
+      // de verhelderingsvraag, of de situatie als de sessie hier pas begint.
+      const tweede = [sessionId ? null : situatie, clarifyAnswer].filter(Boolean).join('\n');
+      if (tweede) {
+        const categorie = await classificeer(a.ctx, tweede);
+        if (categorie !== 'ok') {
+          const redirect = tekstVoor(a.ctx, categorie);
+          await supabase.from('sessions').update({
+            gatekeeper_triggered: true,
+            gatekeeper_reason: categorie === 'crisis' ? 'mentaal' : categorie,
+          }).eq('id', s.id);
+          await addMessage(s.id, 'assistant', redirect);
+          return res.status(200).json({ off_topic: true, crisis: categorie === 'crisis', redirect, sessionId: s.id });
+        }
+      }
+
       // Eerste zetje na de Doelscan, met een bruikbaar eigen antwoord: geen AI-call.
       if (firstStepOverride.length >= 8 && !firstStepOverride.endsWith('?')) {
         const zetje = { badge: 'Eigen zetje', titel: 'Jouw eigen eerste stap', intro: '', stappen: [firstStepOverride] };
@@ -278,6 +263,7 @@ crisis gaat altijd voor: kies crisis bij elk signaal van gedachten aan zelfdodin
   } catch (err) {
     console.error('claude', err.message);
     if (err.code === 'eu_niet_beschikbaar') return res.status(503).json({ error: 'tijdelijk', reason: 'tijdelijk' });
+    if (err.code === 'poortwachter_uit') return res.status(200).json({ off_topic: true, crisis: false, redirect: TEKST_UIT, sessionId: null });
     return res.status(500).json({ error: 'API call failed' });
   }
 };

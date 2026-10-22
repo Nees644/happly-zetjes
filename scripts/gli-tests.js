@@ -14,7 +14,7 @@ async function test(naam, fn) {
 }
 
 (async () => {
-  const { getContext } = require('../api/_lib/contexts');
+  const { getContext, CONTEXTS } = require('../api/_lib/contexts');
   const gli = getContext('gli');
 
   await test('GLI vraagt uitdrukkelijke toestemming met een vinkje', () => {
@@ -51,6 +51,33 @@ async function test(naam, fn) {
       assert.ok(p.includes('artikel 49 lid 1 sub a'), 'toestemming voor doorgifte ontbreekt');
     }
     assert.ok(!/[—–]/.test(p), 'gedachtestreepje gevonden');
+  });
+
+  await test('de poortwachter staat op beide fasen en is in de GLI verplicht', () => {
+    const code = fs.readFileSync(path.join(__dirname, '..', 'api', 'claude.js'), 'utf8');
+    const fase1 = code.indexOf("phase === 'clarify'");
+    const fase2 = code.indexOf("phase === 'zetje'");
+    assert.ok(fase1 > 0 && fase2 > fase1);
+    assert.ok(code.slice(fase1, fase2).includes('classificeer('), 'fase 1 zonder poortwachter');
+    assert.ok(code.slice(fase2).includes('classificeer('), 'fase 2 zonder poortwachter');
+    assert.equal(CONTEXTS.gli.poortwachterVerplicht, true);
+    assert.ok(code.includes("poortwachter_uit"), 'geen afhandeling als de poortwachter uitvalt');
+  });
+
+  await test('veertig gevallen, elke categorie minstens drie keer, crisis minstens drie', () => {
+    const gevallen = require('../api/_lib/poortwachter-gevallen');
+    assert.equal(gevallen.length, 40);
+    const cats = CONTEXTS.gli.poortwachter.categorieen;
+    const telling = {};
+    for (const g of gevallen) {
+      assert.ok(cats.includes(g.categorie), `onbekende categorie ${g.categorie}`);
+      assert.ok(g.tekst.length > 10);
+      telling[g.categorie] = (telling[g.categorie] || 0) + 1;
+    }
+    for (const c of cats) assert.ok(telling[c] >= 3, `te weinig gevallen voor ${c}`);
+    // Eten in de situatie zonder vraag om advies hoort ok te zijn: minstens vijf van die grensgevallen.
+    const grens = gevallen.filter((g) => g.categorie === 'ok' && /eet|gegeten|snoep|chips/i.test(g.tekst));
+    assert.ok(grens.length >= 5, 'te weinig grensgevallen met eten in de situatie');
   });
 
   await test('alleenEU zonder Bedrock-sleutel: weigert, geen terugval', async () => {

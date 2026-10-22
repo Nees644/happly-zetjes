@@ -243,6 +243,8 @@ Niet relevant (offtopic): technische vragen (btw, KvK), juridische vragen, recep
     // de Claude API van Anthropic (buiten Europa). Toestemmingstekst en
     // privacy-gli.html zeggen dat. Zet alleenEU terug op true zodra Bedrock werkt.
     alleenEU: false,
+    // Geen poortwachter, geen zetje: in de GLI wordt nooit zonder classificatie geantwoord.
+    poortwachterVerplicht: true,
     ui: {
       // Uitdrukkelijke toestemming (AVG artikel 9 lid 2 sub a en artikel 49 lid 1 sub a).
       // Versie gli-2, 20 oktober 2026: verwerking door het taalmodel ook buiten Europa.
