@@ -103,7 +103,9 @@ Niet relevant (offtopic): recepten, technische vragen, medisch advies, puur zake
     },
     ankerFrequentie: null,
     scan: {
-      goalPrompt: 'Wat wil je bereiken?',
+      whyPrompt: 'Waarvoor doe je het?',
+      whyPlaceholder: 'Bijv: om weer met plezier naar mijn werk te gaan',
+      goalPrompt: 'Wat ga je daarvoor doen?',
       whenPrompt: 'Wanneer en waar ga je de eerste stap zetten?',
       hardPrompt: 'Waar verwacht je dat het lastig wordt?',
       openPrompt: 'Wat is het eerste wat je vanavond kunt doen, hoe klein ook?',
@@ -195,7 +197,9 @@ Niet relevant (offtopic): technische vragen (btw, KvK), juridische vragen, recep
     // deze context is ook wat Zetjes | personal gebruikt (bijlage 15 hoofdstuk 6),
     // en personal krijgt expliciet de neutrale kern.
     scan: {
-      goalPrompt: 'Wat wil je bereiken?',
+      whyPrompt: 'Waarvoor doe je het?',
+      whyPlaceholder: 'Bijv: om mijn bedrijf te laten groeien zonder er elke avond aan te zitten',
+      goalPrompt: 'Wat ga je daarvoor doen?',
       whenPrompt: 'Wanneer en waar ga je de eerste stap zetten?',
       hardPrompt: 'Waar verwacht je dat het lastig wordt?',
       openPrompt: 'Wat is het eerste wat je vanavond kunt doen, hoe klein ook?',
@@ -234,7 +238,30 @@ Niet relevant (offtopic): technische vragen (btw, KvK), juridische vragen, recep
     label: 'Zetjes bij je leefstijlprogramma',
     taalniveau: 'A2',
     faseweter: true,
+    // Besluit 20 oktober 2026: Bedrock EU is op korte termijn niet beschikbaar.
+    // De GLI loopt daarom via de gewone route: eerst Bedrock als die werkt, anders
+    // de Claude API van Anthropic (buiten Europa). Toestemmingstekst en
+    // privacy-gli.html zeggen dat. Zet alleenEU terug op true zodra Bedrock werkt.
+    alleenEU: false,
     ui: {
+      // Uitdrukkelijke toestemming (AVG artikel 9 lid 2 sub a en artikel 49 lid 1 sub a).
+      // Versie gli-2, 20 oktober 2026: verwerking door het taalmodel ook buiten Europa.
+      // Wijzig je de tekst, verhoog dan de versie en loop privacy-gli.html na.
+      toestemming: {
+        versie: 'gli-2',
+        titel: 'Voor je <em>begint</em>',
+        alineas: [
+          'Je krijgt Zetjes via je leefstijlprogramma. Je aanbieder is verantwoordelijk voor je gegevens. Happly maakt Zetjes in opdracht van je aanbieder.',
+          'Zetjes bewaart wat je typt. Zo kan het je de volgende keer beter helpen. Wat je typt, kan iets zeggen over je gezondheid. Daarom vragen we eerst je toestemming.',
+          'Je coach ziet nooit wat je typt. Je aanbieder ziet alleen cijfers over een hele groep, nooit over jou.',
+          'We gebruiken gegevens zonder naam en samengevoegd om Zetjes beter te maken.',
+          'Je gegevens worden in Europa bewaard. De antwoorden maakt een computerprogramma van het bedrijf Anthropic. Dat kan ook in de Verenigde Staten gebeuren. Anthropic gebruikt wat je typt niet om te leren.',
+          'Typ daarom geen naam, adres of telefoonnummer. Je kunt je gegevens altijd zelf wissen. Je kunt ook altijd stoppen.',
+        ],
+        vinkje: 'Ik geef toestemming. Zetjes mag bewaren wat ik typ en dit gebruiken zoals hierboven staat, ook buiten Europa.',
+        knop: 'Start',
+        privacy: '/privacy-gli.html',
+      },
       welkom: 'Lukt het even <em>niet?</em>',
       subtitel: 'Vertel wat er speelt. Je krijgt één klein zetje.',
       placeholder: 'Bijv: Het ging deze week niet goed. Nu heb ik geen zin meer om naar de bijeenkomst te gaan...',
@@ -319,7 +346,9 @@ offtopic: iets wat niets met het programma of met vastlopen te maken heeft (rece
     ankerFrequentie: { eersteCheckin: 3, daarna: 7 },
     scan: {
       // Het doel is deels voorgegeven: doorgaan met het programma, niet een open vraag.
-      goalPrompt: 'Wat wil je deze periode volhouden in het programma?',
+      whyPrompt: 'Waarvoor doe je dit programma?',
+      whyPlaceholder: 'Bijv: om met mijn kleinkinderen te kunnen spelen',
+      goalPrompt: 'Wat wil je deze periode volhouden?',
       whenPrompt: 'Wanneer ga je daar deze week mee aan de slag?',
       hardPrompt: 'Wat maakt dat nu lastig voor je?',
       openPrompt: 'Wat kun je vanavond doen, hoe klein ook?',
@@ -444,6 +473,8 @@ offtopic: iets wat niets met stoppen met roken of met vastlopen te maken heeft.`
       },
     },
     scan: {
+      whyPrompt: 'Waarvoor stop je?',
+      whyPlaceholder: 'Bijv: om de trap op te kunnen zonder te hijgen',
       goalPrompt: 'Wat is je doel? Bijvoorbeeld: rookvrij blijven vanaf mijn stopdag.',
       whenPrompt: 'Wat is je stopdag, of wanneer ben je gestopt?',
       hardPrompt: 'In welke situatie is het het lastigst om niet te roken? Bijvoorbeeld: na het eten, op het terras, met een drankje, in de auto.',

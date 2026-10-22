@@ -162,6 +162,7 @@ const PROFIEL_TOON = {
 function profielBlokTekst(ctx, profile) {
   if (!profile) return '';
   const parts = [`PROFIEL UIT DE DOELSCAN (richt het zetje hierop; wat de persoon nu typt blijft leidend voor de situatie zelf).`];
+  if (profile.goal_why) parts.push(`Waarom deze persoon dit wil, in eigen woorden: "${profile.goal_why}". Geef dit letterlijk terug als de persoon schrijft dat het geen zin heeft of de zin kwijt is; verzin er geen andere reden bij.`);
   if (profile.goal_text) parts.push(`Doel van deze persoon: ${profile.goal_text}`);
   if (ctx.key === 'rookvrij') {
     if (profile.goal_when) parts.push(`Stopdag: ${profile.goal_when}`);

@@ -114,10 +114,10 @@ h1 em{color:var(--mag);font-style:normal}
 
   <div class="veld"><label for="z1">Wie ben je?</label><small id="v1"></small>
     <textarea id="z1" rows="2" maxlength="120" placeholder="Ik ben ..."></textarea></div>
-  <div class="veld"><label for="z2">Wat houd je vol?</label><small id="v2"></small>
-    <textarea id="z2" rows="2" maxlength="140" placeholder="Ik ..."></textarea></div>
   <div class="veld"><label for="z3">Waarvoor doe je het?</label><small id="v3"></small>
     <textarea id="z3" rows="2" maxlength="160" placeholder="Ik doe het ..."></textarea></div>
+  <div class="veld"><label for="z2">Wat houd je daarvoor vol?</label><small id="v2"></small>
+    <textarea id="z2" rows="2" maxlength="140" placeholder="Ik ..."></textarea></div>
   <div class="veld"><label for="z4">Wanneer is het lastig?</label><small id="v4"></small>
     <textarea id="z4" rows="2" maxlength="140" placeholder="Het lastigst is ..."></textarea></div>
   <div class="veld vast"><label>En je sluit af met</label><small>Iedereen eindigt hetzelfde.</small><div class="slot">Ik houd vol.</div></div>
@@ -177,7 +177,7 @@ h1 em{color:var(--mag);font-style:normal}
 
 <script>
 const $ = (id) => document.getElementById(id);
-const velden = ['z1','z2','z3','z4'];
+const velden = ['z1','z3','z2','z4']; // waarvoor voor het wat: de reden draagt het volhouden
 const SLOT = 'Ik houd vol.';
 const OPSLAG = 'ikhoudvol-zinnen';
 const TEMPI = { rustig: 2.5, normaal: 3.0, vlot: 3.5 }; // woorden per seconde

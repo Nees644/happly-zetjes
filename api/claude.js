@@ -175,6 +175,7 @@ module.exports = async function handler(req, res) {
       try {
         const { data: guard } = await jsonCall({
           label: 'poortwachter',
+          alleenEU: Boolean(a.ctx.alleenEU),
           system: [{ text: `Je bent de poortwachter van Zetjes. Je classificeert alleen, je antwoordt de gebruiker niet.
 ${pw.beschrijving}
 Kies precies één categorie uit: ${pw.categorieen.join(', ')}.
@@ -186,6 +187,8 @@ crisis gaat altijd voor: kies crisis bij elk signaal van gedachten aan zelfdodin
         });
         categorie = guard?.categorie || 'ok';
       } catch (err) {
+        // Alleen-EU en Bedrock weigert: niet doorgaan zonder poortwachter.
+        if (err.code === 'eu_niet_beschikbaar') throw err;
         // Poortwachter faalt: doorgaan, de systeemprompt bevat dezelfde grenzen.
         console.error('poortwachter', err.message);
       }
@@ -208,12 +211,14 @@ crisis gaat altijd voor: kies crisis bij elk signaal van gedachten aan zelfdodin
       try {
         ({ data: clarify } = await jsonCall({
           label: 'clarify',
+          alleenEU: Boolean(a.ctx.alleenEU),
           system: systemBlocks(a, 'TAAK NU: stel de verhelderingsvraag. Geef precies drie antwoordopties.', null, kaartBlok),
           user: userMsg,
           schema: CLARIFY_SCHEMA,
           effort: 'low',
         }));
       } catch (err) {
+        if (err.code === 'eu_niet_beschikbaar') throw err;
         console.error('clarify', err.message);
         clarify = { vraag: 'Wat maakt dit het moeilijkst voor je?', opties: ['Ik weet het niet', 'De druk van anderen', 'Mijn eigen twijfel'] };
       }
@@ -247,6 +252,7 @@ crisis gaat altijd voor: kies crisis bij elk signaal van gedachten aan zelfdodin
 
       const { data: z } = await jsonCall({
         label: 'zetje',
+        alleenEU: Boolean(a.ctx.alleenEU),
         system: systemBlocks(a, 'TAAK NU: geef het zetje, met de labels voor analyse.', doelscanProfile, kaartBlok),
         user: `Situatie: ${situatie || userMsg}\nAntwoord op de verhelderingsvraag: ${clarifyAnswer || 'geen'}`,
         schema: ZETJE_SCHEMA,
@@ -271,6 +277,7 @@ crisis gaat altijd voor: kies crisis bij elk signaal van gedachten aan zelfdodin
     return res.status(400).json({ error: 'Onbekende fase' });
   } catch (err) {
     console.error('claude', err.message);
+    if (err.code === 'eu_niet_beschikbaar') return res.status(503).json({ error: 'tijdelijk', reason: 'tijdelijk' });
     return res.status(500).json({ error: 'API call failed' });
   }
 };

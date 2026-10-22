@@ -69,6 +69,7 @@ function uitslag(ctx, profile) {
 async function handleScan(req, res, tenant) {
   const anonId = String(req.body?.anonId || '').trim() || 'vrij_' + crypto.randomBytes(12).toString('hex');
   const goalText = schoon(req.body?.goalText, 200);
+  const goalWhy = schoon(req.body?.goalWhy, 200);
   const goalWhen = schoon(req.body?.goalWhen, 150);
   const goalHard = schoon(req.body?.goalHard, 150);
   const firstStep = schoon(req.body?.firstStep, 300);
@@ -90,6 +91,7 @@ async function handleScan(req, res, tenant) {
     user_key: anonId,
     context: CONTEXT_KEY,
     goal_text: goalText,
+    goal_why: goalWhy || null,
     goal_when: goalWhen || null,
     goal_hard: goalHard || null,
     scores: score.scores,
@@ -142,6 +144,7 @@ async function handleZetje(req, res, tenant) {
   try {
     ({ data: z } = await jsonCall({
       label: 'zetje-vrij',
+      alleenEU: Boolean(ctx.alleenEU),
       system: [
         { text: staticSystem(ctx), cache: true },
         { text: `${profielBlok}\n\nTAAK NU: geef het eerste zetje bij dit doel. Geen verhelderingsvraag nodig.`, cache: false },
@@ -153,6 +156,7 @@ async function handleZetje(req, res, tenant) {
     }));
   } catch (err) {
     console.error('scan-vrij zetje', err.message);
+    if (err.code === 'eu_niet_beschikbaar') return res.status(503).json({ error: 'tijdelijk', reason: 'tijdelijk' });
     return res.status(500).json({ error: 'fout' });
   }
 

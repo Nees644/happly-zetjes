@@ -20,6 +20,7 @@ module.exports = async function handler(req, res) {
 
   const { token, anonId } = req.body || {};
   const goalText = schoon(req.body?.goalText);
+  const goalWhy = schoon(req.body?.goalWhy);
   const goalWhen = schoon(req.body?.goalWhen);
   const goalHard = schoon(req.body?.goalHard);
   const firstStep = schoon(req.body?.firstStep);
@@ -61,6 +62,7 @@ module.exports = async function handler(req, res) {
     user_key: a.anonId,
     context: a.ctx.key,
     goal_text: goalText,
+    goal_why: goalWhy || null,
     goal_when: goalWhen || null,
     goal_hard: goalHard || null,
     scores: score.scores,
