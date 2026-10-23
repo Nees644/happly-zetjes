@@ -20,6 +20,13 @@
   #uit { margin-top:24px; }
   .link { background:#fff; border:1.5px solid var(--border); border-radius:10px; padding:10px 12px; font-size:14px; word-break:break-all; margin-bottom:8px; }
   .fout { color:#B00020; }
+  #lijst { margin-top:16px; }
+  .link .kop { font-weight:600; }
+  .link .regel { color:var(--text-mid); font-size:13px; margin:2px 0 6px; }
+  .link .adres { font-size:12px; color:var(--text-mid); }
+  .link.uitgezet { opacity:.6; }
+  .link.uitgezet .adres { text-decoration:line-through; }
+  button.schakel { margin-top:8px; width:auto; padding:8px 14px; font-size:14px; background:transparent; color:var(--pink); border:1.5px solid var(--pink); }
   table.eval { width:100%; border-collapse:collapse; font-size:13px; margin-top:12px; }
   table.eval td { padding:6px 8px; border-top:1px solid var(--border); vertical-align:top; }
   table.eval td.mis { color:#B00020; font-weight:600; }
@@ -60,11 +67,21 @@
   <label for="max">Hoeveel mensen mogen één link gebruiken</label>
   <input id="max" type="number" min="1" value="10">
 
+  <label for="geldig">Geldig tot en met<small>Daarna komt niemand meer binnen via deze link. Leeg laten kan, maar een einddatum is veiliger.</small></label>
+  <input id="geldig" type="date">
+
   <label for="aantal">Aantal links</label>
   <input id="aantal" type="number" min="1" max="50" value="1">
 
   <button id="maak">Maak link</button>
   <div id="uit"></div>
+
+  <h2 style="font-size:18px;margin:40px 0 4px">Bestaande links</h2>
+  <p class="meta">Wie de link heeft, komt binnen. Zet een link uit zodra hij niet meer nodig is; aanzetten kan altijd weer.</p>
+  <label for="filter">Alleen van organisatie (korte naam, leeg is alles)</label>
+  <input id="filter" value="">
+  <button id="toon" class="btn-ghost" style="background:transparent;color:var(--pink);border:1.5px solid var(--pink)">Toon links</button>
+  <div id="lijst"></div>
 
   <h2 style="font-size:18px;margin:40px 0 4px">Poortwachter testen (GLI)</h2>
   <p class="meta">Haalt veertig voorbeeldberichten door de echte poortwachter en telt wat hij goed doet. Duurt een halve minuut, kost een paar cent.</p>
@@ -90,6 +107,7 @@
           label: v('label'),
           startDate: v('start') || undefined,
           maxUses: v('max') || undefined,
+          expiresAt: v('geldig') || undefined,
           count: v('aantal') || 1,
           appUrl: location.origin,
         }),
@@ -113,6 +131,73 @@
       knop.disabled = false;
     }
   });
+
+  const STATUS = { open: 'open', uit: 'uit', verlopen: 'verlopen', vol: 'vol' };
+  function datum(iso) { return iso ? new Date(iso).toLocaleDateString('nl-NL') : ''; }
+
+  async function toonLinks() {
+    const knop = document.getElementById('toon');
+    const uit = document.getElementById('lijst');
+    const sleutel = document.getElementById('sleutel').value.trim();
+    const slug = document.getElementById('filter').value.trim();
+    knop.disabled = true;
+    uit.textContent = 'Bezig...';
+    try {
+      const r = await fetch('/api/admin/invites' + (slug ? `?tenantSlug=${encodeURIComponent(slug)}` : ''), {
+        headers: { 'x-admin-key': sleutel },
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(r.status === 401 ? 'Beheersleutel klopt niet.' : (d.error || 'Er ging iets fout.'));
+      uit.innerHTML = '';
+      if (!d.links.length) { uit.textContent = 'Geen links gevonden.'; return; }
+      d.links.forEach((l) => {
+        const kaart = document.createElement('div');
+        kaart.className = 'link' + (l.actief ? '' : ' uitgezet');
+        const kop = document.createElement('div');
+        kop.className = 'kop';
+        kop.textContent = `${l.label || 'zonder label'} · ${l.organisatie || ''} · ${l.context}${l.reis ? ' · reis' : ''}`;
+        const regel = document.createElement('div');
+        regel.className = 'regel';
+        const gebruik = l.maxGebruik != null ? `${l.gebruikt} van ${l.maxGebruik}` : `${l.gebruikt}`;
+        regel.textContent = `Status ${STATUS[l.status]} · gebruikt ${gebruik}` +
+          (l.startDatum ? ` · start ${datum(l.startDatum)}` : '') +
+          (l.geldigTot ? ` · geldig tot ${datum(l.geldigTot)}` : ' · geen einddatum');
+        const adres = document.createElement('div');
+        adres.className = 'adres';
+        adres.textContent = l.link;
+        const schakel = document.createElement('button');
+        schakel.className = 'schakel';
+        schakel.textContent = l.actief ? 'Zet uit' : 'Zet aan';
+        schakel.addEventListener('click', async () => {
+          schakel.disabled = true;
+          try {
+            const p = await fetch('/api/admin/invites', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', 'x-admin-key': sleutel },
+              body: JSON.stringify({ token: l.token, active: !l.actief }),
+            });
+            const pd = await p.json().catch(() => ({}));
+            if (!p.ok) throw new Error(pd.error || 'Er ging iets fout.');
+            await toonLinks();
+          } catch (e) {
+            schakel.disabled = false;
+            schakel.textContent = e.message;
+          }
+        });
+        kaart.append(kop, regel, adres, schakel);
+        uit.appendChild(kaart);
+      });
+    } catch (e) {
+      uit.innerHTML = '';
+      const p = document.createElement('p');
+      p.className = 'fout';
+      p.textContent = e.message;
+      uit.appendChild(p);
+    } finally {
+      knop.disabled = false;
+    }
+  }
+  document.getElementById('toon').addEventListener('click', toonLinks);
 
   document.getElementById('test').addEventListener('click', async () => {
     const knop = document.getElementById('test');
