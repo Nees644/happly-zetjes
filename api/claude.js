@@ -12,6 +12,13 @@ const { laadReisOpAnon, laadKaart, kaartBlokTekst, dagInReis } = require('./_lib
 
 const MAX_INPUT = 2000;
 
+// Taalregel: volhouden, nooit doorzetten. Het label komt van het model, dus
+// het wordt hier nagekeken in plaats van alleen gevraagd.
+function schoonLabel(badge) {
+  const b = String(badge || '').trim();
+  return /doorzet/i.test(b) ? 'Volhouden' : b;
+}
+
 const CLARIFY_SCHEMA = {
   type: 'object',
   properties: {
@@ -25,7 +32,7 @@ const CLARIFY_SCHEMA = {
 const ZETJE_SCHEMA = {
   type: 'object',
   properties: {
-    badge: { type: 'string', description: 'Korte naam van wat er speelt, maximaal 2 woorden, bijvoorbeeld Perfectie, Twijfel, Loslaten, Geen puf' },
+    badge: { type: 'string', description: 'Korte naam van wat er speelt, maximaal 2 woorden, bijvoorbeeld Perfectie, Twijfel, Loslaten, Geen puf. Nooit Doorzetten; zeg Volhouden' },
     titel: { type: 'string', description: 'Prikkelende titel van het zetje, maximaal 8 woorden' },
     intro: { type: 'string', description: 'De spiegel: één zin die laat voelen dat je begrijpt wat er speelt, in de woorden van de persoon, zonder oordeel' },
     stappen: { type: 'array', items: { type: 'string' }, description: 'Eén tot drie concrete stappen, elk maximaal 15 woorden; de eerste kan binnen vijf minuten beginnen' },
@@ -72,9 +79,10 @@ function systemBlocks(a, taak, doelscanProfile, kaartBlok) {
 }
 
 // De Volhoudkaart van deze gebruiker, als hij in een reis zit. Hoogste versie.
-async function loadKaartBlok(anonId) {
+// Alleen de reis van deze link: een kaart uit een andere reis hoort hier niet.
+async function loadKaartBlok(anonId, inviteId) {
   const reis = await laadReisOpAnon(anonId);
-  if (!reis) return '';
+  if (!reis || reis.invite_id !== inviteId) return '';
   const kaart = await laadKaart(reis.id);
   return kaartBlokTekst(kaart, dagInReis(reis.invites || {}), reis.voornaam);
 }
@@ -163,7 +171,7 @@ module.exports = async function handler(req, res) {
   const doelscanProfileId = doelscanProfile?.id || null;
   // In een reis: de kaart als tweede bron naast (meestal in plaats van) het profiel.
   let kaartBlok = '';
-  try { kaartBlok = await loadKaartBlok(a.anonId); } catch (err) { console.error('kaartblok', err.message); }
+  try { kaartBlok = await loadKaartBlok(a.anonId, a.invite.id); } catch (err) { console.error('kaartblok', err.message); }
 
   try {
     // ── FASE 1: poortwachter + verhelderingsvraag ────────────────
@@ -260,7 +268,7 @@ crisis gaat altijd voor: kies crisis bij elk signaal van gedachten aan zelfdodin
         effort: 'medium',
       });
 
-      const zetje = { badge: z.badge, titel: z.titel, intro: z.intro, stappen: (z.stappen || []).slice(0, 3) };
+      const zetje = { badge: schoonLabel(z.badge), titel: z.titel, intro: z.intro, stappen: (z.stappen || []).slice(0, 3) };
       await addMessage(s.id, 'assistant', JSON.stringify(zetje));
       const { error } = await supabase.from('sessions').update({
         pattern: z.pattern,
@@ -281,3 +289,5 @@ crisis gaat altijd voor: kies crisis bij elk signaal van gedachten aan zelfdodin
     return res.status(500).json({ error: 'API call failed' });
   }
 };
+module.exports.schoonLabel = schoonLabel;
+module.exports.loadKaartBlok = loadKaartBlok;

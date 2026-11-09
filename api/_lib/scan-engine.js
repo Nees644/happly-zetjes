@@ -159,9 +159,17 @@ const PROFIEL_TOON = {
 // Bouwt het profielblok voor de systeemprompt (niet-gecachte deel). ctx moet
 // ctx.scan.phrases bevatten (de context van de scan, niet per se de context
 // van het gesprek zelf bij de losse scan, waar beide gelijk zijn).
+// Het opgeslagen doel stuurt alleen als de situatie erover gaat. Typt iemand
+// over iets anders (uitstel op het werk terwijl het doel afvallen was), dan
+// komt de eerste stap uit wat hij nu typt en wordt het doel niet genoemd.
+const DOEL_ALS_ACHTERGROND = 'Wat de persoon nu typt is altijd leidend. Gebruik het doel, het waarom en het plan hieronder alleen als de situatie die de persoon nu beschrijft daarover gaat. Gaat de situatie over iets anders, noem het doel dan niet, en laat geen enkele stap over het doel gaan: elke stap gaat over de situatie die de persoon nu beschrijft.';
+
 function profielBlokTekst(ctx, profile) {
   if (!profile) return '';
-  const parts = [`PROFIEL UIT DE DOELSCAN (richt het zetje hierop; wat de persoon nu typt blijft leidend voor de situatie zelf).`];
+  const parts = [
+    'PROFIEL UIT DE DOELSCAN (achtergrond, nooit het onderwerp).',
+    DOEL_ALS_ACHTERGROND,
+  ];
   if (profile.goal_why) parts.push(`Waarom deze persoon dit wil, in eigen woorden: "${profile.goal_why}". Geef dit letterlijk terug als de persoon schrijft dat het geen zin heeft of de zin kwijt is; verzin er geen andere reden bij.`);
   if (profile.goal_text) parts.push(`Doel van deze persoon: ${profile.goal_text}`);
   if (ctx.key === 'rookvrij') {
@@ -194,5 +202,5 @@ module.exports = {
   BLOKKADES, DREMPEL, CONTEXT_STANDAARD, contextStandaard,
   scoreDoelscan, bouwHerkenningszin, labelVoorScore, eersteStapBruikbaar,
   hermetingBlokken, hermetingItems, scoreHermeting,
-  PROFIEL_TOON, profielBlokTekst,
+  PROFIEL_TOON, profielBlokTekst, DOEL_ALS_ACHTERGROND,
 };
