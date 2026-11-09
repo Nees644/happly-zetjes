@@ -10,6 +10,7 @@ const crypto = require('crypto');
 const { supabase } = require('./supabase');
 const { todayNL } = require('./access');
 const { stuurMail } = require('./mail');
+const { DOEL_ALS_ACHTERGROND } = require('./scan-engine');
 
 const REIS_TOKEN_RE = /^[0-9a-f]{32}$/;
 const DAGEN = 66;
@@ -151,7 +152,8 @@ function kaartBlokTekst(kaart, dag, voornaam) {
   if (kaart.vak4_woorden) r.push(`Zijn eigen woorden als het zwaar wordt: "${kaart.vak4_woorden}"`);
   if (dag != null && dag >= 1) r.push(`Dag ${dag} van ${DAGEN}.`);
   r.push('');
-  r.push('Gebruik dit zo: zakt de zin weg of schrijft hij dat het geen nut heeft, geef dan eerst zijn waarom terug, letterlijk, als vraag of herinnering. Herken de zin uit "wat hij dan tegen zichzelf zegt" als die terugkomt en benoem dat het het moment is, niet de waarheid. Verwijs naar het als-dan-plan als eerste stap, of maak hem kleiner als hij vandaag te groot is. Sluit af met zijn eigen woorden, letterlijk, als dat past. Verzin geen andere woorden voor hem en herhaal de kaart niet als lijst.');
+  r.push(DOEL_ALS_ACHTERGROND);
+  r.push('Gaat de situatie wel over dit doel: zakt de zin weg of schrijft hij dat het geen nut heeft, geef dan eerst zijn waarom terug, letterlijk, als vraag of herinnering. Herken de zin uit "wat hij dan tegen zichzelf zegt" als die terugkomt en benoem dat het het moment is, niet de waarheid. Verwijs dan naar het als-dan-plan als eerste stap, of maak hem kleiner als hij vandaag te groot is. Sluit af met zijn eigen woorden, letterlijk, als dat past. Verzin geen andere woorden voor hem en herhaal de kaart niet als lijst.');
   return r.join('\n');
 }
 
